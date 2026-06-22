@@ -12,7 +12,7 @@ function ExtraModule.Init(Deps)
     local Sea = Deps.Sea
     local SmartTween = Deps.SmartTween
     local Settings = Deps.Settings
-    local RegisterAttack = Deps.RegisterAttack -- گرفتن RegisterAttack از کد اصلی بدون RegisterHit
+    local RegisterAttack = Deps.RegisterAttack
 
     local State = {
         AutoFish = false, AutoBuyBait = false,
@@ -32,11 +32,10 @@ function ExtraModule.Init(Deps)
         IslandTeleportEnabled = false, SelectedIslandTarget = nil,
         ActiveTween = nil,
 
-        -- متغیرهای جدید برای الایت و یاما
         AutoEliteHunter = false,
         AutoYama = false,
         TryLuckYama = false,
-        IsDoingPriorityTask = false, -- این کلید لول آپ رو خاموش میکنه
+        IsDoingPriorityTask = false,
         EliteExpandedEnemy = nil,
         LastEliteAttackTime = 0,
         CurrentEliteSpawnIndex = 1
@@ -100,7 +99,19 @@ function ExtraModule.Init(Deps)
         end)
     end
 
-    local function getStoreNameForAuto(toolName) local baseName = toolName:gsub(" Fruit", ""); return baseName .. "-" .. baseName end
+    -- آپدیت و حل مشکل اسم فروت ها با دیکشنری کامل
+    local ValidFruitsForStore = {"Rocket", "Spin", "Chop", "Spring", "Bomb", "Spike", "Flame", "Falcon", "Ice", "Sand", "Dark", "Diamond", "Light", "Rubber", "Barrier", "Ghost", "Magma", "Quake", "Buddha", "Love", "Spider", "Sound", "Phoenix", "Portal", "Rumble", "Pain", "Blizzard", "Gravity", "Mammoth", "T-Rex", "Dough", "Shadow", "Venom", "Control", "Spirit", "Dragon", "Leopard", "Kitsune"}
+    local function getStoreNameForAuto(toolName) 
+        local tName = toolName:lower()
+        for _, fruit in ipairs(ValidFruitsForStore) do
+            if tName:find(fruit:lower()) then
+                return fruit .. "-" .. fruit
+            end
+        end
+        local baseName = toolName:gsub(" Fruit", ""):match("^%s*(.-)%s*$")
+        if baseName then return baseName .. "-" .. baseName end
+        return toolName
+    end
 
     local function tryStoreFruit(item)
         if not State.AutoStore then return end
@@ -294,40 +305,43 @@ function ExtraModule.Init(Deps)
                                         if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
                                         root.CFrame = dest
 
-                                        if tick() - State.LastEliteAttackTime > Settings.AttackWaitTime then
-                                            if bossFound:FindFirstChild("Head") then
-                                                Workspace.CurrentCamera.CFrame = CFrame.lookAt(Workspace.CurrentCamera.CFrame.Position, bossFound.Head.Position)
-                                            end
-                                            
-                                            local h = Plr.Character:FindFirstChild("Humanoid")
-                                            local t = Plr.Character:FindFirstChildOfClass("Tool")
-                                            if not (t and (t.ToolTip == "Melee" or t.ToolTip == "Sword" or t.ToolTip == "Blox Fruit")) then
-                                                for _, t2 in pairs(Plr.Backpack:GetChildren()) do 
-                                                    if t2:IsA("Tool") and (t2.ToolTip == "Sword" or t2.ToolTip == "Blox Fruit" or t2.ToolTip == "Melee") then 
-                                                        h:EquipTool(t2); break 
-                                                    end 
-                                                end
-                                            end
-                                            
-                                            local CX, CY = Workspace.CurrentCamera.ViewportSize.X/2, Workspace.CurrentCamera.ViewportSize.Y/2
-                                            VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, true, game, 1)
-                                            task.wait(Settings.HoldTime)
-                                            VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, false, game, 1)
-                                            
-                                            if RegisterAttack then
-                                                RegisterAttack:FireServer(math.floor((0.5 + math.random() * 0.5) * 10000) / 10000)
-                                            end
-                                            State.LastEliteAttackTime = tick()
+                                        -- تغییرات سرعت اتک: حذف زمان صبر طولانی و جایگزین با اسپم کلیک شبیه دوج کینگ
+                                        if bossFound:FindFirstChild("Head") then
+                                            Workspace.CurrentCamera.CFrame = CFrame.lookAt(Workspace.CurrentCamera.CFrame.Position, bossFound.Head.Position)
                                         end
+                                        
+                                        local h = Plr.Character:FindFirstChild("Humanoid")
+                                        local t = Plr.Character:FindFirstChildOfClass("Tool")
+                                        if not (t and (t.ToolTip == "Melee" or t.ToolTip == "Sword" or t.ToolTip == "Blox Fruit")) then
+                                            for _, t2 in pairs(Plr.Backpack:GetChildren()) do 
+                                                if t2:IsA("Tool") and (t2.ToolTip == "Sword" or t2.ToolTip == "Blox Fruit" or t2.ToolTip == "Melee") then 
+                                                    h:EquipTool(t2); break 
+                                                end 
+                                            end
+                                        end
+                                        
+                                        -- ایجاد ترد جداگانه برای کلیک های سریع و بدون مکس
+                                        task.spawn(function()
+                                            local CX, CY = Workspace.CurrentCamera.ViewportSize.X/2, Workspace.CurrentCamera.ViewportSize.Y/2
+                                            for i = 1, 4 do
+                                                VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, true, game, 1)
+                                                task.wait(Settings.HoldTime or 0.05)
+                                                VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, false, game, 1)
+                                                
+                                                if RegisterAttack then
+                                                    RegisterAttack:FireServer(math.floor((0.5 + math.random() * 0.5) * 10000) / 10000)
+                                                end
+                                                task.wait(0.1)
+                                            end
+                                        end)
+                                        
                                     end
                                 else
-                                    -- گشتن در سی فریم ها (رفع مشکل گیر کردن روی نقطه اول)
                                     local spawns = EliteSpawns[islandName]
                                     if spawns then
                                         if State.CurrentEliteSpawnIndex > #spawns then State.CurrentEliteSpawnIndex = 1 end
                                         
                                         local targetSpawn = spawns[State.CurrentEliteSpawnIndex]
-                                        -- به جای فاصله با خود نقطه، فاصله با محلی که قرار است بالای نقطه بایستد را میسنجیم
                                         local targetDest = targetSpawn * CFrame.new(0, 40, 0)
                                         local distToDest = (root.Position - targetDest.Position).Magnitude
                                         
