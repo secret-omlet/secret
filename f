@@ -12,7 +12,7 @@ function ExtraModule.Init(Deps)
     local Sea = Deps.Sea
     local SmartTween = Deps.SmartTween
     local Settings = Deps.Settings
-    local RegisterAttack = Deps.RegisterAttack -- گرفتن RegisterAttack از کد اصلی
+    local RegisterAttack = Deps.RegisterAttack -- گرفتن RegisterAttack از کد اصلی بدون RegisterHit
 
     local State = {
         AutoFish = false, AutoBuyBait = false,
@@ -164,7 +164,6 @@ function ExtraModule.Init(Deps)
                     local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart")
                     if not root or IsPlayerDead() then return end
 
-                    -- گرفتن تعداد کیل ها
                     local progressRaw = CommF:InvokeServer("EliteHunter", "Progress")
                     local kills = tonumber(tostring(progressRaw):match("%d+")) or 0
                     
@@ -188,32 +187,31 @@ function ExtraModule.Init(Deps)
                             else
                                 if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
                                 
-                                -- نگه داشتن دوربین روی شمشیر
                                 Workspace.CurrentCamera.CFrame = CFrame.lookAt(Workspace.CurrentCamera.CFrame.Position, hitbox.Position)
                                 
-                                -- کلیک کردن (کلیک مجازی)
                                 local x = Workspace.CurrentCamera.ViewportSize.X/2
                                 local y = Workspace.CurrentCamera.ViewportSize.Y/2
                                 VirtualInputManager:SendMouseButtonEvent(x, y, 0, true, game, 1)
                                 task.wait(0.1)
                                 VirtualInputManager:SendMouseButtonEvent(x, y, 0, false, game, 1)
                                 
-                                -- چک کردن نوتیفیکیشن
                                 local notifs = Plr.PlayerGui:FindFirstChild("Notifications")
                                 if notifs then
                                     for _, child in pairs(notifs:GetChildren()) do
-                                        if child.Name == "NotificationTemplate" then
-                                            local txtObj = child:FindFirstChild("TextLabel")
-                                            local text = txtObj and txtObj.Text or child.Text
-                                            if type(text) == "string" then
-                                                if string.find(text, "not worthy") then
-                                                    WindUI:Notify({Title="یاما سورد", Content="شانس ناموفق بود! ادامه شکار الایت...", Duration=5})
+                                        if child.Name == "NotificationTemplate" and child:IsA("Frame") then
+                                            local textStr = ""
+                                            local textLabel = child:FindFirstChild("TextLabel") or child:FindFirstChildOfClass("TextLabel")
+                                            if textLabel then textStr = textLabel.Text end
+                                            
+                                            if textStr ~= "" then
+                                                if string.find(textStr:lower(), "not worthy") then
+                                                    WindUI:Notify({Title="یاما سورد", Content="شانس ناموفق بود! ادامه شکار...", Duration=5})
                                                     child:Destroy()
                                                     State.IsDoingPriorityTask = false
                                                     ResumeFarms()
-                                                    task.wait(5) -- مکث برای جلوگیری از اسپم
+                                                    task.wait(2)
                                                     return
-                                                elseif string.find(text, "accepted you") then
+                                                elseif string.find(textStr:lower(), "accepted you") then
                                                     WindUI:Notify({Title="تبریک!", Content="شمشیر یاما رو گرفتی!", Duration=10})
                                                     State.AutoYama = false
                                                     State.TryLuckYama = false
@@ -228,7 +226,7 @@ function ExtraModule.Init(Deps)
                                 end
                             end
                         end
-                        return -- اگه تو حالت یاماست بقیه کد اجرا نشه
+                        return 
                     end
 
                     -- === 2. چک کردن الایت هانتر ===
@@ -249,7 +247,6 @@ function ExtraModule.Init(Deps)
                                     Deps.SetFarmMode("EliteHunter")
                                 end
 
-                                -- جستجوی ماب در مپ
                                 local bossFound = nil
                                 local enemies = Workspace:FindFirstChild("Enemies")
                                 if enemies then
@@ -265,7 +262,6 @@ function ExtraModule.Init(Deps)
                                 end
 
                                 if bossFound then
-                                    -- بزرگ کردن کله و فریز کردن (مثل اتو لول آپ)
                                     local H = bossFound:FindFirstChild("Head")
                                     if H and not bossFound:FindFirstChild("FakeHead") then
                                         if State.EliteExpandedEnemy and State.EliteExpandedEnemy ~= bossFound then EliteCleanupExpandedHead(State.EliteExpandedEnemy) end
@@ -287,7 +283,6 @@ function ExtraModule.Init(Deps)
                                     if hum then hum.WalkSpeed = 0; hum.JumpPower = 0 end
                                     for _, p in pairs(bossFound:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end
 
-                                    -- گرفتن موقعیت دقیق برای اتک
                                     local ep = bossFound.HumanoidRootPart.Position
                                     local d = (root.Position - ep); d = Vector3.new(d.X, 0, d.Z)
                                     if d.Magnitude < 0.1 then d = Vector3.new(1,0,0) end; d = d.Unit
@@ -299,13 +294,11 @@ function ExtraModule.Init(Deps)
                                         if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
                                         root.CFrame = dest
 
-                                        -- سیستم اتک دقیقا مشابه لول آپ (فقط کلیک + RegisterAttack)
                                         if tick() - State.LastEliteAttackTime > Settings.AttackWaitTime then
                                             if bossFound:FindFirstChild("Head") then
                                                 Workspace.CurrentCamera.CFrame = CFrame.lookAt(Workspace.CurrentCamera.CFrame.Position, bossFound.Head.Position)
                                             end
                                             
-                                            -- Equip Tool (Sword, Fruit, Melee)
                                             local h = Plr.Character:FindFirstChild("Humanoid")
                                             local t = Plr.Character:FindFirstChildOfClass("Tool")
                                             if not (t and (t.ToolTip == "Melee" or t.ToolTip == "Sword" or t.ToolTip == "Blox Fruit")) then
@@ -316,13 +309,11 @@ function ExtraModule.Init(Deps)
                                                 end
                                             end
                                             
-                                            -- ارسال کلیک مجازی + RegisterAttack
                                             local CX, CY = Workspace.CurrentCamera.ViewportSize.X/2, Workspace.CurrentCamera.ViewportSize.Y/2
                                             VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, true, game, 1)
                                             task.wait(Settings.HoldTime)
                                             VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, false, game, 1)
                                             
-                                            -- بدون RegisterHit
                                             if RegisterAttack then
                                                 RegisterAttack:FireServer(math.floor((0.5 + math.random() * 0.5) * 10000) / 10000)
                                             end
@@ -330,23 +321,27 @@ function ExtraModule.Init(Deps)
                                         end
                                     end
                                 else
-                                    -- گشتن در سی فریم ها (Spawn Hopping)
+                                    -- گشتن در سی فریم ها (رفع مشکل گیر کردن روی نقطه اول)
                                     local spawns = EliteSpawns[islandName]
                                     if spawns then
                                         if State.CurrentEliteSpawnIndex > #spawns then State.CurrentEliteSpawnIndex = 1 end
                                         
                                         local targetSpawn = spawns[State.CurrentEliteSpawnIndex]
-                                        if (root.Position - targetSpawn.Position).Magnitude > 30 then
-                                            State.ActiveTween = SmartTween(root, targetSpawn * CFrame.new(0, 40, 0), State.ActiveTween)
+                                        -- به جای فاصله با خود نقطه، فاصله با محلی که قرار است بالای نقطه بایستد را میسنجیم
+                                        local targetDest = targetSpawn * CFrame.new(0, 40, 0)
+                                        local distToDest = (root.Position - targetDest.Position).Magnitude
+                                        
+                                        if distToDest > 20 then
+                                            State.ActiveTween = SmartTween(root, targetDest, State.ActiveTween)
                                         else
-                                            task.wait(0.5) -- اگر رسیدیم و لود نشد، بریم نقطه بعدی
+                                            if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
+                                            task.wait(0.5)
                                             State.CurrentEliteSpawnIndex = State.CurrentEliteSpawnIndex + 1
                                         end
                                     end
                                 end
                             end
                         else
-                            -- اگر الایت تو مپ نبود (یا کشته شد) و قبلا دستگیر بودیم
                             if State.IsDoingPriorityTask then
                                 if State.EliteExpandedEnemy then EliteCleanupExpandedHead(State.EliteExpandedEnemy); State.EliteExpandedEnemy = nil end
                                 State.IsDoingPriorityTask = false
