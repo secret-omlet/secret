@@ -1,0 +1,1122 @@
+--[[
+    ╔═══════════════════════════════════════════════════════════════╗
+    ║                    OMLET HUB v0.4.7 (PRO TWEEN)               ║
+    ║        Auto LevelUp (Module) + Auto Boss + Auto Raid          ║
+    ║        Smart Auto Fruit + Double Gacha + Live Status          ║
+    ║        Fighting Style Auto Buy + Smart Fast Teleport Tween    ║
+    ╚═══════════════════════════════════════════════════════════════╝
+]]
+
+local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local StarterGui = game:GetService("StarterGui")
+local CoreGui = game:GetService("CoreGui")
+
+local LocalPlayer = Players.LocalPlayer
+local imageId = "rbxassetid://131457172964999"
+
+pcall(function()
+    StarterGui:SetCore("SendNotification", {Title = "OMLET HUB", Text = "ممنون که مارا انتخاب کردید", Icon = imageId, Duration = 5})
+end)
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "OmletCenteredGui"
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+
+if not pcall(function() screenGui.Parent = CoreGui end) then screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
+
+local imageLabel = Instance.new("ImageLabel")
+imageLabel.Image = imageId
+imageLabel.BackgroundTransparency = 1
+imageLabel.AnchorPoint = Vector2.new(0.5, 0.5)
+imageLabel.Position = UDim2.new(0.5, 0, 0.5, 0)
+imageLabel.Size = UDim2.new(0, 0, 0, 0)
+imageLabel.ImageTransparency = 1
+imageLabel.Parent = screenGui
+
+local aspectConstraint = Instance.new("UIAspectRatioConstraint")
+aspectConstraint.AspectRatio = 1
+aspectConstraint.AspectType = Enum.AspectType.ScaleWithParentSize
+aspectConstraint.DominantAxis = Enum.DominantAxis.Height
+aspectConstraint.Parent = imageLabel
+
+local tweenIn = TweenService:Create(imageLabel, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0.35, 0, 0.35, 0), ImageTransparency = 0})
+tweenIn:Play()
+task.wait(8)
+local tweenOut = TweenService:Create(imageLabel, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Size = UDim2.new(0, 0, 0, 0), ImageTransparency = 1})
+tweenOut:Play()
+tweenOut.Completed:Connect(function() screenGui:Destroy() end)
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local GuiService = game:GetService("GuiService")
+local Plr = LocalPlayer
+
+local Sea = 1
+local SeaName = "دریای اول"
+
+local PlayerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+local MainGui = PlayerGui:WaitForChild("Main", 5)
+
+if MainGui and MainGui:FindFirstChild("Version") then
+    task.wait(1.5) 
+    local text = string.lower(MainGui.Version.Text)
+    
+    if string.find(text, "sea1") then Sea = 1; SeaName = "دریای اول"
+    elseif string.find(text, "sea2") then Sea = 2; SeaName = "دریای دوم"
+    elseif string.find(text, "sea3") then Sea = 3; SeaName = "دریای سوم" end
+end
+
+local Net = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Net")
+local RegisterAttack = Net:WaitForChild("RE/RegisterAttack")
+
+local function getCleanName(name) return string.split(name, "-")[1] or name end
+local function formatNumber(n) local formatted = tostring(n); while true do local k; formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", '%1,%2'); if k == 0 then break end end; return formatted end
+
+local Settings = {
+    HeadSize = 100, MinClickDelay = 0.05, MaxClickDelay = 0.09, HoldTime = 0.01,
+    AttackDistance = 40, AttackHeight = 40, BuddhaDistance = 50, WaitHeight = 50,
+    FlightSpeed = 350, FreezeEnemy = true, RemoveAnimator = true, AttackWaitTime = 2,
+    GunAttackDistance = 60, GunAttackHeight = 40, SwitchHP = 2000, ChestCollectionDelay = 0.5,
+    ChestMaxTravelTime = 35, ChestMinHeight = -3000, ChestMaxHeight = 10000, ChestMaxAttempts = 3,
+    RaidLowHPThreshold = 1000, RaidSafeDistance = 150, RaidSafeHeight = 300, RaidNPCSearchRange = 250,
+    RaidTeleportWaitTime = 30, RaidTeleportCheckDistance = 500, RaidTargetSwitchTime = 5,
+    RaidIslandCheckInterval = 1, RaidIslandWaitTime = 3, RaidEndTeleportDistance = 800,
+    DoughKingHeadSize = 30, DoughKingAttackDistance = 10, DoughKingAttackHeight = 20, DoughKingWaitHeight = 15,
+    BoatSpeed = 250,
+}
+
+local LastFastTeleport = 0
+local function SmartTween(root, targetCFrame, activeTween)
+    if not root then return nil end
+    local myPos = root.Position; local targetPos = targetCFrame.Position; local dist = (myPos - targetPos).Magnitude
+    if dist < 10 then root.CFrame = targetCFrame; if activeTween then activeTween:Cancel() end; return nil end
+
+    if tick() - LastFastTeleport > 3 then
+        local teleported = false
+        if Sea == 1 then
+            local distFishman = (myPos - Vector3.new(61163, 11, 1819)).Magnitude
+            local targetDistFishman = (targetPos - Vector3.new(61163, 11, 1819)).Magnitude
+            local distSky1, myDistSky1 = (targetPos - Vector3.new(-4607, 874, -1667)).Magnitude, (myPos - Vector3.new(-4607, 874, -1667)).Magnitude
+            local distSky2, myDistSky2 = (targetPos - Vector3.new(-7894, 5547, -380)).Magnitude, (myPos - Vector3.new(-7894, 5547, -380)).Magnitude
+            if distFishman > 3000 and targetDistFishman < 3000 then ReplicatedStorage.Remotes.CommF_:InvokeServer("requestEntrance", Vector3.new(61163.85, 11.68, 1819.78)); teleported = true
+            elseif distFishman < 3000 and targetDistFishman > 3000 then ReplicatedStorage.Remotes.CommF_:InvokeServer("requestEntrance", Vector3.new(3864.69, 6.74, -1926.21)); teleported = true
+            elseif targetDistFishman > 3000 then
+                if distSky2 < 2000 and myDistSky2 > 2000 then ReplicatedStorage.Remotes.CommF_:InvokeServer("requestEntrance", Vector3.new(-7894.61, 5547.14, -380.29)); teleported = true
+                elseif distSky1 < 2000 and myDistSky1 > 2000 then ReplicatedStorage.Remotes.CommF_:InvokeServer("requestEntrance", Vector3.new(-4607.82, 874.39, -1667.55)); teleported = true end
+            end
+        elseif Sea == 2 then
+            local distCursed = (myPos - Vector3.new(923, 126, 32852)).Magnitude
+            local targetDistCursed = (targetPos - Vector3.new(923, 126, 32852)).Magnitude
+            if distCursed > 3000 and targetDistCursed < 3000 then ReplicatedStorage.Remotes.CommF_:InvokeServer("requestEntrance", Vector3.new(923.21, 126.97, 32852.83)); teleported = true
+            elseif distCursed < 3000 and targetDistCursed > 3000 then ReplicatedStorage.Remotes.CommF_:InvokeServer("requestEntrance", Vector3.new(-6508.55, 89.03, -132.84)); teleported = true end
+        end
+        if teleported then if activeTween then activeTween:Cancel() end; LastFastTeleport = tick(); task.wait(1.5); return nil end
+    end
+
+    local useCFrame = targetCFrame
+    if dist > 300 and myPos.Y > -500 and targetPos.Y > -500 then useCFrame = targetCFrame * CFrame.new(0, 40, 0) end
+    if activeTween then activeTween:Cancel() end
+    local tween = TweenService:Create(root, TweenInfo.new(dist / Settings.FlightSpeed, Enum.EasingStyle.Linear), {CFrame = useCFrame})
+    tween:Play(); return tween
+end
+
+local function GetMeleeMastery(styleName)
+    local function checkTool(tool)
+        if tool and tool:IsA("Tool") and tool.ToolTip == "Melee" then
+            if styleName then if string.lower(tool.Name):find(string.lower(styleName)) then local lvl = tool:FindFirstChild("Level"); return tool.Name, lvl and lvl.Value or 0 end
+            else local lvl = tool:FindFirstChild("Level"); return tool.Name, lvl and lvl.Value or 0 end
+        end; return nil, 0
+    end
+    if Plr.Character then for _, tool in pairs(Plr.Character:GetChildren()) do local n, v = checkTool(tool); if n then return n, v end end end
+    for _, tool in pairs(Plr.Backpack:GetChildren()) do local n, v = checkTool(tool); if n then return n, v end end
+    return "هیچ میلی پیدا نشد", 0
+end
+
+local function FSIsEnemyValid(E) if not E or not E.Parent then return false end; local h = E:FindFirstChild("Humanoid"); if not h or h.Health <= 0 then return false end; return E:FindFirstChild("HumanoidRootPart") ~= nil end
+local function FSFindEnemy(mobName)
+    local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart"); if not root then return nil end
+    local fm, md = nil, math.huge; local enemies = Workspace:FindFirstChild("Enemies")
+    if enemies then for _, v in pairs(enemies:GetChildren()) do pcall(function() if string.find(v.Name, mobName) and FSIsEnemyValid(v) then local d = (root.Position - v.HumanoidRootPart.Position).Magnitude; if d < md then md = d; fm = v end end end) end end
+    return fm
+end
+
+local FSState = { Active = false, CurrentStyle = nil, Phase = "Idle", TargetMob = nil, Dest = nil }
+local SHState = { Active = false, Phase = "Idle", Index = 1, TargetMob = nil, Dest = nil }
+local SHStyles = {
+    {Name = "Dark Step", Check = {"BuyBlackLeg", true}, Equip = {"BuyBlackLeg"}, NPCPos = CFrame.new(-4842, 34, -4745)},
+    {Name = "Electric", Check = {"BuyElectro", true}, Equip = {"BuyElectro"}, NPCPos = CFrame.new(-4842, 34, -4745)},
+    {Name = "Water Kung Fu", Check = {"BuyFishmanKarate", true}, Equip = {"BuyFishmanKarate"}, NPCPos = CFrame.new(-4842, 34, -4745)},
+    {Name = "Dragon Claw", Check = {"BlackbeardReward", "DragonClaw", "1"}, Equip = {"BlackbeardReward", "DragonClaw", "2"}, NPCPos = CFrame.new(710, 186, 653)}
+}
+local FightingStyles = {
+    { Name = "Dark Step", RemoteArg = "BuyBlackLeg", NPCPos = CFrame.new(-4842, 34, -4745), Cost = 150000, Fragments = 0, },
+    { Name = "Electric", RemoteArg = "BuyElectro", NPCPos = CFrame.new(-4842, 34, -4745), Cost = 500000, Fragments = 0, },
+    { Name = "Water Kung Fu", RemoteArg = "BuyFishmanKarate", NPCPos = CFrame.new(-4842, 34, -4745), Cost = 750000, Fragments = 0, },
+    { Name = "Sharkman Karate", RemoteArg = "BuySharkmanKarate", NPCPos = CFrame.new(-2601, 238, -10314), Cost = 2500000, Fragments = 5000, ReqStyleName = "Water Kung Fu", ReqCheck = {"BuyFishmanKarate", true}, ReqEquip = {"BuyFishmanKarate"}, EquipPos = CFrame.new(-4842, 34, -4745), ReqMastery = 400, ReqKey = true, BossName = "Tide Keeper", BossPos = CFrame.new(-3053, 237, -10146)},
+    { Name = "Death Step", RemoteArg = "BuyDeathStep", NPCPos = CFrame.new(6359, 296, -6764), Cost = 2500000, Fragments = 5000, ReqStyleName = "Dark Step", ReqCheck = {"BuyBlackLeg", true}, ReqEquip = {"BuyBlackLeg"}, EquipPos = CFrame.new(-4842, 34, -4745), ReqMastery = 400},
+}
+
+local function GetPlayerBeli() local s, v = pcall(function() return Plr.Data.Beli.Value end); return s and v or 0 end
+local function GetPlayerFragments() local s, v = pcall(function() return Plr.Data.Fragments.Value end); return s and v or 0 end
+local function HasWaterKey() return Plr.Backpack:FindFirstChild("Water Key") ~= nil or (Plr.Character and Plr.Character:FindFirstChild("Water Key") ~= nil) end
+
+task.spawn(function()
+    while task.wait(0.5) do
+        pcall(function()
+            if not FSState.Active or not FSState.CurrentStyle then return end
+            local style = FSState.CurrentStyle
+            local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart")
+            if not root then return end
+
+            if FSState.Phase == "CheckRequirements" then
+                local beli = GetPlayerBeli(); local frags = GetPlayerFragments()
+                if beli < style.Cost then WindUI:Notify({Title="فایتینگ استایل", Content="پول کافی ندارید!", Duration=5}); FSState.Active = false; FSState.Phase = "Idle"; return end
+                if style.Fragments and style.Fragments > 0 and frags < style.Fragments then WindUI:Notify({Title="فایتینگ استایل", Content="فرگمنت کافی ندارید!", Duration=5}); FSState.Active = false; FSState.Phase = "Idle"; return end
+                if style.ReqStyleName then
+                    local res = ReplicatedStorage.Remotes.CommF_:InvokeServer(unpack(style.ReqCheck))
+                    if tostring(res) ~= "1" then WindUI:Notify({Title="خطا", Content="فایتینگ استایل پیش‌نیاز رو نخریده‌اید!", Duration=5}); FSState.Active = false; FSState.Phase = "Idle"; return end
+                    local _, mastery = GetMeleeMastery(style.ReqStyleName)
+                    if mastery < style.ReqMastery then FSState.Phase = "EquipReq"; return end
+                end
+                if style.ReqKey then if not HasWaterKey() then FSState.Phase = "FarmBoss"; return end end
+                FSState.Phase = "GoToNPC"
+
+            elseif FSState.Phase == "EquipReq" then
+                FSState.TargetMob = nil; FSState.Dest = style.EquipPos
+                if (root.Position - style.EquipPos.Position).Magnitude < 15 then ReplicatedStorage.Remotes.CommF_:InvokeServer(unpack(style.ReqEquip)); task.wait(1.5); FSState.Phase = "MasteryFarm" end
+
+            elseif FSState.Phase == "MasteryFarm" then
+                local _, mastery = GetMeleeMastery(style.ReqStyleName)
+                if mastery >= style.ReqMastery then FSState.TargetMob = nil; WindUI:Notify({Title="فایتینگ استایل", Content="مستری کامل شد!", Duration=3}); FSState.Phase = "CheckRequirements"; return end
+                if not (FSState.TargetMob and FSIsEnemyValid(FSState.TargetMob)) then
+                    local mob = FSFindEnemy("Sea Soldier") or FSFindEnemy("Water Fighter")
+                    if mob then FSState.TargetMob = mob else FSState.TargetMob = nil; FSState.Dest = CFrame.new(-3053, 287, -10146) end
+                end
+
+            elseif FSState.Phase == "FarmBoss" then
+                if HasWaterKey() then FSState.TargetMob = nil; WindUI:Notify({Title="فایتینگ استایل", Content="Water Key پیدا شد!", Duration=3}); FSState.Phase = "GoToNPC"; return end
+                local boss = FSFindEnemy(style.BossName)
+                if boss then FSState.TargetMob = boss else FSState.TargetMob = nil; FSState.Dest = style.BossPos * CFrame.new(0, 50, 0) end
+
+            elseif FSState.Phase == "GoToNPC" then
+                FSState.TargetMob = nil; FSState.Dest = style.NPCPos
+                if (root.Position - style.NPCPos.Position).Magnitude < 15 then FSState.Phase = "Buy" end
+
+            elseif FSState.Phase == "Buy" then
+                local success = false
+                for i = 1, 3 do pcall(function() local result = ReplicatedStorage.Remotes.CommF_:InvokeServer(style.RemoteArg); if result then success = true end end); if success then break end; task.wait(1) end
+                if success then WindUI:Notify({Title="فایتینگ استایل", Content=style.Name .. " با موفقیت خریداری شد!", Duration=5}) else FSState.Phase = "GoToNPC"; return end
+                FSState.Phase = "Done"; FSState.Active = false
+            end
+        end)
+    end
+end)
+
+task.spawn(function()
+    while task.wait(0.5) do
+        pcall(function()
+            if not SHState.Active then return end
+            local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart"); if not root then return end
+            if SHState.Phase == "Check" then
+                if GetPlayerBeli() < 3000000 then WindUI:Notify({Title="سوپر هیومن", Content="پول شما کمتر از 3,000,000 است!", Duration=5}); SHState.Active = false; return end
+                for _, style in ipairs(SHStyles) do
+                    local result = ReplicatedStorage.Remotes.CommF_:InvokeServer(unpack(style.Check))
+                    if tostring(result) ~= "1" then WindUI:Notify({Title="سوپر هیومن", Content="پیش نیازها کامل نیست! ("..style.Name..")", Duration=5}); SHState.Active = false; return end
+                end
+                SHState.Phase = "ProcessStyle"; SHState.Index = 1
+
+            elseif SHState.Phase == "ProcessStyle" then
+                if SHState.Index > 4 then SHState.Phase = "BuySH"; return end
+                local style = SHStyles[SHState.Index]
+                SHState.Dest = style.NPCPos
+                if (root.Position - style.NPCPos.Position).Magnitude < 15 then
+                    ReplicatedStorage.Remotes.CommF_:InvokeServer(unpack(style.Equip)); task.wait(1.5)
+                    local _, mastery = GetMeleeMastery()
+                    if mastery >= 300 then SHState.Index = SHState.Index + 1 else SHState.Phase = "Farm" end
+                end
+
+            elseif SHState.Phase == "Farm" then
+                local _, mastery = GetMeleeMastery()
+                if mastery >= 300 then SHState.TargetMob = nil; SHState.Phase = "ProcessStyle"; return end
+                if not (SHState.TargetMob and FSIsEnemyValid(SHState.TargetMob)) then
+                    local mob = FSFindEnemy("Sea Soldier") or FSFindEnemy("Water Fighter")
+                    if mob then SHState.TargetMob = mob else SHState.TargetMob = nil; SHState.Dest = CFrame.new(-3053, 287, -10146) end
+                end
+                
+            elseif SHState.Phase == "BuySH" then
+                SHState.TargetMob = nil; local shPos = CFrame.new(1400, 247, -5181); SHState.Dest = shPos
+                if (root.Position - shPos.Position).Magnitude < 15 then
+                    ReplicatedStorage.Remotes.CommF_:InvokeServer("BuySuperhuman"); WindUI:Notify({Title="سوپر هیومن", Content="با موفقیت خریداری شد!", Duration=5})
+                    SHState.Active = false; SHState.Phase = "Idle"
+                end
+            end
+        end)
+    end
+end)
+
+local RAID_TYPES = { ["Flame"]="Flame", ["Ice"]="Ice", ["Quake"]="Quake", ["Light"]="Light", ["Dark"]="Dark", ["Spider"]="Spider", ["Rumble"]="Rumble", ["Magma"]="Magma", ["Buddha"]="Human: Buddha", ["Sand"]="Sand", ["Phoenix"]="Phoenix", ["Dough"]="Dough" }
+local RAID_FRUITS = { "Rocket-Rocket","Spin-Spin","Chop-Chop","Spring-Spring","Bomb-Bomb","Spike-Spike","Flame-Flame","Falcon-Falcon","Ice-Ice","Sand-Sand","Dark-Dark","Diamond-Diamond","Light-Light","Rubber-Rubber","Barrier-Barrier","Ghost-Ghost","Magma-Magma","Quake-Quake","Buddha-Buddha","Love-Love","Spider-Spider","Sound-Sound","Phoenix-Phoenix","Portal-Portal","Rumble-Rumble","Pain-Pain","Blizzard-Blizzard","Gravity-Gravity","Mammoth-Mammoth","T-Rex-T-Rex","Dough-Dough","Shadow-Shadow","Venom-Venom","Control-Control","Spirit-Spirit","Dragon-Dragon","Leopard-Leopard","Kitsune-Kitsune" }
+
+local DisplayFruitNames, FruitRealNamesMap = {}, {}
+for _, f in ipairs(RAID_FRUITS) do local clean = getCleanName(f); table.insert(DisplayFruitNames, clean); FruitRealNamesMap[clean] = f end
+
+local BossDatabase, ChestIslands = {}, {}
+if Sea == 1 then
+    BossDatabase = {{Lvl=20,Mob="Gorilla King",QName="JungleQuest",QId=3,Pos=CFrame.new(-1131,6,1642)},{Lvl=55,Mob="Bobby",QName="BuggyQuest1",QId=3,Pos=CFrame.new(-1140,5,3830)},{Lvl=115,Mob="Yeti",QName="SnowQuest",QId=3,Pos=CFrame.new(1386,87,-1299)},{Lvl=130,Mob="Vice Admiral",QName="MarineQuest2",QId=2,Pos=CFrame.new(-5036,28,4325)},{Lvl=210,Mob="Warden",QName="PrisonerQuest",QId=2,Pos=CFrame.new(5308,2,475)},{Lvl=220,Mob="Chief Warden",QName="PrisonerQuest",QId=3,Pos=CFrame.new(5308,2,475)},{Lvl=230,Mob="Swan",QName="PrisonerQuest",QId=4,Pos=CFrame.new(5308,2,475)},{Lvl=350,Mob="Magma Admiral",QName="MagmaQuest",QId=3,Pos=CFrame.new(-5315,12,8516)},{Lvl=425,Mob="Fishman Lord",QName="FishmanQuest",QId=3,Pos=CFrame.new(61122,19,1568)},{Lvl=500,Mob="Wysper",QName="SkyExp1Quest",QId=3,Pos=CFrame.new(-7860,5545,-381)},{Lvl=575,Mob="Thunder God",QName="SkyExp2Quest",QId=3,Pos=CFrame.new(-7904,5636,-1412)},{Lvl=675,Mob="Cyborg",QName="FountainQuest",QId=3,Pos=CFrame.new(5259,39,4050)},{Lvl=700,Mob="Ice Admiral",QName="FountainQuest",QId=4,Pos=CFrame.new(5259,39,4050)}}
+    ChestIslands = {{Name="جزیره شروع",Pos=Vector3.new(1060,17,1549)},{Name="جنگل",Pos=Vector3.new(-1602,37,154)},{Name="باگی",Pos=Vector3.new(-1140,5,3830)},{Name="بیابان",Pos=Vector3.new(897,7,4390)},{Name="جزیره برفی",Pos=Vector3.new(1386,87,-1299)},{Name="پایگاه تفنگدار",Pos=Vector3.new(-5036,28,4325)},{Name="جزیره آسمان",Pos=Vector3.new(-4840,717,-2620)},{Name="زندان",Pos=Vector3.new(5308,2,475)},{Name="کولوسئوم",Pos=Vector3.new(-1576,8,-2985)},{Name="مگما",Pos=Vector3.new(-5315,12,8516)},{Name="ماهی‌مرد",Pos=Vector3.new(61122,19,1568)},{Name="آسمان ۱",Pos=Vector3.new(-4722,845,-1951)},{Name="آسمان ۲",Pos=Vector3.new(-7904,5636,-1412)},{Name="فواره",Pos=Vector3.new(5259,39,4050)}}
+elseif Sea == 2 then
+    BossDatabase = {{Lvl=750,Mob="Diamond",QName="Area1Quest",QId=3,Pos=CFrame.new(-425,73,1835)},{Lvl=850,Mob="Jeremy",QName="Area2Quest",QId=3,Pos=CFrame.new(637,72,917)},{Lvl=925,Mob="Orbitus",QName="MarineQuest3",QId=3,Pos=CFrame.new(-2442,75,-3219)},{Lvl=1150,Mob="Smoke Admiral",QName="IceSideQuest",QId=3,Pos=CFrame.new(-6230,81,-4850)},{Lvl=1400,Mob="Awakened Ice Admiral",QName="FrostQuest",QId=3,Pos=CFrame.new(6115,29,-6222)},{Lvl=1475,Mob="Tide Keeper",QName="ForgottenQuest",QId=3,Pos=CFrame.new(-3053,237,-10146)}}
+    ChestIslands = {{Name="پادشاهی رز",Pos=Vector3.new(-425,73,1835)},{Name="کارخانه",Pos=Vector3.new(634,75,949)},{Name="پایگاه تفنگدار",Pos=Vector3.new(-2442,75,-3219)},{Name="جزیره زامبی",Pos=Vector3.new(-5492,49,-794)},{Name="کوه برفی",Pos=Vector3.new(606,402,-5369)},{Name="سمت یخ",Pos=Vector3.new(-6230,81,-4850)},{Name="سمت آتش",Pos=Vector3.new(-5430,16,-5295)},{Name="جزیره وایتبرد",Pos=Vector3.new(1955,28,-3108)},{Name="جزیره تاریکی",Pos=Vector3.new(-1500,14,-1500)},{Name="جزیره گوسفند",Pos=Vector3.new(-3100,12,3800)},{Name="کشتی ۱",Pos=Vector3.new(921,126,32832)},{Name="کشتی ۲",Pos=Vector3.new(912,126,33198)},{Name="جزیره یخبندان",Pos=Vector3.new(6115,29,-6222)},{Name="جزیره فراموش شده",Pos=Vector3.new(-3053,237,-10146)},{Name="جزیره ماهی‌مرد دوم",Pos=Vector3.new(2200,14,1100)},{Name="جزیره لاک‌پشت",Pos=Vector3.new(-4700,19,-1800)}}
+elseif Sea == 3 then
+    BossDatabase = {{Lvl=1550,Mob="Stone",QName="PiratePortQuest",QId=3,Pos=CFrame.new(-288,43,5433)},{Lvl=1675,Mob="Island Empress",QName="AmazonQuest2",QId=3,Pos=CFrame.new(5449,602,750)},{Lvl=1750,Mob="Kilo Admiral",QName="MarineTreeIsland",QId=3,Pos=CFrame.new(2182,28,-6738)},{Lvl=1875,Mob="Captain Elephant",QName="DeepForestIsland2",QId=3,Pos=CFrame.new(-10332,331,-8912)},{Lvl=1950,Mob="Beautiful Pirate",QName="HauntedQuest1",QId=3,Pos=CFrame.new(-9515,142,5537)},{Lvl=2250,Mob="Ice Cream Queen",QName="IceCreamIslandQuest",QId=3,Pos=CFrame.new(-818,65,-10965)}}
+    ChestIslands = {{Name="بندر دزدان دریایی",Pos=Vector3.new(-288,43,5433)},{Name="جزیره هیدرا",Pos=Vector3.new(5228,18,345)},{Name="آمازون لیلی",Pos=Vector3.new(5833,52,-1103)},{Name="آمازون بالا",Pos=Vector3.new(5449,602,750)},{Name="جزیره درخت دریایی",Pos=Vector3.new(2182,28,-6738)},{Name="درخت بزرگ",Pos=Vector3.new(2300,50,-6800)},{Name="قلعه روی دریا",Pos=Vector3.new(-5000,300,-3000)},{Name="جنگل عمیق ۱",Pos=Vector3.new(-10582,331,-8758)},{Name="جنگل عمیق ۲",Pos=Vector3.new(-10332,331,-8912)},{Name="عمارت",Pos=Vector3.new(-12488,332,-7553)},{Name="لاکپشت شناور",Pos=Vector3.new(-13200,500,-7600)},{Name="قلعه تسخیر شده",Pos=Vector3.new(-9515,142,5537)},{Name="جزیره بادام زنینی",Pos=Vector3.new(-2022,37,-12025)},{Name="جزیره بستنی",Pos=Vector3.new(-818,65,-10965)},{Name="جزیره کیک ۱",Pos=Vector3.new(-2020,37,-12025)},{Name="جزیره کیک ۲",Pos=Vector3.new(-1926,37,-12850)},{Name="جزیره آبنبات",Pos=Vector3.new(-1149,13,-12836)},{Name="جزیره تیکی ۱",Pos=Vector3.new(-16547,55,-172)},{Name="جزیره تیکی ۲",Pos=Vector3.new(-16540,55,1054)},{Name="جزیره تیکی ۳",Pos=Vector3.new(-16667,105,1579)},{Name="شهر بندری",Pos=Vector3.new(-290,10,5500)},{Name="زیر آب ۱",Pos=Vector3.new(10779,-2088,9262),IsSubmerged=true},{Name="زیر آب ۲",Pos=Vector3.new(10883,-2087,10032),IsSubmerged=true},{Name="زیر آب ۳",Pos=Vector3.new(9639,-1993,9616),IsSubmerged=true}}
+end
+
+local Core = { FarmMode = "None", WeaponMode = "Melee", AttackMethod = "Click", LevelUpEnabled = false, BossFarmEnabled = false, ChestFarmEnabled = false, FruitFarmEnabled = false, KillAuraEnabled = false, DoughKingEnabled = false, DoughKingPhase = "Idle", DoughKingRemaining = 999 }
+local Target = { Current = nil, Chest = nil, ExpandedEnemy = nil, ActiveTween = nil, ChestActiveTween = nil, LastEnemy = nil, LastTime = 0, ChestStopSignal = false }
+local SavedStates = {}
+local StopChestOnChalice = false -- متغیر جدید برای توقف چست با چالیس
+
+local AutoRaidSystem = loadstring(game:HttpGet("https://raw.githubusercontent.com/secret-omlet/secret/refs/heads/main/raid"))()
+local AutoLevelUpSystem = loadstring(game:HttpGet("https://raw.githubusercontent.com/secret-omlet/secret/refs/heads/main/lev"))()
+local AutoLevelUp = AutoLevelUpSystem(Settings, WindUI, Net, ReplicatedStorage, Workspace, TweenService, VirtualInputManager, GuiService, RegisterAttack)
+local ExtraSystemLink = "https://raw.githubusercontent.com/secret-omlet/secret/refs/heads/main/models"
+
+local function PauseMainFarms()
+    SavedStates.LevelUp = Core.LevelUpEnabled; SavedStates.BossFarm = Core.BossFarmEnabled; SavedStates.ChestFarm = Core.ChestFarmEnabled; SavedStates.DoughKing = Core.DoughKingEnabled
+    if Core.LevelUpEnabled then AutoLevelUp.Stop() end
+    Core.LevelUpEnabled = false; Core.BossFarmEnabled = false; Core.ChestFarmEnabled = false; Core.DoughKingEnabled = false; Core.KillAuraEnabled = false
+    Target.ChestStopSignal = true; Target.Current = nil
+    if Target.ActiveTween then Target.ActiveTween:Cancel(); Target.ActiveTween = nil end
+end
+
+local function ResumeMainFarms()
+    Target.ChestStopSignal = false
+    if SavedStates.LevelUp then Core.LevelUpEnabled = true; Core.FarmMode = "LevelUp"; AutoLevelUp.Start(); AutoLevelUp.SetWeaponMode(Core.WeaponMode)
+    elseif SavedStates.BossFarm then Core.BossFarmEnabled = true; Core.FarmMode = "BossFarm"
+    elseif SavedStates.ChestFarm then Core.ChestFarmEnabled = true; Core.FarmMode = "Chest"
+    elseif SavedStates.DoughKing then Core.DoughKingEnabled = true; Core.DoughKingPhase = "CheckStart"; Core.FarmMode = "DoughKing"
+    else Core.FarmMode = "None" end
+end
+
+local ExtraModule = loadstring(game:HttpGet(ExtraSystemLink))()
+local Extra = ExtraModule.Init({
+    Plr = Plr, ReplicatedStorage = ReplicatedStorage, Workspace = Workspace,
+    VirtualInputManager = VirtualInputManager, GuiService = GuiService,
+    WindUI = WindUI, PauseFarms = PauseMainFarms, ResumeFarms = ResumeMainFarms,
+    Sea = Sea, Settings = Settings, SmartTween = SmartTween,
+    SetFarmMode = function(m) Core.FarmMode = m end,
+    RegisterAttack = RegisterAttack
+})
+
+local function GetRandomDelay() return Settings.MinClickDelay+(math.random()*(Settings.MaxClickDelay-Settings.MinClickDelay)) end
+local function GetRandomAttackValue() return math.floor((0.5+math.random()*0.5)*10000)/10000 end
+local function GetMyLevel() local s,l=pcall(function() return Plr.Data.Level.Value end); return s and l or 0 end
+local function Log(m) print("[OMLET HUB] "..m) end
+
+local SelectedBosses, CurrentBossData, AliveBossList, SpawnCache, LastKnownSpawn = {}, nil, {}, {}, nil
+for _, boss in ipairs(BossDatabase) do SelectedBosses[boss.Mob] = true end
+local function IsBossSelected(n) return SelectedBosses[n]==true end
+local function GetSelectedBossCount() local c=0; for _,v in pairs(SelectedBosses) do if v then c=c+1 end end; return c end
+
+local function HasGodsChalice() return Plr.Backpack:FindFirstChild("God's Chalice") or (Plr.Character and Plr.Character:FindFirstChild("God's Chalice")) end
+local function HasSweetChalice() return Plr.Backpack:FindFirstChild("Sweet Chalice") or (Plr.Character and Plr.Character:FindFirstChild("Sweet Chalice")) end
+local function EquipSweetChalice() pcall(function() if Plr.Character and Plr.Character:FindFirstChild("Humanoid") then local t=Plr.Backpack:FindFirstChild("Sweet Chalice"); if t then Plr.Character.Humanoid:EquipTool(t) end end end) end
+local function GetCocoaCount() local c=0; pcall(function() local r=ReplicatedStorage.Remotes.CommF_:InvokeServer("getInventory"); if r then for _,i in pairs(r) do if i.Name=="Conjured Cocoa" then c=i.Count or 0; break end end end end); return c end
+local function GetDoughKingRemainingCount() local r=999; pcall(function() local res=ReplicatedStorage.Remotes.CommF_:InvokeServer("CakePrinceSpawner",true); if type(res)=="string" then local n=res:match("(%d+)"); if n then r=tonumber(n) end; if res:find("opened") or res:find("spawned") or res:find("already") then r=0 end end end); return r end
+
+local DoughKingMobs, CocoaMobName = {"Cookie Crafter","Cake Guard"}, "Cocoa Warrior"
+local DoughKingMobSpawnPos, CocoaMobSpawnPos = CFrame.new(-2020,37,-12025), CFrame.new(-1149,13,-12836)
+local SweetChaliceNPCPos, DoughKingPortalPos = Vector3.new(225,24,-12770), Vector3.new(-2136,74,-12401)
+local SubmarineNPCPos, SubmarineExitPos = Vector3.new(-16271,25,1372), Vector3.new(11427,-2156,9727)
+
+local function IsPlayerDead() return not Plr.Character or not Plr.Character:FindFirstChild("Humanoid") or Plr.Character.Humanoid.Health<=0 end
+local function WaitForRespawn() while IsPlayerDead() do task.wait(0.5) end; task.wait(1) end
+local function IsDoughKingMob(n) if Core.DoughKingPhase=="FightingBoss" then return string.find(n,"Dough King")~=nil elseif Core.DoughKingPhase=="DoughKingKilling" then for _,name in ipairs(DoughKingMobs) do if string.find(n,name) then return true end end; return false elseif Core.DoughKingPhase=="CocoaFarming" then return string.find(n,CocoaMobName)~=nil end; return false end
+local function IsBossAlive(n) local E=Workspace:FindFirstChild("Enemies"); if E then for _,v in pairs(E:GetChildren()) do if string.find(v.Name,n) and v:FindFirstChild("Humanoid") and v.Humanoid.Health>0 then return true end end end; return false end
+local function IsBossSpawned(n) local W=Workspace:FindFirstChild("_WorldOrigin"); if W then local E=W:FindFirstChild("EnemySpawns"); if E then for _,v in pairs(E:GetChildren()) do if string.find(v.Name,n) then return true end end end end; return IsBossAlive(n) end
+local function PickRandomAliveBoss()
+    local nl={}; for _,d in ipairs(BossDatabase) do if IsBossSelected(d.Mob) and IsBossSpawned(d.Mob) then table.insert(nl,{Lvl=d.Lvl,Mob=d.Mob,QName=d.QName,QId=d.QId,Pos=d.Pos,CanQuest=(GetMyLevel()>=d.Lvl)}) end end; AliveBossList=nl; if #AliveBossList==0 then return nil end
+    if CurrentBossData and IsBossSelected(CurrentBossData.Mob) then for _,d in ipairs(AliveBossList) do if d.Mob==CurrentBossData.Mob then return CurrentBossData end end end
+    return AliveBossList[math.random(1,#AliveBossList)]
+end
+
+local CurrentFruit, IsCollectingFruit, FruitPriorityActive, SelectedFruitsToCollect = nil, false, false, {}
+local function GetFruitTool() if Plr.Character then local t=Plr.Character:FindFirstChildOfClass("Tool"); if t and t.ToolTip=="Blox Fruit" then return t end end; for _,t in pairs(Plr.Backpack:GetChildren()) do if t:IsA("Tool") and t.ToolTip=="Blox Fruit" then return t end end; return nil end
+local function IsBuddhaFruit() local f=GetFruitTool(); return f and string.find(string.lower(f.Name),"buddha")~=nil end
+local function FindFruitInWorld()
+    for _,v in pairs(Workspace:GetChildren()) do
+        if (v:IsA("Tool") or v:IsA("Model")) and string.find(v.Name,"Fruit") and not string.find(v.Name,"Dealer") and not string.find(v.Name,"Gacha") and not string.find(v.Name,"Blox Fruit") then
+            if v:FindFirstChild("Handle") then
+                local isAll = next(SelectedFruitsToCollect)==nil
+                for sel,_ in pairs(SelectedFruitsToCollect) do
+                    local realName = FruitRealNamesMap[sel] or sel
+                    if string.find(string.lower(v.Name), string.lower(realName)) then isAll=true; break end
+                end
+                if isAll then return v end
+            end
+        end
+    end; return nil
+end
+
+local function PauseAllForFruit() PauseMainFarms(); FruitPriorityActive = true; Core.FarmMode = "Fruit" end
+local function ResumeAfterFruit() FruitPriorityActive = false; CurrentFruit = nil; IsCollectingFruit = false; ResumeMainFarms() end
+
+local ChestCurrentIslandIndex, ChestFailedAttempts, ChestBuggedList, TotalChestsCollected, ValidChests = 1, {}, {}, 0, {["Chest1"]=true,["Chest2"]=true,["Chest3"]=true}
+local function HasTouchInterest(c) if not c or not c.Parent then return false end; if c:FindFirstChild("TouchInterest") then return true end; for _, ch in pairs(c:GetDescendants()) do if ch:IsA("TouchInterest") then return true end end; return false end
+local function GetChestPosition(c) if not c or not c.Parent then return nil end; if c:IsA("BasePart") then return c.Position elseif c:IsA("Model") and c.PrimaryPart then return c.PrimaryPart.Position elseif c:IsA("Model") and c:FindFirstChild("Part") then return c.Part.Position end; return nil end
+local function GetChestCFrame(c) if not c or not c.Parent then return nil end; if c:IsA("BasePart") then return c.CFrame elseif c:IsA("Model") and c.PrimaryPart then return c.PrimaryPart.CFrame elseif c:IsA("Model") and c:FindFirstChild("Part") then return c.Part.CFrame end; return nil end
+
+local function GetNearestChest()
+    local Root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart")
+    if not Root then return nil end
+    local nd, nc = math.huge, nil
+    for _, v in pairs(Workspace:GetDescendants()) do
+        if ValidChests[v.Name] and (v:IsA("BasePart") or v:IsA("Model")) and not ChestBuggedList[v] and HasTouchInterest(v) then
+            local P = GetChestPosition(v)
+            if P and P.Y > Settings.ChestMinHeight and P.Y < Settings.ChestMaxHeight then
+                local D = (Root.Position - P).Magnitude
+                if D < nd then nd = D; nc = v end
+            end
+        end
+    end; return nc
+end
+
+local function AnyChestAvailable() for _, v in pairs(Workspace:GetDescendants()) do if ValidChests[v.Name] and (v:IsA("BasePart") or v:IsA("Model")) and not ChestBuggedList[v] and HasTouchInterest(v) then return true end end; return false end
+
+local function CollectAllAvailableChests()
+    while Core.ChestFarmEnabled and not Target.ChestStopSignal do
+        -- توقف چست در صورت داشتن چالیس
+        if StopChestOnChalice and HasGodsChalice() then
+            Target.ChestStopSignal = true
+            Core.ChestFarmEnabled = false
+            if Target.ChestActiveTween then Target.ChestActiveTween:Cancel(); Target.ChestActiveTween = nil end
+            Target.Chest = nil
+            WindUI:Notify({Title="اتو چست متوقف شد!", Content="شما God's Chalice گرفتید.", Duration=5})
+            return
+        end
+
+        local chest = GetNearestChest(); if not chest then return end
+        Target.Chest = chest; local StartT = tick()
+        if not ChestFailedAttempts[chest] then ChestFailedAttempts[chest] = 0 end
+        ChestFailedAttempts[chest] = ChestFailedAttempts[chest] + 1
+        if ChestFailedAttempts[chest] > Settings.ChestMaxAttempts then ChestBuggedList[chest] = true; Target.Chest = nil; task.wait(0.1); continue end
+
+        while Core.ChestFarmEnabled and not Target.ChestStopSignal and chest and chest.Parent and HasTouchInterest(chest) do
+            if Target.ChestStopSignal or (Core.DoughKingEnabled and HasGodsChalice()) then if Target.ChestActiveTween then Target.ChestActiveTween:Cancel(); Target.ChestActiveTween=nil end; Target.Chest=nil; return end
+            
+            -- بررسی مجدد داخل حلقه
+            if StopChestOnChalice and HasGodsChalice() then
+                Target.ChestStopSignal = true
+                Core.ChestFarmEnabled = false
+                if Target.ChestActiveTween then Target.ChestActiveTween:Cancel(); Target.ChestActiveTween = nil end
+                Target.Chest = nil
+                WindUI:Notify({Title="اتو چست متوقف شد!", Content="شما God's Chalice گرفتید.", Duration=5})
+                return
+            end
+
+            local Root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart"); if not Root then break end
+            local Dest = GetChestCFrame(chest); if not Dest then break end
+            local Dist = (Root.Position - Dest.Position).Magnitude
+            if Dist < 6 then
+                if Target.ChestActiveTween then Target.ChestActiveTween:Cancel() end
+                Root.CFrame = Dest; task.wait(Settings.ChestCollectionDelay)
+                if not HasTouchInterest(chest) then TotalChestsCollected=TotalChestsCollected+1; ChestFailedAttempts[chest]=nil end
+                break
+            else
+                if Target.ChestActiveTween then Target.ChestActiveTween:Cancel() end
+                Target.ChestActiveTween = TweenService:Create(Root, TweenInfo.new(Dist<25 and 0.1 or Dist/Settings.FlightSpeed, Enum.EasingStyle.Linear), {CFrame = Dest}); Target.ChestActiveTween:Play()
+            end
+            if (tick() - StartT) > Settings.ChestMaxTravelTime then break end
+            task.wait(0.2)
+        end
+        Target.Chest = nil; task.wait(0.1)
+    end
+end
+
+local function TravelToSubmerged()
+    local Root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart"); if not Root or Target.ChestStopSignal then return false end
+    if Target.ChestActiveTween then Target.ChestActiveTween:Cancel() end
+    Target.ChestActiveTween = TweenService:Create(Root, TweenInfo.new(math.max((Root.Position-SubmarineNPCPos).Magnitude/Settings.FlightSpeed,0.1), Enum.EasingStyle.Linear), {CFrame=CFrame.new(SubmarineNPCPos+Vector3.new(0,5,0))}); Target.ChestActiveTween:Play()
+    local st = tick(); while Core.ChestFarmEnabled and not Target.ChestStopSignal and (tick()-st)<120 do Root=Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart"); if not Root then return false end; if (Root.Position-SubmarineNPCPos).Magnitude<15 then break end; task.wait(0.3) end
+    if Target.ChestStopSignal then return false end; task.wait(1); pcall(function() Net:WaitForChild("RF/SubmarineWorkerSpeak"):InvokeServer("TravelToSubmergedIsland") end); task.wait(8); return (Root.Position - Vector3.new(10779, -2088, 9262)).Magnitude < 3000
+end
+
+local function ExitSubmerged()
+    local Root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart"); if not Root or Target.ChestStopSignal then return false end
+    if Target.ChestActiveTween then Target.ChestActiveTween:Cancel() end
+    Target.ChestActiveTween = TweenService:Create(Root, TweenInfo.new(math.max((Root.Position-SubmarineExitPos).Magnitude/Settings.FlightSpeed,0.1), Enum.EasingStyle.Linear), {CFrame=CFrame.new(SubmarineExitPos)}); Target.ChestActiveTween:Play()
+    local st = tick(); while Core.ChestFarmEnabled and not Target.ChestStopSignal and (tick()-st)<120 do Root=Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart"); if not Root then return false end; if (Root.Position-SubmarineExitPos).Magnitude<15 then break end; task.wait(0.3) end
+    if Target.ChestStopSignal then return false end; task.wait(1); pcall(function() Net:WaitForChild("RF/SubmarineTransportation"):InvokeServer("InitiateTeleport", "Tiki Outpost") end); task.wait(8); return not ((Root.Position - Vector3.new(10779, -2088, 9262)).Magnitude < 3000)
+end
+
+local function CleanupExpandedHead(E) pcall(function() if not E or not E.Parent then return end; local H = E:FindFirstChild("Head"); local FH = E:FindFirstChild("FakeHead"); if FH then if H then H.Size = FH.Size; H.Transparency = FH.Transparency end; FH:Destroy() end end) end
+local function IsEnemyValid(E) if not E or not E.Parent then return false end; local h = E:FindFirstChild("Humanoid"); if not h or h.Health<=0 then return false end; return E:FindFirstChild("HumanoidRootPart")~=nil end
+local function ExpandHead(E, hs) pcall(function() if not E or not E.Parent then return end; local H = E:FindFirstChild("Head"); if not H then return end; if Target.ExpandedEnemy and Target.ExpandedEnemy ~= E then CleanupExpandedHead(Target.ExpandedEnemy); Target.ExpandedEnemy = nil end; if E:FindFirstChild("FakeHead") then H.Size = Vector3.new(hs, hs, hs); H.Transparency = 1; H.CanCollide = false; Target.ExpandedEnemy = E; return end; Target.ExpandedEnemy = E; local FH = H:Clone(); FH.Name = "FakeHead"; FH.CanCollide = false; FH.Anchored = false; FH.Massless = true; FH.Size = H.Size; FH.Transparency = H.Transparency; FH.Parent = E; local W = Instance.new("WeldConstraint"); W.Part0 = H; W.Part1 = FH; W.Parent = FH; H.Size = Vector3.new(hs, hs, hs); H.Transparency = 1; H.CanCollide = false; for _, c in pairs(H:GetChildren()) do if c:IsA("SpecialMesh") or c:IsA("Decal") or c:IsA("FaceInstance") or c:IsA("Texture") then c:Destroy() end end; for _, c in pairs(H:GetChildren()) do if c:IsA("BillboardGui") then c.Adornee = FH end end end) end
+local function PrepareEnemy(E) pcall(function() if not E or not E.Parent or not E:FindFirstChild("HumanoidRootPart") then return end; ExpandHead(E, Settings.HeadSize); if Settings.FreezeEnemy and E:FindFirstChild("Humanoid") then E.Humanoid.WalkSpeed = 0; E.Humanoid.JumpPower = 0; if Settings.RemoveAnimator and E.Humanoid:FindFirstChild("Animator") then E.Humanoid.Animator:Destroy() end end; for _, p in pairs(E:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end end) end
+local function PrepareDoughKingEnemy(E) pcall(function() if not E or not E.Parent or not E:FindFirstChild("HumanoidRootPart") then return end; ExpandHead(E, Settings.DoughKingHeadSize); if Settings.FreezeEnemy and E:FindFirstChild("Humanoid") then E.Humanoid.WalkSpeed = 0; E.Humanoid.JumpPower = 0; if Settings.RemoveAnimator and E.Humanoid:FindFirstChild("Animator") then E.Humanoid.Animator:Destroy() end end; for _, p in pairs(E:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end end) end
+
+local function EquipMeleeOnly() pcall(function() if not Plr.Character then return end; local h=Plr.Character:FindFirstChild("Humanoid"); if not h then return end; local t=Plr.Character:FindFirstChildOfClass("Tool"); if t and t.ToolTip=="Melee" then return end; for _,t2 in pairs(Plr.Backpack:GetChildren()) do if t2:IsA("Tool") and t2.ToolTip=="Melee" then h:EquipTool(t2); return end end end) end
+local function EquipSwordOnly() pcall(function() if not Plr.Character then return end; local h=Plr.Character:FindFirstChild("Humanoid"); if not h then return end; local t=Plr.Character:FindFirstChildOfClass("Tool"); if t and t.ToolTip=="Sword" then return end; for _,t2 in pairs(Plr.Backpack:GetChildren()) do if t2:IsA("Tool") and t2.ToolTip=="Sword" then h:EquipTool(t2); return end end end) end
+local function EquipGunOnly() pcall(function() if not Plr.Character then return end; local h=Plr.Character:FindFirstChild("Humanoid"); if not h then return end; local t=Plr.Character:FindFirstChildOfClass("Tool"); if t and (t.ToolTip=="Gun" or t.ToolTip=="Guns") then return end; for _,t2 in pairs(Plr.Backpack:GetChildren()) do if t2:IsA("Tool") and (t2.ToolTip=="Gun" or t2.ToolTip=="Guns") then h:EquipTool(t2); return end end end) end
+local function EquipFruitOnly() pcall(function() if not Plr.Character then return end; local h=Plr.Character:FindFirstChild("Humanoid"); if not h then return end; local t=Plr.Character:FindFirstChildOfClass("Tool"); if t and t.ToolTip=="Blox Fruit" then return end; for _,t2 in pairs(Plr.Backpack:GetChildren()) do if t2:IsA("Tool") and t2.ToolTip=="Blox Fruit" then h:EquipTool(t2); return end end end) end
+local function EquipAnyWeapon() pcall(function() if not Plr.Character then return end; local h=Plr.Character:FindFirstChild("Humanoid"); if not h then return end; local t=Plr.Character:FindFirstChildOfClass("Tool"); if t and (t.ToolTip=="Melee" or t.ToolTip=="Sword" or t.ToolTip=="Blox Fruit") then return end; for _,t2 in pairs(Plr.Backpack:GetChildren()) do if t2:IsA("Tool") and (t2.ToolTip=="Melee" or t2.ToolTip=="Sword" or t.ToolTip=="Blox Fruit") then h:EquipTool(t2); break end end end) end
+local function ShouldUseFinisher() if not Target.Current or not Target.Current.Instance then return false end; local h=Target.Current.Instance:FindFirstChild("Humanoid"); return h and h.Health<=Settings.SwitchHP end
+local function EquipWeapon() if Core.WeaponMode=="Melee" then EquipMeleeOnly() elseif Core.WeaponMode=="Sword" then EquipSwordOnly() elseif Core.WeaponMode=="Gun" then EquipGunOnly() elseif Core.WeaponMode=="Fruit" then EquipFruitOnly() elseif Core.WeaponMode=="MeleeGun" then if ShouldUseFinisher() then EquipGunOnly() else EquipMeleeOnly() end elseif Core.WeaponMode=="MeleeAbility" then if ShouldUseFinisher() then EquipFruitOnly() else EquipMeleeOnly() end end end
+
+local function ShootAtTarget(tp) if not tp then return end; local sp,on=Workspace.CurrentCamera:WorldToViewportPoint(tp.Position); if on then VirtualInputManager:SendMouseButtonEvent(sp.X,sp.Y,0,true,game,1); task.wait(0.05); VirtualInputManager:SendMouseButtonEvent(sp.X,sp.Y,0,false,game,1) end end
+local function UseAbilities() for _,k in ipairs({"Z","X","C","F"}) do VirtualInputManager:SendKeyEvent(true,Enum.KeyCode[k],false,game); task.wait(0.05); VirtualInputManager:SendKeyEvent(false,Enum.KeyCode[k],false,game); task.wait(0.1) end end
+local function ClickNevermind(DG) local VB={}; for _,v in pairs(DG:GetDescendants()) do if v:IsA("TextButton") and v.Visible then table.insert(VB,v) end end; if #VB>0 then local b=VB[#VB]; local p=b.AbsolutePosition; local s=b.AbsoluteSize; local I=GuiService:GetGuiInset(); VirtualInputManager:SendMouseButtonEvent(p.X+s.X/2,p.Y+s.Y/2+I.Y,0,true,game,1); task.wait(0.05); VirtualInputManager:SendMouseButtonEvent(p.X+s.X/2,p.Y+s.Y/2+I.Y,0,false,game,1); return true end; return false end
+local function HandleDialogue() pcall(function() local M=Plr.PlayerGui:FindFirstChild("Main"); if not M then return end; local D=M:FindFirstChild("Dialogue"); if D and D.Visible then IsSafeToClick=false; task.wait(2); if D.Visible then ClickNevermind(D) end; task.wait(2); if D.Visible then ClickNevermind(D) end; task.wait(1) else if Target.Current and Target.Current.Mode=="Travel" then IsSafeToClick=false else IsSafeToClick=true end end end) end
+local function GetAggressiveSpawn(n) if SpawnCache[n] then return SpawnCache[n] end; if Workspace:FindFirstChild("_WorldOrigin") and Workspace._WorldOrigin:FindFirstChild("EnemySpawns") then for _,v in pairs(Workspace._WorldOrigin.EnemySpawns:GetChildren()) do if string.find(v.Name,n) then SpawnCache[n]=v.CFrame; return v.CFrame end end end; return nil end
+
+local RaidConfig = {
+    RaidEnabled = false, RaidAutoRestart = true, RaidSelectedType = "Flame", RaidSelectedFruit = "Flame-Flame",
+    RaidPhase = "Idle", RaidTarget = nil, RaidAttackEnabled = false, RaidConfirmed = false, RaidLastKnownSpawn = nil,
+    RaidNoEnemyTimer = 0, RaidTeleportStartTime = 0, RaidPositionBeforeButton = nil, RaidLastTargetEnemy = nil,
+    RaidLastAttackTime = 0, RaidTargetStartTime = 0, RaidIgnoredNPCs = {}, RaidDiscoveredIslands = {},
+    RaidCurrentIslandTarget = nil, RaidPendingIslandTarget = nil, RaidIsRetreating = false, RaidRetreatPosition = nil,
+    RaidLastTrackedPosition = nil, RaidRetreatAnchorY = 0, ActiveTween = nil, CurrentExpandedEnemy = nil, WeaponMode = "Melee",
+}
+local AutoRaid = AutoRaidSystem(Settings, WindUI, RaidConfig)
+
+local function GetActiveFarmMode()
+    if Extra.Get("IsDoingPriorityTask") then return "PriorityTask" end
+    if Extra.Get("AutoTushita") and Extra.Get("TushitaPhase") ~= "Idle" then return "PriorityTask" end
+    if FruitPriorityActive then return "Fruit" end
+    if Core.DoughKingEnabled and Core.DoughKingPhase~="Idle" and Core.DoughKingPhase~="WaitingForChalice" then return "DoughKing" end
+    if SHState.Active then return "Superhuman" end
+    if RaidConfig.RaidEnabled then return "Raid" end
+    if Core.KillAuraEnabled then return "KillAura" end 
+    if Core.LevelUpEnabled then return "LevelUp" end
+    if Core.BossFarmEnabled then return "BossFarm" end
+    if Core.ChestFarmEnabled then return "Chest" end
+    if Extra.Get("AutoSeaEnabled") then return "AutoSea" end
+    if Extra.Get("IslandTeleportEnabled") then return "IslandTeleport" end
+    if FSState.Active then return "FightingStyle" end
+    return Core.FarmMode
+end
+
+RunService.Heartbeat:Connect(function()
+    pcall(function()
+        if Target.ExpandedEnemy then if not IsEnemyValid(Target.ExpandedEnemy) then CleanupExpandedHead(Target.ExpandedEnemy); Target.ExpandedEnemy = nil; if Target.Current and Target.Current.Instance == Target.ExpandedEnemy then Target.Current = nil end end end
+        local mode = GetActiveFarmMode()
+        if mode == "BossFarm" and Target.Current and Target.Current.Mode=="Mob" and Target.Current.Instance then local E = Target.Current.Instance; if E and E.Parent and E:FindFirstChild("Humanoid") then E.Humanoid.WalkSpeed = 0; E.Humanoid.JumpPower = 0; for _, p in pairs(E:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end end end
+        if mode=="DoughKing" and DoughKingMobTarget and DoughKingMobTarget.Mode=="Mob" and DoughKingMobTarget.Instance then local E = DoughKingMobTarget.Instance; if E and E.Parent and E:FindFirstChild("Humanoid") then E.Humanoid.WalkSpeed = 0; E.Humanoid.JumpPower = 0; for _, p in pairs(E:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end end end
+        if (mode == "FightingStyle" or mode == "Superhuman") and Target.Current and Target.Current.Mode=="Mob" and Target.Current.Instance then local E = Target.Current.Instance; if E and E.Parent and E:FindFirstChild("Humanoid") then E.Humanoid.WalkSpeed = 0; E.Humanoid.JumpPower = 0; for _, p in pairs(E:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end end end
+    end)
+end)
+
+RunService.Stepped:Connect(function()
+    local mode = GetActiveFarmMode()
+    if (mode ~= "None" and mode ~= "LevelUp" and mode ~= "KillAura" or Core.ChestFarmEnabled) and mode ~= "AutoSea" and Plr.Character then
+        pcall(function()
+            for _,p in pairs(Plr.Character:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide=false end end
+            if Plr.Character:FindFirstChild("HumanoidRootPart") then Plr.Character.HumanoidRootPart.Velocity=Vector3.zero end
+            local hum = Plr.Character:FindFirstChild("Humanoid"); if hum and hum.Sit then hum.Sit = false; hum:ChangeState(Enum.HumanoidStateType.Jumping) end
+        end)
+    end
+end)
+
+task.spawn(function()
+    while task.wait(0.1) do
+        local mode = GetActiveFarmMode()
+        if mode == "FightingStyle" then
+            if FSState.Phase == "MasteryFarm" or FSState.Phase == "FarmBoss" then
+                if FSState.TargetMob then Target.Current = {Mode = "Mob", Instance = FSState.TargetMob} else Target.Current = {Mode = "Wait", CFrame = FSState.Dest} end
+            else Target.Current = nil end
+        elseif mode == "Superhuman" then
+            if SHState.Phase == "Farm" then
+                if SHState.TargetMob then Target.Current = {Mode = "Mob", Instance = SHState.TargetMob} else Target.Current = {Mode = "Wait", CFrame = SHState.Dest} end
+            else Target.Current = nil end
+        end
+    end
+end)
+
+task.spawn(function()
+    while true do
+        local Clicked = false
+        pcall(function()
+            local mode = GetActiveFarmMode()
+            if mode == "LevelUp" or mode == "KillAura" or mode == "None" or mode == "Chest" or mode == "Fruit" or mode == "Raid" or mode == "AutoSea" or mode == "IslandTeleport" or mode == "PriorityTask" then return end
+            
+            if mode == "DoughKing" and (Core.DoughKingPhase=="CocoaFarming" or Core.DoughKingPhase=="DoughKingKilling" or Core.DoughKingPhase=="FightingBoss") then
+                if DoughKingMobTarget and DoughKingMobTarget.Mode=="Mob" and DoughKingMobTarget.Instance then
+                    local E = DoughKingMobTarget.Instance
+                    if E ~= DoughKingLastTargetEnemy then DoughKingLastTargetEnemy=E; DoughKingLastTargetTime=tick() end
+                    if tick()-DoughKingLastTargetTime < Settings.AttackWaitTime then return end
+                    if not IsEnemyValid(E) then DoughKingMobTarget = nil; return end
+                    if Plr.Character and Plr.Character:FindFirstChild("Humanoid") then
+                        pcall(function() if E:FindFirstChild("Head") then Workspace.CurrentCamera.CFrame=CFrame.lookAt(Workspace.CurrentCamera.CFrame.Position,E.Head.Position) end end)
+                        EquipAnyWeapon()
+                        if Plr.Character:FindFirstChildOfClass("Tool") then
+                            Clicked=true; RegisterAttack:FireServer(GetRandomAttackValue()); local CX,CY=Workspace.CurrentCamera.ViewportSize.X/2,Workspace.CurrentCamera.ViewportSize.Y/2
+                            VirtualInputManager:SendMouseButtonEvent(CX,CY,0,true,game,1); task.wait(Settings.HoldTime); VirtualInputManager:SendMouseButtonEvent(CX,CY,0,false,game,1)
+                        end
+                    end
+                end; return
+            end
+
+            HandleDialogue(); if not IsSafeToClick or mode~="BossFarm" and mode~="FightingStyle" and mode~="Superhuman" then return end
+            
+            if Target.Current and Target.Current.Mode=="Mob" and Target.Current.Instance then
+                local E = Target.Current.Instance
+                if E ~= Target.LastEnemy then Target.LastEnemy=E; Target.LastTime=tick() end
+                if tick()-Target.LastTime < Settings.AttackWaitTime then return end
+                if not IsEnemyValid(E) then CleanupExpandedHead(E); if Target.ExpandedEnemy == E then Target.ExpandedEnemy = nil end; Target.Current = nil; Target.LastEnemy = nil; return end
+                
+                if Plr.Character and Plr.Character:FindFirstChild("Humanoid") then
+                    pcall(function() if E:FindFirstChild("Head") then Workspace.CurrentCamera.CFrame=CFrame.lookAt(Workspace.CurrentCamera.CFrame.Position,E.Head.Position) end end)
+                    if mode == "FightingStyle" or mode == "Superhuman" then EquipMeleeOnly() else EquipWeapon() end
+                    
+                    local Tool = Plr.Character:FindFirstChildOfClass("Tool")
+                    if Tool then
+                        Clicked = true
+                        local isGun = false
+                        if mode ~= "FightingStyle" and mode ~= "Superhuman" then
+                            isGun = (Core.WeaponMode=="Gun") or (Core.WeaponMode=="MeleeGun" and ShouldUseFinisher() and (Tool.ToolTip=="Gun" or Tool.ToolTip=="Guns"))
+                        end
+                        if isGun then local tp = E:FindFirstChild("Head") or E:FindFirstChild("HumanoidRootPart"); if tp then ShootAtTarget(tp) end else
+                            local CX,CY=Workspace.CurrentCamera.ViewportSize.X/2,Workspace.CurrentCamera.ViewportSize.Y/2; VirtualInputManager:SendMouseButtonEvent(CX,CY,0,true,game,1); task.wait(Settings.HoldTime); VirtualInputManager:SendMouseButtonEvent(CX,CY,0,false,game,1)
+                            if Core.AttackMethod=="Click" then RegisterAttack:FireServer(GetRandomAttackValue()) end
+                        end
+                        if mode ~= "FightingStyle" and mode ~= "Superhuman" and Core.WeaponMode=="MeleeAbility" and ShouldUseFinisher() and Tool.ToolTip=="Blox Fruit" then UseAbilities() end
+                    end
+                end
+            end
+        end)
+        task.wait(Clicked and GetRandomDelay() or 0.15)
+    end
+end)
+
+task.spawn(function()
+    while task.wait(0.08) do
+        pcall(function()
+            local mode=GetActiveFarmMode()
+            if mode == "LevelUp" or mode == "KillAura" or mode=="None" or mode=="Chest" or mode=="Fruit" or mode=="Raid" or mode == "AutoSea" or mode == "IslandTeleport" or mode == "PriorityTask" then return end
+            if not Plr.Character or not Plr.Character:FindFirstChild("HumanoidRootPart") then return end
+            local myPos=Plr.Character.HumanoidRootPart.Position+Vector3.new(0,2,0)
+            if mode=="DoughKing" and DoughKingMobTarget and DoughKingMobTarget.Mode=="Mob" and DoughKingMobTarget.Instance and DoughKingMobTarget.Instance:FindFirstChild("HumanoidRootPart") then
+                Workspace.CurrentCamera.CFrame=CFrame.lookAt(myPos,DoughKingMobTarget.Instance.HumanoidRootPart.Position); return
+            end
+            if (mode=="BossFarm" or mode=="FightingStyle" or mode=="Superhuman") and Target.Current and Target.Current.Mode=="Mob" and Target.Current.Instance and Target.Current.Instance:FindFirstChild("HumanoidRootPart") then
+                Workspace.CurrentCamera.CFrame=CFrame.lookAt(myPos,Target.Current.Instance.HumanoidRootPart.Position)
+            end
+        end)
+    end
+end)
+
+task.spawn(function()
+    while true do
+        pcall(function()
+            local mode=GetActiveFarmMode()
+            if mode=="None" or mode=="Chest" or mode=="Raid" or mode=="AutoSea" or mode=="IslandTeleport" or mode == "PriorityTask" or not Plr.Character or not Plr.Character:FindFirstChild("HumanoidRootPart") then return end
+            local Root=Plr.Character.HumanoidRootPart; local Dest=nil
+            
+            if mode == "Superhuman" then
+                if SHState.Phase == "Check" or SHState.Phase == "ProcessStyle" then if SHState.Dest then Dest = SHState.Dest end
+                elseif SHState.Phase == "BuySH" then if SHState.Dest then Dest = SHState.Dest end
+                elseif SHState.Phase == "Farm" then
+                    if Target.Current then
+                        if Target.Current.Mode == "Mob" and Target.Current.Instance and Target.Current.Instance:FindFirstChild("HumanoidRootPart") then
+                            local EP = Target.Current.Instance.HumanoidRootPart.Position; local d = (Root.Position - EP); d = Vector3.new(d.X, 0, d.Z)
+                            if d.Magnitude < 0.1 then d = Vector3.new(1,0,0) end; d = d.Unit; Dest = CFrame.lookAt(EP + d * Settings.AttackDistance + Vector3.new(0, Settings.AttackHeight, 0), EP)
+                        elseif Target.Current.Mode == "Wait" then Dest = Target.Current.CFrame end
+                    end
+                end
+            elseif mode == "FightingStyle" then
+                if FSState.Phase == "EquipReq" or FSState.Phase == "GoToNPC" then
+                    if Sea == 1 and FSState.CurrentStyle and FSState.CurrentStyle.Name == "Electric" and FSState.Phase == "GoToNPC" then
+                        if Root.Position.Y > 300 then local safePos = CFrame.new(-5450, 50, -2149); if (Root.Position - safePos.Position).Magnitude > 20 then Dest = safePos else Dest = FSState.Dest end else Dest = FSState.Dest end
+                    elseif FSState.Dest then Dest = FSState.Dest end
+                elseif FSState.Phase == "MasteryFarm" or FSState.Phase == "FarmBoss" then
+                    if Target.Current then
+                        if Target.Current.Mode == "Mob" and Target.Current.Instance and Target.Current.Instance:FindFirstChild("HumanoidRootPart") then
+                            local EP = Target.Current.Instance.HumanoidRootPart.Position; local d = (Root.Position - EP); d = Vector3.new(d.X, 0, d.Z)
+                            if d.Magnitude < 0.1 then d = Vector3.new(1,0,0) end; d = d.Unit; Dest = CFrame.lookAt(EP + d * Settings.AttackDistance + Vector3.new(0, Settings.AttackHeight, 0), EP)
+                        elseif Target.Current.Mode == "Wait" then Dest = Target.Current.CFrame end
+                    end
+                end
+            elseif mode == "LevelUp" or mode == "KillAura" then
+                AutoLevelUp.Tick(Root, tick()); Dest = nil 
+            elseif mode=="DoughKing" then
+                if Core.DoughKingPhase=="GoingToNPC" then Dest=CFrame.new(SweetChaliceNPCPos)
+                elseif Core.DoughKingPhase=="ActivatingPortal" or Core.DoughKingPhase=="GoingToPortal" then Dest=CFrame.new(DoughKingPortalPos)
+                elseif (Core.DoughKingPhase=="CocoaFarming" or Core.DoughKingPhase=="DoughKingKilling" or Core.DoughKingPhase=="FightingBoss") and DoughKingMobTarget then
+                    if DoughKingMobTarget.Mode=="Wait" then Dest=DoughKingMobTarget.CFrame elseif DoughKingMobTarget.Mode=="Mob" and DoughKingMobTarget.Instance then
+                        pcall(function() if DoughKingMobTarget.Instance:FindFirstChild("HumanoidRootPart") then local EP=DoughKingMobTarget.Instance.HumanoidRootPart.Position; local d=(Root.Position-EP); d=Vector3.new(d.X,0,d.Z); if d.Magnitude<0.1 then d=Vector3.new(1,0,0) end; d=d.Unit; Dest=CFrame.lookAt(EP+d*Settings.DoughKingAttackDistance+Vector3.new(0,Settings.DoughKingAttackHeight,0),EP) end end)
+                    end
+                end
+            elseif mode=="Fruit" and CurrentFruit and CurrentFruit.Parent and CurrentFruit:FindFirstChild("Handle") then Dest=CurrentFruit.Handle.CFrame
+            elseif mode=="BossFarm" and Target.Current then
+                if Target.Current.Mode=="NPC" or Target.Current.Mode=="Wait" or Target.Current.Mode=="Travel" then Dest=Target.Current.CFrame
+                elseif Target.Current.Mode=="Mob" and Target.Current.Instance then
+                    if not IsEnemyValid(Target.Current.Instance) then CleanupExpandedHead(Target.Current.Instance); Target.Current = nil; return end
+                    pcall(function() if Target.Current.Instance:FindFirstChild("HumanoidRootPart") then local EP=Target.Current.Instance.HumanoidRootPart.Position; local d=(Root.Position-EP); d=Vector3.new(d.X,0,d.Z); if d.Magnitude<0.1 then d=Vector3.new(1,0,0) end; d=d.Unit; local ad,ah=Settings.AttackDistance,Settings.AttackHeight; if (Core.WeaponMode=="Fruit" or Core.WeaponMode=="MeleeAbility") and IsBuddhaFruit() then ad=Settings.BuddhaDistance end; local T=Plr.Character:FindFirstChildOfClass("Tool"); if T and (T.ToolTip=="Gun" or T.ToolTip=="Guns") then ad=Settings.GunAttackDistance; ah=Settings.GunAttackHeight end; Dest=CFrame.lookAt(EP+d*ad+Vector3.new(0,ah,0),EP) end end)
+                end
+            end
+            if Dest then Target.ActiveTween = SmartTween(Root, Dest, Target.ActiveTween) end
+        end)
+        task.wait(0.12)
+    end
+end)
+
+task.spawn(function()
+    local lastBuso = 0; local lastDKCheck = 0
+    while task.wait(0.5) do
+        pcall(function()
+            local now = tick(); local mode = GetActiveFarmMode()
+            if not Plr.Character or not Plr.Character:FindFirstChild("HumanoidRootPart") then return end
+            local Root = Plr.Character.HumanoidRootPart
+            if now - lastBuso > 5 then lastBuso = now; if mode ~= "None" and Plr.Character and not Plr.Character:FindFirstChild("HasBuso") then pcall(function() ReplicatedStorage.Remotes.CommF_:InvokeServer("Buso") end) end end
+
+            if Core.FruitFarmEnabled and not IsCollectingFruit then
+                if CurrentFruit and CurrentFruit.Parent and CurrentFruit:FindFirstChild("Handle") then
+                    if (Root.Position-CurrentFruit.Handle.Position).Magnitude<5 then
+                        IsCollectingFruit=true; Root.CFrame=CurrentFruit.Handle.CFrame; task.wait(1)
+                        Log("فروت: "..getCleanName(CurrentFruit.Name)); WindUI:Notify({Title="فروت",Content="جمع شد: "..getCleanName(CurrentFruit.Name),Duration=3})
+                        ResumeAfterFruit()
+                    end
+                else
+                    local f = FindFruitInWorld()
+                    if f then CurrentFruit = f; Log("فروت مجاز پیدا شد: "..f.Name); WindUI:Notify({Title="میوه یافت شد!",Content=getCleanName(f.Name),Duration=3}); PauseAllForFruit() end
+                end
+            end
+
+            if Core.DoughKingEnabled and Core.DoughKingPhase ~= "Idle" then
+                if Core.DoughKingPhase == "FightingBoss" and IsPlayerDead() then
+                    DoughKingMobTarget = nil; WaitForRespawn(); task.wait(2); local ba = false
+                    pcall(function() for _,v in pairs(Workspace.Enemies:GetChildren()) do if string.find(v.Name,"Dough King") and v:FindFirstChild("Humanoid") and v.Humanoid.Health>0 then ba=true end end end)
+                    if ba then Core.DoughKingPhase="GoingToPortal" else Core.DoughKingPhase="Completed"; WindUI:Notify({Title="داف کینگ",Content="شکست داده شد!",Duration=10}) end
+                    return
+                end
+                if now-lastDKCheck>5 and Core.DoughKingPhase=="DoughKingKilling" then lastDKCheck=now; Core.DoughKingRemaining=GetDoughKingRemainingCount() end
+                if Core.DoughKingPhase=="CheckStart" then
+                    if HasSweetChalice() then Core.DoughKingPhase="DoughKingKilling"; Core.DoughKingRemaining=GetDoughKingRemainingCount()
+                    elseif HasGodsChalice() then if GetCocoaCount()>=10 then Core.DoughKingPhase="GoingToNPC" else Core.DoughKingPhase="CocoaFarming" end
+                    else Core.ChestFarmEnabled=true; Target.ChestStopSignal=false; Core.DoughKingPhase="WaitingForChalice" end
+                elseif Core.DoughKingPhase=="WaitingForChalice" then
+                    if HasGodsChalice() then Core.ChestFarmEnabled=false; Target.ChestStopSignal=true; Target.Chest=nil; if Target.ChestActiveTween then Target.ChestActiveTween:Cancel(); Target.ChestActiveTween=nil end; Core.DoughKingPhase="CocoaFarming" end
+                elseif Core.DoughKingPhase=="CocoaFarming" then
+                    if not HasGodsChalice() then Core.DoughKingPhase="WaitingForChalice"; Target.ChestStopSignal=false; Core.ChestFarmEnabled=true; DoughKingMobTarget=nil; return end
+                    if GetCocoaCount()>=10 then Core.DoughKingPhase="GoingToNPC"; DoughKingMobTarget=nil; return end
+                elseif Core.DoughKingPhase=="GoingToNPC" then
+                    DoughKingMobTarget=nil
+                    if (Root.Position-SweetChaliceNPCPos).Magnitude<15 then
+                        task.wait(1); pcall(function() ReplicatedStorage.Remotes.CommF_:InvokeServer("SweetChaliceNpc") end); task.wait(2)
+                        if HasSweetChalice() then Core.DoughKingPhase="DoughKingKilling"; Core.DoughKingRemaining=GetDoughKingRemainingCount() else
+                            task.wait(2); pcall(function() ReplicatedStorage.Remotes.CommF_:InvokeServer("SweetChaliceNpc") end); task.wait(2)
+                            if HasSweetChalice() then Core.DoughKingPhase="DoughKingKilling"; Core.DoughKingRemaining=GetDoughKingRemainingCount() else Core.DoughKingPhase="WaitingForChalice"; Target.ChestStopSignal=false; Core.ChestFarmEnabled=true end
+                        end
+                    end
+                elseif Core.DoughKingPhase=="DoughKingKilling" then
+                    if not HasSweetChalice() then Core.DoughKingPhase="WaitingForChalice"; Target.ChestStopSignal=false; Core.ChestFarmEnabled=true; DoughKingMobTarget=nil; return end
+                    Core.DoughKingRemaining=GetDoughKingRemainingCount()
+                    if Core.DoughKingRemaining<=0 then Core.DoughKingPhase="ActivatingPortal"; DoughKingMobTarget=nil; return end
+                elseif Core.DoughKingPhase=="ActivatingPortal" then
+                    DoughKingMobTarget=nil; EquipSweetChalice(); task.wait(1); pcall(function() ReplicatedStorage.Remotes.CommF_:InvokeServer("CakePrinceSpawner",true) end); task.wait(2)
+                    if not HasSweetChalice() then Core.DoughKingPhase="GoingToPortal" else
+                        task.wait(2); pcall(function() ReplicatedStorage.Remotes.CommF_:InvokeServer("CakePrinceSpawner",true) end); task.wait(2)
+                        if not HasSweetChalice() then Core.DoughKingPhase="GoingToPortal" else Core.DoughKingPhase="WaitingForChalice"; Target.ChestStopSignal=false; Core.ChestFarmEnabled=true end
+                    end
+                elseif Core.DoughKingPhase=="GoingToPortal" then
+                    if (Root.Position-DoughKingPortalPos).Magnitude<20 then task.wait(4); Core.DoughKingPhase="FightingBoss"; DoughKingMobTarget=nil end
+                elseif Core.DoughKingPhase=="FightingBoss" then
+                    local ba=false; pcall(function() for _,v in pairs(Workspace.Enemies:GetChildren()) do if string.find(v.Name,"Dough King") and v:FindFirstChild("Humanoid") and v.Health>0 then ba=true end end end)
+                    if not ba then Core.DoughKingPhase="Completed"; DoughKingMobTarget=nil; WindUI:Notify({Title="داف کینگ",Content="شکست داده شد!",Duration=10}) end
+                end
+
+                if Core.DoughKingPhase=="CocoaFarming" or Core.DoughKingPhase=="DoughKingKilling" or Core.DoughKingPhase=="FightingBoss" then
+                    if Core.DoughKingPhase=="CocoaFarming" and GetCocoaCount()>=10 then DoughKingMobTarget=nil else
+                        if DoughKingMobTarget and DoughKingMobTarget.Mode=="Mob" and DoughKingMobTarget.Instance then
+                            local sa = IsEnemyValid(DoughKingMobTarget.Instance)
+                            if sa then PrepareDoughKingEnemy(DoughKingMobTarget.Instance) else if DoughKingMobTarget.Instance then CleanupExpandedHead(DoughKingMobTarget.Instance) end; DoughKingMobTarget=nil end
+                        end
+                        if not DoughKingMobTarget or DoughKingMobTarget.Mode~="Mob" then
+                            local fm,md=nil,math.huge; local enemies=Workspace:FindFirstChild("Enemies")
+                            if enemies then for _,v in pairs(enemies:GetChildren()) do pcall(function() if IsDoughKingMob(v.Name) and IsEnemyValid(v) then local d=(Root.Position-v.HumanoidRootPart.Position).Magnitude; if d<md then md=d; fm=v end end end) end end
+                            if fm then PrepareDoughKingEnemy(fm); DoughKingMobTarget={Mode="Mob",Instance=fm} else
+                                local sp; if Core.DoughKingPhase=="FightingBoss" then sp=CFrame.new(DoughKingPortalPos) elseif Core.DoughKingPhase=="DoughKingKilling" then local s; for _,n in ipairs(DoughKingMobs) do s=GetAggressiveSpawn(n); if s then break end end; sp=s and s*CFrame.new(0,Settings.DoughKingWaitHeight,0) or DoughKingMobSpawnPos*CFrame.new(0,50,0) else local s=GetAggressiveSpawn(CocoaMobName); sp=s and s*CFrame.new(0,Settings.DoughKingWaitHeight,0) or CocoaMobSpawnPos*CFrame.new(0,50,0) end
+                                DoughKingMobTarget={Mode="Wait",CFrame=sp}
+                            end
+                        end
+                    end
+                end
+            end
+
+            if mode=="BossFarm" then
+                if GetSelectedBossCount()==0 then Target.Current=nil; return end
+                if not CurrentBossData then CurrentBossData=PickRandomAliveBoss() end
+                if not CurrentBossData then if Target.ExpandedEnemy then CleanupExpandedHead(Target.ExpandedEnemy); Target.ExpandedEnemy=nil end; Target.Current=nil; CurrentBossData=PickRandomAliveBoss(); return end
+                
+                local QData=CurrentBossData; QData.CanQuest = GetMyLevel()>=QData.Lvl
+                if not IsBossSpawned(QData.Mob) then CurrentBossData=nil; Target.Current=nil; if Target.ExpandedEnemy then CleanupExpandedHead(Target.ExpandedEnemy); Target.ExpandedEnemy=nil end; return end
+
+                if UseQuestMode and QData.CanQuest then
+                    if HasQuest() then
+                        IsSafeToClick=true; if Target.Current and Target.Current.Mode=="Mob" and Target.Current.Instance then local sa = IsEnemyValid(Target.Current.Instance); if sa then PrepareEnemy(Target.Current.Instance); return else CleanupExpandedHead(Target.Current.Instance); Target.ExpandedEnemy=nil; Target.Current=nil end end
+                        local fm,md=nil,math.huge
+                        if Workspace:FindFirstChild("Enemies") then for _,v in pairs(Workspace.Enemies:GetChildren()) do pcall(function() if string.find(v.Name,QData.Mob) and IsEnemyValid(v) then local d=(Root.Position-v.HumanoidRootPart.Position).Magnitude; if d<md then md=d; fm=v end end end) end end
+                        if fm then PrepareEnemy(fm); Target.Current={Mode="Mob",Instance=fm}; LastKnownSpawn=fm.HumanoidRootPart.CFrame else
+                            if Target.ExpandedEnemy then CleanupExpandedHead(Target.ExpandedEnemy); Target.ExpandedEnemy=nil end
+                            local sp=GetAggressiveSpawn(QData.Mob); if sp then Target.Current={Mode="Wait",CFrame=sp*CFrame.new(0,Settings.WaitHeight,0)} elseif LastKnownSpawn then Target.Current={Mode="Wait",CFrame=LastKnownSpawn*CFrame.new(0,Settings.WaitHeight,0)} else Target.Current={Mode="Wait",CFrame=QData.Pos*CFrame.new(0,50,0)} end
+                        end
+                    else
+                        if Target.ExpandedEnemy then CleanupExpandedHead(Target.ExpandedEnemy); Target.ExpandedEnemy=nil end
+                        LastKnownSpawn=nil; IsSafeToClick=false; Target.Current={Mode="NPC",CFrame=QData.Pos}
+                        if (Root.Position-QData.Pos.Position).Magnitude<12 then
+                            task.wait(0.5)
+                            for a=1,3 do
+                                pcall(function() ReplicatedStorage.Remotes.CommF_:InvokeServer("StartQuest",QData.QName,QData.QId) end); task.wait(0.6); HandleDialogue(); task.wait(0.5)
+                                if HasQuest() then IsSafeToClick=true; Target.Current=nil; break end; task.wait(0.3)
+                            end
+                        end
+                    end
+                else
+                    IsSafeToClick=true; if Target.Current and Target.Current.Mode=="Mob" and Target.Current.Instance then local sa = IsEnemyValid(Target.Current.Instance); if sa then PrepareEnemy(Target.Current.Instance); return else CleanupExpandedHead(Target.Current.Instance); Target.ExpandedEnemy=nil; Target.Current=nil end end
+                    local fm,md=nil,math.huge
+                    if Workspace:FindFirstChild("Enemies") then for _,v in pairs(Workspace.Enemies:GetChildren()) do pcall(function() if string.find(v.Name,QData.Mob) and IsEnemyValid(v) then local d=(Root.Position-v.HumanoidRootPart.Position).Magnitude; if d<md then md=d; fm=v end end end) end end
+                    if fm then PrepareEnemy(fm); Target.Current={Mode="Mob",Instance=fm}; LastKnownSpawn=fm.HumanoidRootPart.CFrame else
+                        if Target.ExpandedEnemy then CleanupExpandedHead(Target.ExpandedEnemy); Target.ExpandedEnemy=nil end
+                        local sp=GetAggressiveSpawn(QData.Mob); if sp then Target.Current={Mode="Wait",CFrame=sp*CFrame.new(0,Settings.WaitHeight,0)} elseif LastKnownSpawn then Target.Current={Mode="Wait",CFrame=LastKnownSpawn*CFrame.new(0,Settings.WaitHeight,0)} else Target.Current={Mode="Wait",CFrame=QData.Pos*CFrame.new(0,50,0)} end
+                    end
+                end
+            end
+        end)
+    end
+end)
+
+task.spawn(function()
+    while task.wait(0.5) do
+        if Target.ChestStopSignal then if Target.ChestActiveTween then Target.ChestActiveTween:Cancel(); Target.ChestActiveTween = nil end; Target.Chest = nil end
+        if Core.ChestFarmEnabled and not Target.ChestStopSignal and #ChestIslands > 0 then
+            pcall(function()
+                local Root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart"); if not Root then return end
+                if Core.DoughKingEnabled and HasGodsChalice() then Core.ChestFarmEnabled = false; Target.Chest = nil; if Target.ChestActiveTween then Target.ChestActiveTween:Cancel(); Target.ChestActiveTween = nil end; return end
+                if ChestCurrentIslandIndex > #ChestIslands then ChestCurrentIslandIndex = 1 end
+                local island = ChestIslands[ChestCurrentIslandIndex]
+                if island.IsSubmerged then
+                    if not (Root.Position - Vector3.new(10779, -2088, 9262)).Magnitude < 3000 then if not TravelToSubmerged() then task.wait(3); return end end
+                    if Target.ChestStopSignal then return end
+                    if Target.ChestActiveTween then Target.ChestActiveTween:Cancel() end
+                    local dist = (Root.Position - island.Pos).Magnitude; local Time = math.max(dist / Settings.FlightSpeed, 0.1)
+                    Target.ChestActiveTween = TweenService:Create(Root, TweenInfo.new(Time, Enum.EasingStyle.Linear), {CFrame = CFrame.new(island.Pos + Vector3.new(0, 30, 0))}); Target.ChestActiveTween:Play()
+                    local st = tick(); while Core.ChestFarmEnabled and not Target.ChestStopSignal and (tick() - st) < 120 do Root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart"); if not Root then break end; if (Root.Position - island.Pos).Magnitude < 300 then break end; task.wait(0.3) end
+                    if Target.ChestStopSignal then return end; task.wait(2); CollectAllAvailableChests(); if Target.ChestStopSignal then return end
+                    local nextIdx = (ChestCurrentIslandIndex % #ChestIslands) + 1; local nextIsland = ChestIslands[nextIdx]
+                    if not nextIsland.IsSubmerged and (Root.Position - Vector3.new(10779, -2088, 9262)).Magnitude < 3000 then if not ExitSubmerged() then task.wait(3); ExitSubmerged() end end
+                    ChestCurrentIslandIndex = nextIdx
+                else
+                    if Target.ChestStopSignal then return end; if AnyChestAvailable() then CollectAllAvailableChests() end; if Target.ChestStopSignal then return end
+                    Root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart"); if not Root then return end
+                    if Target.ChestActiveTween then Target.ChestActiveTween:Cancel() end
+                    local dist = (Root.Position - island.Pos).Magnitude; local Time = math.max(dist / Settings.FlightSpeed, 0.1)
+                    Target.ChestActiveTween = TweenService:Create(Root, TweenInfo.new(Time, Enum.EasingStyle.Linear), {CFrame = CFrame.new(island.Pos + Vector3.new(0, 30, 0))}); Target.ChestActiveTween:Play()
+                    local st = tick(); while Core.ChestFarmEnabled and not Target.ChestStopSignal and (tick() - st) < 120 do Root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart"); if not Root then break end; if Target.ChestStopSignal then if Target.ChestActiveTween then Target.ChestActiveTween:Cancel(); Target.ChestActiveTween = nil end; return end
+                        if (Root.Position - island.Pos).Magnitude < 300 then break end
+                        if AnyChestAvailable() then if Target.ChestActiveTween then Target.ChestActiveTween:Cancel(); Target.ChestActiveTween = nil end; CollectAllAvailableChests(); if Target.ChestStopSignal then return end; Root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart"); if Root then dist = (Root.Position - island.Pos).Magnitude; Time = math.max(dist / Settings.FlightSpeed, 0.1); Target.ChestActiveTween = TweenService:Create(Root, TweenInfo.new(Time, Enum.EasingStyle.Linear), {CFrame = CFrame.new(island.Pos + Vector3.new(0, 30, 0))}); Target.ChestActiveTween:Play() end end
+                        task.wait(0.3)
+                    end
+                    if Target.ChestStopSignal then return end; task.wait(2); CollectAllAvailableChests(); if Target.ChestStopSignal then return end
+                    ChestCurrentIslandIndex = (ChestCurrentIslandIndex % #ChestIslands) + 1
+                end
+            end)
+        end
+    end
+end)
+
+task.spawn(function() while task.wait(180) do pcall(function() local count = 0; for _ in pairs(ChestBuggedList) do count = count + 1 end; if count > 0 then Log("پاکسازی " .. count .. " چست باگ خورده"); ChestBuggedList = {}; ChestFailedAttempts = {} end end) end end)
+task.spawn(function() while task.wait(10) do pcall(function() for chest in pairs(ChestFailedAttempts) do if not chest.Parent then ChestFailedAttempts[chest] = nil; ChestBuggedList[chest] = nil end end; for chest in pairs(ChestBuggedList) do if not chest.Parent then ChestBuggedList[chest] = nil end end end) end end)
+
+local function TurnOffAll()
+    Core.LevelUpEnabled = false; Core.BossFarmEnabled = false; Core.KillAuraEnabled = false
+    Target.ChestStopSignal = true; Core.ChestFarmEnabled = false; FruitPriorityActive = false; IsCollectingFruit = false
+    Extra.Set("AutoSeaEnabled", false); Extra.Set("IslandTeleportEnabled", false)
+    FSState.Active = false; FSState.Phase = "Idle"; FSState.CurrentStyle = nil; FSState.TargetMob = nil
+    SHState.Active = false; SHState.Phase = "Idle"; SHState.TargetMob = nil
+    Extra.Set("AutoFish", false); Extra.Set("AutoBuyBait", false); Extra.Set("AutoSellFish", false)
+    Extra.Set("AutoRoll", false); Extra.Set("AutoStore", false); Extra.Set("AutoStats", false); Extra.Set("AutoBuyDealer", false)
+    Core.DoughKingEnabled = false; Core.DoughKingPhase = "Idle"; DoughKingMobTarget = nil; Core.DoughKingRemaining = 999
+    Extra.Set("AutoEliteHunter", false); Extra.Set("AutoYama", false); Extra.Set("TryLuckYama", false)
+    Extra.Set("AutoTushita", false)
+    
+    AutoLevelUp.Stop()
+    AutoRaid.Stop()
+    
+    Target.Current = nil; CurrentBossData = nil; Target.Chest = nil; CurrentFruit = nil
+    Core.FarmMode = "None"
+    pcall(function() if Target.ExpandedEnemy then CleanupExpandedHead(Target.ExpandedEnemy); Target.ExpandedEnemy = nil end end)
+    pcall(function() if Target.ActiveTween then Target.ActiveTween:Cancel(); Target.ActiveTween = nil end end)
+    pcall(function() if Target.ChestActiveTween then Target.ChestActiveTween:Cancel(); Target.ChestActiveTween = nil end end)
+    Extra.CancelTweens()
+    task.delay(0.1, function() Target.ChestStopSignal = false end)
+end
+
+-- ==========================================
+-- ساخت رابط کاربری 
+-- ==========================================
+local UI = {}
+UI.Window = WindUI:CreateWindow({
+    Title="OMLET HUB", Author="by OMLET", Folder="BloxFruitsHub", Icon="egg-fried", Size=UDim2.fromOffset(580,460), Transparent=true, Theme="Dark",
+    OpenButton={Title="هاب",CornerRadius=UDim.new(1,0),StrokeThickness=3,Enabled=true,Draggable=true,OnlyMobile=false,Color=ColorSequence.new(Color3.fromHex("#FF6B6B"),Color3.fromHex("#00FF88"))},
+    Topbar={Height=44,ButtonsType="Default"}
+})
+
+UI.MainSection=UI.Window:Section({Title="بخش ها",Icon="blocks",Opened=true})
+UI.Window:Tag({Title=SeaName.." | Sea "..Sea,Icon="anchor",Color=Color3.fromHex("#FFD700"),Radius=12})
+UI.Window:Tag({Title="v0.4.7",Icon="egg",Color=Color3.fromHex("#707070"),Radius=12})
+
+UI.FarmTab=UI.MainSection:Tab({Title="اتو فارم",Icon="pickaxe",IconColor=Color3.fromHex("#00FF88"),Border=true})
+UI.LUS=UI.FarmTab:Section({Title="اتو لول آپ",Box=true,BoxBorder=true,Opened=true})
+
+UI.LUS:Toggle({
+    Title="شروع اتو لول آپ",
+    Desc="روشن کن تا کوئست بگیره و لول آپ کنه",
+    Value=false,
+    Callback=function(s) 
+        if s then 
+            TurnOffAll(); task.wait(0.1); Target.ChestStopSignal=false
+            Core.LevelUpEnabled=true; Core.FarmMode="LevelUp"
+            AutoLevelUp.Start(); AutoLevelUp.SetWeaponMode(Core.WeaponMode); AutoLevelUp.SetAttackMethod(Core.AttackMethod)
+            WindUI:Notify({Title="اتو لول آپ",Content="شروع شد!",Duration=3}) 
+        else 
+            Core.LevelUpEnabled=false; if Core.FarmMode=="LevelUp" then Core.FarmMode="None" end
+            AutoLevelUp.Stop(); if Target.ActiveTween then Target.ActiveTween:Cancel(); Target.ActiveTween=nil end 
+        end 
+    end
+})
+
+UI.LUS:Toggle({
+    Title="کشتن ماب های اطراف",
+    Desc="بدون کوئست گرفتن، نزدیک‌ترین ماب رو پیدا می‌کنه و می‌کشه",
+    Value=false,
+    Callback=function(s)
+        if s then
+            TurnOffAll(); task.wait(0.1); Target.ChestStopSignal=false
+            Core.KillAuraEnabled=true; Core.FarmMode="KillAura"
+            if AutoLevelUp.StartKillAura then AutoLevelUp.StartKillAura() end
+            AutoLevelUp.SetWeaponMode(Core.WeaponMode); AutoLevelUp.SetAttackMethod(Core.AttackMethod)
+            WindUI:Notify({Title="کشتن ماب های اطراف",Content="شروع شد!",Duration=3})
+        else
+            Core.KillAuraEnabled=false; if Core.FarmMode=="KillAura" then Core.FarmMode="None" end
+            AutoLevelUp.Stop(); if Target.ActiveTween then Target.ActiveTween:Cancel(); Target.ActiveTween=nil end 
+        end
+    end
+})
+
+UI.LUS:Toggle({Title="زدن باس‌ها در لول آپ",Desc="باس‌هایی که در مسیر لول آپ هستن رو بزنه",Value=true,Callback=function(s) AutoLevelUp.SetBossInLevelUp(s) end})
+
+UI.CS=UI.FarmTab:Section({Title="اتو چست",Box=true,BoxBorder=true,Opened=true})
+UI.CS:Toggle({Title="شروع اتو چست",Desc="روشن کن تا چست‌ها رو جمع کنه",Value=false,Callback=function(s) if s then TurnOffAll(); task.wait(0.1); Target.ChestStopSignal=false; Core.ChestFarmEnabled=true; Core.FarmMode="Chest"; WindUI:Notify({Title="اتو چست",Content="شروع شد!",Duration=3}) else Target.ChestStopSignal=true; Core.ChestFarmEnabled=false; Target.Chest=nil; if Target.ChestActiveTween then Target.ChestActiveTween:Cancel(); Target.ChestActiveTween=nil end; if Core.FarmMode=="Chest" then Core.FarmMode="None" end; task.delay(0.5, function() Target.ChestStopSignal=false end) end end})
+
+UI.CS:Toggle({
+    Title="توقف اتو چست با گرفتن God's Chalice",
+    Desc="اگه موقع چست زدن جام گرفتی، کلا اسکریپت اتو چست خاموش میشه.",
+    Value=false,
+    Callback=function(s) StopChestOnChalice = s end
+})
+
+UI.FarmExtraTab = UI.MainSection:Tab({Title="اتو فارم کمکی", Icon="plus", IconColor=Color3.fromHex("#FFD700"), Border=true})
+UI.AutoSeaSec = UI.FarmExtraTab:Section({Title="🌊 اتو فارم دریا (Sea Events)", Box=true, BoxBorder=true, Opened=true})
+
+local BoatNames, BoatsMap = Extra.GetBoats()
+UI.AutoSeaSec:Dropdown({Title="انتخاب قایق",Desc="قایقی که اسکریپت خریداری میکنه",Multi=false,Default="Pirate Grand Brigade (پیشنهادی)",Values=BoatNames,Callback=function(s) Extra.Set("SelectedBoatArg", BoatsMap[s] or "PirateGrandBrigade") end})
+UI.AutoSeaSec:Dropdown({Title="لول دریا (Danger Level)",Desc="قایق تا کدام لول دریا برود؟",Multi=false,Default="بی نهایت",Values={"Level 1","Level 2","Level 3","Level 4","Level 5","Level 6 (???)","بی نهایت"},Callback=function(s) if s == "بی نهایت" then Extra.Set("TargetSeaLevel", 7) else Extra.Set("TargetSeaLevel", tonumber(s:match("%d"))) end end})
+UI.AutoSeaSec:Toggle({Title="شروع اتو فارم دریا",Value=false,Callback=function(s) if s then TurnOffAll(); task.wait(0.1); Extra.Set("AutoSeaEnabled", true); WindUI:Notify({Title="اتو دریا",Content="شروع شد!",Duration=3}) else Extra.Set("AutoSeaEnabled", false); Extra.CancelTweens(); if Core.FarmMode == "AutoSea" or Core.FarmMode == "GettingBoat" then Core.FarmMode = "None" end end end})
+
+UI.IslandTeleportSec = UI.FarmExtraTab:Section({Title="تلپورت به جزایر (Island Teleport)", Box=true, BoxBorder=true, Opened=true})
+local IslandNames = Extra.GetIslands()
+UI.IslandTeleportSec:Dropdown({Title="انتخاب جزیره",Desc="جزیره مورد نظر را برای این دریا انتخاب کنید",Multi=false,Default=IslandNames[1],Values=IslandNames,Callback=function(val) Extra.Set("SelectedIslandTarget", val) end})
+UI.IslandTeleportSec:Toggle({Title="شروع تلپورت",Value=false,Callback=function(val) if val then TurnOffAll(); task.wait(0.1); Extra.Set("IslandTeleportEnabled", true); Core.FarmMode = "IslandTeleport"; WindUI:Notify({Title="تلپورت",Content="در حال حرکت به سمت جزیره انتخاب شده",Duration=3}) else Extra.Set("IslandTeleportEnabled", false); Extra.CancelTweens(); if Core.FarmMode == "IslandTeleport" then Core.FarmMode = "None" end end end})
+
+UI.AutoFishSec = UI.FarmExtraTab:Section({Title="اتو فیش", Box=true, BoxBorder=true, Opened=true})
+UI.AutoFishSec:Paragraph({Title="پیام راهنما", Desc="اول در روبه‌روی دریا قرار بگیرید و به سمت دریا نگاه کنید و بعد اسکریپت رو روشن کنید."})
+UI.AutoFishSec:Toggle({Title="شروع اتو فیش",Desc="ماهیگیری خودکار به همراه هوک سریع",Value=false,Callback=function(s) if s then TurnOffAll(); task.wait(0.1); Extra.Set("AutoFish", true); WindUI:Notify({Title="اتو فیش", Content="شروع شد! در حال ماهیگیری...", Duration=3}) else Extra.Set("AutoFish", false) end end})
+UI.AutoFishSec:Toggle({Title="اتو خریدن بایت",Desc="وقتی کمتر از 15 تا شد خودکار شارژ میکنه",Value=false,Callback=function(s) Extra.Set("AutoBuyBait", s) end})
+UI.AutoFishSec:Slider({Title="زمان فروش ماهی (ثانیه)",Desc="هر چند ثانیه ماهی ها را بفروشد",Step=5,Value={Min=30,Max=300,Default=60},Callback=function(v) Extra.Set("SellInterval", v) end})
+UI.AutoFishSec:Toggle({Title="اتو فروش ماهی",Desc="تمام ماهی های دستتان را خودکار میفروشه",Value=false,Callback=function(s) Extra.Set("AutoSellFish", s) end})
+
+UI.BRT=UI.MainSection:Tab({Title="باس و رید",Icon="skull",IconColor=Color3.fromHex("#FF6B6B"),Border=true})
+UI.MBS=UI.BRT:Section({Title="اتو باس",Box=true,BoxBorder=true,Opened=true})
+UI.MBS:Toggle({Title="شروع اتو باس",Value=false,Callback=function(s) if s then TurnOffAll(); task.wait(0.1); Core.BossFarmEnabled=true; Core.FarmMode="BossFarm" else Core.BossFarmEnabled=false; Target.Current=nil; if Target.ActiveTween then Target.ActiveTween:Cancel(); Target.ActiveTween=nil end end end})
+UI.MBS:Toggle({Title="با کوئست",Desc="روشن = کوئست میگیره | خاموش = فقط میزنه",Value=true,Callback=function(s) UseQuestMode=s end})
+
+UI.BSS=UI.BRT:Section({Title="انتخاب باس‌ها ("..SeaName..")",Box=true,BoxBorder=true,Opened=true})
+local bn={}; for _,b in ipairs(BossDatabase) do table.insert(bn,b.Mob) end
+UI.BSS:Dropdown({Title="انتخاب باس‌ها",Multi=true,Values=bn,Default=bn,Callback=function(sel) SelectedBosses={}; if sel==nil then return end; if type(sel)=="table" then if #sel>0 then for _,n in ipairs(sel) do if type(n)=="string" then SelectedBosses[n]=true end end else for n,v in pairs(sel) do if v then SelectedBosses[n]=true end end end elseif type(sel)=="string" then SelectedBosses[sel]=true end; if GetSelectedBossCount()==0 then for _,b in ipairs(BossDatabase) do SelectedBosses[b.Mob]=true end end; CurrentBossData=nil end})
+
+UI.DKS=UI.BRT:Section({Title="اتو دوج کینگ",Box=true,BoxBorder=true,Opened=true})
+UI.DKS:Toggle({Title="شروع اتو دوج کینگ",Value=false,Callback=function(s) if s then TurnOffAll(); task.wait(0.1); Core.DoughKingEnabled=true; Core.DoughKingPhase="CheckStart"; Core.FarmMode="DoughKing" else Core.DoughKingEnabled=false; Core.DoughKingPhase="Idle"; if Target.ActiveTween then Target.ActiveTween:Cancel(); Target.ActiveTween=nil end end end})
+
+UI.RS=UI.BRT:Section({Title="اتو رید",Box=true,BoxBorder=true,Opened=true})
+UI.RS:Toggle({Title="شروع اتو رید",Value=false,Callback=function(s) if s then TurnOffAll(); task.wait(0.1); RaidConfig.WeaponMode=Core.WeaponMode; AutoRaid.Start() else AutoRaid.Stop(); if Target.ActiveTween then Target.ActiveTween:Cancel(); Target.ActiveTween=nil end end end})
+UI.RS:Toggle({Title="شروع مجدد خودکار رید",Value=true,Callback=function(s) AutoRaid.SetAutoRestart(s) end})
+local rtn={}; for n in pairs(RAID_TYPES) do table.insert(rtn,n) end; table.sort(rtn)
+UI.RS:Dropdown({Title="نوع رید",Multi=false,Default="Flame",Values=rtn,Callback=function(s) AutoRaid.SetType(s) end})
+UI.RS:Dropdown({Title="فروت رید",Multi=false,Default="Flame",Values=DisplayFruitNames,Callback=function(s) AutoRaid.SetFruit(FruitRealNamesMap[s] or s) end})
+
+UI.FruitStyleTab=UI.MainSection:Tab({Title="فروت و فایتینگ استایل",Icon="apple",IconColor=Color3.fromHex("#FF8C00"),Border=true})
+UI.FGS=UI.FruitStyleTab:Section({Title="اتو گرفتن فروت",Box=true,BoxBorder=true,Opened=true})
+UI.FGS:Dropdown({Title="انتخاب میوه (وایت‌لیست)",Desc="خالی = همه میوه‌ها",Multi=true,Values=DisplayFruitNames,Default={},Callback=function(sel) SelectedFruitsToCollect={}; if sel==nil then return end; if type(sel)=="table" then for k,v in pairs(sel) do if type(k)=="number" then SelectedFruitsToCollect[v]=true else if v then SelectedFruitsToCollect[k]=true end end end elseif type(sel)=="string" then SelectedFruitsToCollect[sel]=true end end})
+UI.FGS:Toggle({Title="شروع اتو فروت",Value=false,Callback=function(s) Core.FruitFarmEnabled=s; if not s then CurrentFruit=nil; IsCollectingFruit=false; FruitPriorityActive=false; if Target.ActiveTween then Target.ActiveTween:Cancel(); Target.ActiveTween=nil end end end})
+UI.FGS:Toggle({Title="اتو رول فروت (گاچا)",Value=false,Callback=function(s) Extra.Set("AutoRoll", s) end})
+UI.FGS:Toggle({Title="استور خودکار فروت",Value=false,Callback=function(s) Extra.Set("AutoStore", s) end})
+
+UI.ABS = UI.FruitStyleTab:Section({Title="اتو خرید فروت از دیلر شاپ", Box=true, BoxBorder=true, Opened=true})
+UI.ABS:Dropdown({Title="انتخاب فروت برای خرید",Multi=false,Default="Rocket",Values=DisplayFruitNames,Callback=function(sel) Extra.Set("TargetFruit", FruitRealNamesMap[sel] or sel); Extra.Set("LastCheckedRestockTime", 0) end})
+UI.ABS:Toggle({Title="شروع اتو خرید فروت",Value=false,Callback=function(s) Extra.Set("AutoBuyDealer", s); Extra.Set("LastCheckedRestockTime", 0) end})
+
+UI.FSTab = UI.FruitStyleTab:Section({Title="🥋 اتو خرید فایتینگ استایل", Box=true, BoxBorder=true, Opened=true})
+
+-- حذف شرط Sea برای نمایش همیشگی دکمه ها
+UI.FSTab:Button({Title="خرید Dark Step",Callback=function() TurnOffAll(); task.wait(0.1); FSState.Active = true; FSState.CurrentStyle = FightingStyles[1]; FSState.Phase = "CheckRequirements"; Core.FarmMode = "FightingStyle" end})
+UI.FSTab:Button({Title="خرید Electric",Callback=function() TurnOffAll(); task.wait(0.1); FSState.Active = true; FSState.CurrentStyle = FightingStyles[2]; FSState.Phase = "CheckRequirements"; Core.FarmMode = "FightingStyle" end})
+UI.FSTab:Button({Title="خرید Water Kung Fu",Callback=function() TurnOffAll(); task.wait(0.1); FSState.Active = true; FSState.CurrentStyle = FightingStyles[3]; FSState.Phase = "CheckRequirements"; Core.FarmMode = "FightingStyle" end})
+
+UI.FSTab:Toggle({Title="اتو خرید Sharkman Karate",Value=false,Callback=function(s) if s then TurnOffAll(); task.wait(0.1); FSState.Active=true; FSState.CurrentStyle=FightingStyles[4]; FSState.Phase="CheckRequirements"; Core.FarmMode="FightingStyle" else FSState.Active=false; FSState.Phase="Idle"; FSState.CurrentStyle=nil; FSState.TargetMob=nil; if Core.FarmMode=="FightingStyle" then Core.FarmMode="None" end; if Target.ActiveTween then Target.ActiveTween:Cancel(); Target.ActiveTween=nil end end end})
+UI.FSTab:Toggle({Title="اتو خرید Death Step",Value=false,Callback=function(s) if s then TurnOffAll(); task.wait(0.1); FSState.Active=true; FSState.CurrentStyle=FightingStyles[5]; FSState.Phase="CheckRequirements"; Core.FarmMode="FightingStyle" else FSState.Active=false; FSState.Phase="Idle"; FSState.CurrentStyle=nil; FSState.TargetMob=nil; if Core.FarmMode=="FightingStyle" then Core.FarmMode="None" end; if Target.ActiveTween then Target.ActiveTween:Cancel(); Target.ActiveTween=nil end end end})
+UI.FSTab:Toggle({Title="🌟 اتو خرید Superhuman (سوپر هیومن)",Value=false,Callback=function(s) if s then TurnOffAll(); task.wait(0.1); SHState.Active=true; SHState.Phase="Check"; Core.FarmMode="Superhuman" else SHState.Active=false; SHState.Phase="Idle"; SHState.TargetMob=nil; if Core.FarmMode=="Superhuman" then Core.FarmMode="None" end; if Target.ActiveTween then Target.ActiveTween:Cancel(); Target.ActiveTween=nil end end end})
+
+-- ========================================================
+-- سکشن الایت هانتر و یاما (زیر فایتینگ استایل در دریای سوم)
+-- ========================================================
+if Sea == 3 then
+    UI.EliteYamaSec = UI.FruitStyleTab:Section({Title="⚔️ اتو الایت هانتر و شمشیر یاما", Box=true, BoxBorder=true, Opened=true})
+    
+    UI.EliteYamaSec:Toggle({
+        Title="شکار الایت هانتر (Elite Hunter)",
+        Desc="به طور مداوم NPC رو چک میکنه و در صورت اسپاون میبرتت پیشش",
+        Value=false,
+        Callback=function(s) Extra.Set("AutoEliteHunter", s) end
+    })
+    
+    UI.EliteYamaSec:Toggle({
+        Title="اتو شمشیر یاما (بعد از 30 کیل)",
+        Desc="وقتی 30 تا زدی، کارهای دیگه رو متوقف میکنه و میره یاما رو میکشه",
+        Value=false,
+        Callback=function(s) Extra.Set("AutoYama", s) end
+    })
+    
+    UI.EliteYamaSec:Toggle({
+        Title="امتحان شانس یاما (بین 20 تا 29)",
+        Desc="اگه بین 20 تا 29 الایت کشتی شانسش رو امتحان میکنه. اگه not worthy داد برمیگرده الایت میزنه",
+        Value=false,
+        Callback=function(s) Extra.Set("TryLuckYama", s) end
+    })
+    
+    UI.EliteYamaSec:Toggle({
+        Title="اتو گرفتن توشیتا (Tushita)",
+        Desc="به محض دریافت نوتیفیکیشن، به طور خودکار مراحل را انجام می‌دهد و برمی‌گردد.",
+        Value=false,
+        Callback=function(s) Extra.Set("AutoTushita", s) end
+    })
+end
+
+UI.StatsTab=UI.MainSection:Tab({Title="آمار و وضعیت",Icon="activity",IconColor=Color3.fromHex("#00BFFF"),Border=true})
+UI.StatusPanel = UI.StatsTab:Paragraph({Title="وضعیت زنده", Desc="در حال بارگذاری..."})
+
+local CachedDealerFruits = "در حال محاسبه..."
+local LastDealerCheckCycle = -1
+task.spawn(function()
+    while task.wait(5) do
+        local cCycle = math.floor(os.time() / 14400)
+        if LastDealerCheckCycle ~= cCycle then
+            pcall(function()
+                local stock = ReplicatedStorage.Remotes.CommF_:InvokeServer("GetFruits", false)
+                if type(stock) == "table" then
+                    local onSale = {}
+                    for _, f in pairs(stock) do if f.OnSale then table.insert(onSale, getCleanName(f.Name)) end end
+                    CachedDealerFruits = table.concat(onSale, " ، ")
+                    if CachedDealerFruits == "" then CachedDealerFruits = "هیچ فروتی موجود نیست" end
+                    LastDealerCheckCycle = cCycle
+                end
+            end)
+        end
+    end
+end)
+
+task.spawn(function()
+    while task.wait(1.5) do
+        pcall(function()
+            local actionStr = GetActiveFarmMode()
+            local meleeName, masteryLevel = GetMeleeMastery(nil)
+            local masteryStr = meleeName .. " | مستری: " .. tostring(masteryLevel)
+            local bossesStr = ""
+            for _, d in ipairs(BossDatabase) do if IsBossSpawned(d.Mob) then bossesStr = bossesStr .. d.Mob .. " ، " end end
+            if bossesStr == "" then bossesStr = "هیچ باسی نیست" else bossesStr = string.sub(bossesStr, 1, -4) end
+
+            local checkTime = ReplicatedStorage.Remotes.CommF_:InvokeServer("Cousin", "CheckTime", "DLCBoxData")
+            local canBuy = ReplicatedStorage.Remotes.CommF_:InvokeServer("Cousin", "CheckCanBuyType", "DLCBoxData")
+            local timeReady = (checkTime == true or tostring(checkTime):lower():find("true") or checkTime == 0 or tostring(checkTime):lower():find("ready"))
+            local moneyReady = (canBuy == 1 or canBuy == true or tostring(canBuy) == "1" or tostring(canBuy) == "true")
+            local gachaStr = ""
+            if timeReady then gachaStr = "آماده رول!" else local cleanTime = tostring(checkTime):match("%d+:[%d:]+"); if cleanTime then gachaStr = "مانده: " .. cleanTime else gachaStr = "محاسبه..." end end
+            if not moneyReady then gachaStr = gachaStr .. " | ❌ پول کافی نیست" end
+
+            local fruitsStr = ""
+            for _, v in pairs(Workspace:GetChildren()) do if (v:IsA("Tool") or v:IsA("Model")) and string.find(v.Name,"Fruit") and not string.find(v.Name,"Dealer") and not string.find(v.Name,"Gacha") and not string.find(v.Name,"Blox Fruit") then fruitsStr = fruitsStr .. getCleanName(v.Name) .. " ، " end end
+            if fruitsStr == "" then fruitsStr = "میوه‌ای روی زمین نیست" else fruitsStr = string.sub(fruitsStr, 1, -4) end
+
+            UI.StatusPanel:SetDesc(
+                "🔰 لول فعلی: " .. GetMyLevel() ..
+                "\n💵 پول: $" .. formatNumber(GetPlayerBeli()) ..
+                "\n💎 فرگمنت: " .. formatNumber(GetPlayerFragments()) ..
+                "\n🎣 ماهی گرفته شده: " .. (Extra.Get("TotalFishCaught") or 0) ..
+                "\n⚙️ درحال انجام: " .. actionStr ..
+                "\n🎁 چست جمع شده: " .. TotalChestsCollected ..
+                "\n🎰 گاچا: " .. gachaStr ..
+                "\n🏪 دیلر: " .. CachedDealerFruits ..
+                "\n💀 باس‌ها: " .. bossesStr ..
+                "\n🍎 روی زمین: " .. fruitsStr
+            )
+        end)
+    end
+end)
+
+UI.STS=UI.StatsTab:Section({Title="ارتقای خودکار استتس",Box=true,BoxBorder=true,Opened=true})
+UI.STS:Dropdown({Title="انتخاب نوع استتس",Multi=true,Values={"Melee","Defense","Sword","Gun","Demon Fruit"},Default={},Callback=function(sel) local ss={}; if sel==nil then return end; if type(sel)=="table" then for k,v in pairs(sel) do if type(k)=="number" then ss[v]=true else if v then ss[k]=true end end end elseif type(sel)=="string" then ss[sel]=true end; Extra.Set("SelectedStats", ss) end})
+UI.STS:Slider({Title="تعداد پوینت ارتقا",Step=1,Value={Min=1,Max=4000,Default=1},Callback=function(v) Extra.Set("StatsPoint", v) end})
+UI.STS:Toggle({Title="شروع ارتقای خودکار",Value=false,Callback=function(s) Extra.Set("AutoStats", s) end})
+
+UI.ST=UI.MainSection:Tab({Title="تنظیمات",Icon="settings",IconColor=Color3.fromHex("#FFD700"),Border=true})
+UI.SeaTeleportSec = UI.ST:Section({Title="تلپورت بین دریاها", Box=true, BoxBorder=true, Opened=true})
+UI.SeaTeleportSec:Button({Title="دریای اول", Callback=function() if Sea == 1 then return end; ReplicatedStorage.Remotes.CommF_:InvokeServer("TravelMain") end})
+UI.SeaTeleportSec:Button({Title="دریای دوم", Callback=function() if Sea == 2 then return end; ReplicatedStorage.Remotes.CommF_:InvokeServer("TravelDressrosa") end})
+UI.SeaTeleportSec:Button({Title="دریای سوم", Callback=function() if Sea == 3 then return end; ReplicatedStorage.Remotes.CommF_:InvokeServer("TravelZou") end})
+
+UI.CodeSection=UI.ST:Section({Title="اتو ریدیم کدها",Box=true,BoxBorder=true,Opened=true})
+local RedeemCodes={"EASTEREXP","Sub2CaptainMaui","Sub2Fer999","Enyu_is_Pro","Magicbus","JCWK","Starcodeheo","Bluxxy","fudd10_v2","FUDD10","BIGNEWS","THEGREATACE","SUB2GAMERROBOT_EXP1","SUB2GAMERROBOT_RESET1","Sub2OfficialNoobie","StrawHatMaine","Sub2UncleKizaru","Sub2Daigrock","Axiore","TantaiGaming"}
+UI.CodeSection:Button({Title="گرفتن تمام کد ها",Icon="gift",Callback=function() local rr=ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Redeem"); local sc=0; for _,c in ipairs(RedeemCodes) do if pcall(function() return rr:InvokeServer(c) end) then sc+=1 end; task.wait(0.3) end; WindUI:Notify({Title="اتو ریدیم",Content="پایان عملیات | تعداد: "..sc,Duration=4}) end})
+
+UI.WS=UI.ST:Section({Title="انتخاب نوع وسیله زدن",Box=true,BoxBorder=true,Opened=true})
+UI.WS:Dropdown({Title="انتخاب نوع وسیله زدن",Multi=false,Default="Melee (میلی)",Values={"Melee (میلی)","Sword (شمشیر)","Gun (گان)","Fruit (فروت + ترنسفورم)","Melee + Gun (گان آخر)","Melee + Ability (ابیلیتی فروت آخر)"},Callback=function(s) if s=="Melee (میلی)" then Core.WeaponMode="Melee" elseif s=="Sword (شمشیر)" then Core.WeaponMode="Sword" elseif s=="Gun (گان)" then Core.WeaponMode="Gun" elseif s=="Fruit (فروت + ترنسفورم)" then Core.WeaponMode="Fruit" elseif s=="Melee + Gun (گان آخر)" then Core.WeaponMode="MeleeGun" elseif s=="Melee + Ability (ابیلیتی فروت آخر)" then Core.WeaponMode="MeleeAbility" end; RaidConfig.WeaponMode=Core.WeaponMode; AutoRaid.SetWeaponMode(Core.WeaponMode); AutoLevelUp.SetWeaponMode(Core.WeaponMode) end})
+UI.WS:Slider({Title="سیستم عوض کردن گان/فروت",Step=100,Value={Min=100,Max=10000,Default=2000},Callback=function(v) Settings.SwitchHP=v end})
+
+UI.AS=UI.ST:Section({Title="روش حمله",Box=true,BoxBorder=true,Opened=true})
+UI.AS:Dropdown({Title="روش دمیج دادن",Multi=false,Default="بهترین (کلیک کردن)",Values={"بهترین (کلیک کردن)","سریع ترین روش (با ریموت اونت)"},Callback=function(s) Core.AttackMethod=s=="بهترین (کلیک کردن)" and "Click" or "RemoteHit"; AutoLevelUp.SetAttackMethod(Core.AttackMethod) end})
+
+UI.MS=UI.ST:Section({Title="تنظیمات حرکت",Box=true,BoxBorder=true,Opened=true})
+UI.MS:Slider({Title="سرعت پرواز",Step=25,Value={Min=100,Max=500,Default=350},Callback=function(v) Settings.FlightSpeed=v end})
+UI.MS:Slider({Title="سرعت قایق",Step=10,Value={Min=100,Max=500,Default=250},Callback=function(v) Settings.BoatSpeed=v end})
+UI.MS:Slider({Title="فاصله از ماب",Step=5,Value={Min=5,Max=60,Default=40},Callback=function(v) Settings.AttackDistance=v end})
+UI.MS:Slider({Title="ارتفاع از ماب",Step=5,Value={Min=5,Max=60,Default=40},Callback=function(v) Settings.AttackHeight=v end})
+UI.MS:Slider({Title="سایز هد",Step=10,Value={Min=20,Max=150,Default=100},Callback=function(v) Settings.HeadSize=v end})
+
+UI.RSS=UI.ST:Section({Title="تنظیمات رید",Box=true,BoxBorder=true,Opened=true})
+UI.RSS:Slider({Title="HP عقب‌نشینی",Step=100,Value={Min=500,Max=5000,Default=1000},Callback=function(v) Settings.RaidLowHPThreshold=v end})
+
+UI.DKSet=UI.ST:Section({Title="تنظیمات دوج کینگ",Box=true,BoxBorder=true,Opened=true})
+UI.DKSet:Slider({Title="فاصله حمله DK",Step=5,Value={Min=5,Max=40,Default=10},Callback=function(v) Settings.DoughKingAttackDistance=v end})
+UI.DKSet:Slider({Title="ارتفاع حمله DK",Step=5,Value={Min=5,Max=40,Default=20},Callback=function(v) Settings.DoughKingAttackHeight=v end})
+UI.DKSet:Slider({Title="سایز هد DK",Step=5,Value={Min=10,Max=100,Default=30},Callback=function(v) Settings.DoughKingHeadSize=v end})
+
+task.spawn(function()
+    UI.CreatorTab=UI.MainSection:Tab({Title="سازنده",Icon="hammer",IconColor=Color3.fromHex("#FFD700"),Border=true})
+    UI.CreatorSection=UI.CreatorTab:Section({Title="سازنده",Opened=true})
+    UI.CreatorSection:Button({Title="کپی لینک تلگرام",Icon="link",Callback=function() if setclipboard then setclipboard("https://t.me/Robloxexploit_ir") end; WindUI:Notify({Title="لینک",Content="کپی شد!",Duration=3}) end})
+end)
