@@ -143,7 +143,6 @@ function ExtraModule.Init(Deps)
         end)
     end
 
-    -- Listener نوتیفیکیشن Tushita
     if Sea == 3 then
         task.spawn(function()
             local Notifications = Plr:WaitForChild("PlayerGui"):WaitForChild("Notifications", 5)
@@ -161,7 +160,6 @@ function ExtraModule.Init(Deps)
             end
         end)
 
-        -- حلقه Tushita
         task.spawn(function()
             while task.wait(0.1) do
                 if not State.AutoTushita then continue end
@@ -258,7 +256,6 @@ function ExtraModule.Init(Deps)
                         State.TushitaPhase = "KillingLongma"
                         WindUI:Notify({Title="Tushita Puzzle", Content="باس Longma اسپان شد! رفتن برای کشتن...", Duration=5})
                     else
-                        -- بررسی پایان کار
                         local inv = ReplicatedStorage.Remotes.CommF_:InvokeServer("getInventory")
                         local hasTushita = false
                         if type(inv) == "table" then for _, item in pairs(inv) do if item.Name == "Tushita" then hasTushita = true; break end end end
@@ -272,9 +269,7 @@ function ExtraModule.Init(Deps)
             end
         end)
     end
-    -- ===================================================
 
-    -- حلقه Elite Hunter
     if Sea == 3 then
         task.spawn(function()
             local EliteSpawns = { ["Hydra Island"] = { CFrame.new(4509, 1209, -2), CFrame.new(6218, 76, 2120), CFrame.new(7076, 246, -444), CFrame.new(6126, 184, -2208) }, ["Floating Turtle"] = { CFrame.new(-10964, 707, -7108), CFrame.new(-11512, 639, -8910), CFrame.new(-12411, 334, -9654), CFrame.new(-13797, 331, -9126), CFrame.new(-13746, 401, -10072), CFrame.new(-11797, 457, -10306), CFrame.new(-10827, 453, -9786) }, ["Port Town"] = { CFrame.new(-1362, 151, 7334) }, ["Great Tree"] = { CFrame.new(2532, 567, -8343), CFrame.new(4341, 565, -6169) } }
@@ -368,7 +363,6 @@ function ExtraModule.Init(Deps)
         end)
     end
 
-    -- حلقه‌های دیگر (AutoFish, AutoRoll, AutoSea, ...) دقیقاً مانند قبل
     task.spawn(function() while task.wait(0.5) do if State.AutoFish then pcall(AutoFishSystem) end end end)
     task.spawn(function() while task.wait(5) do if State.AutoBuyBait and not State.IsBuyingBait then pcall(function() local inv = ReplicatedStorage.Remotes.CommF_:InvokeServer("getInventory"); local baitCount = 0; if type(inv) == "table" then for _, item in pairs(inv) do if type(item) == "table" and item.Name and string.find(item.Name, "Bait") then baitCount = item.Count or 0; break end end end; if baitCount < 15 then State.IsBuyingBait = true; while State.AutoBuyBait and baitCount < 85 do if Plr.Data.Beli.Value < 10000 then break end; ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Net"):WaitForChild("RF/Craft"):InvokeServer("Craft", "Basic Bait", 1, {}); baitCount = baitCount + 10; task.wait(0.8) end; State.IsBuyingBait = false end end) end end end)
     task.spawn(function() local lastSell = tick() while task.wait(1) do if State.AutoSellFish and (tick() - lastSell >= State.SellInterval) then pcall(function() ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Net"):WaitForChild("RF/JobsRemoteFunction"):InvokeServer("FishingNPC", "SellFish") end) lastSell = tick() end end end)
