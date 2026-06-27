@@ -148,9 +148,11 @@ function ExtraModule.Init(Deps)
         end)
     end
 
+    -- ================== سیستم Auto Core ==================
     if Sea == 2 then
         local CoreLocation = CFrame.new(424.1, 198.4, -408.1)
         
+        -- آپدیت تایمر کور به صورت زنده
         task.spawn(function()
             while task.wait(0.5) do
                 local foundTime = false
@@ -179,43 +181,76 @@ function ExtraModule.Init(Deps)
             end
         end)
 
+        -- کنترل لاجیک حرکتی اتو کور
         task.spawn(function()
             while task.wait(0.1) do
-                if not State.AutoCoreEnabled then continue end
-                
-                local isCoreAlive = (State.CoreTimer ~= -1 and State.CoreTimer >= 0)
-                
-                if State.CoreState ~= "Idle" then
-                    if not isCoreAlive or State.CoreTimer > 20 then
+                -- اگر کاربر در هر لحظه دکمه را خاموش کند، کاملاً ریست می‌شود
+                if not State.AutoCoreEnabled then
+                    if State.CoreState ~= "Idle" then
                         State.CoreState = "Idle"
                         if State.IsDoingPriorityTask then
                             State.IsDoingPriorityTask = false
+                            if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
+                            
+                            -- فیکس شدن باگ سرعت بعد از خاموش کردن
+                            pcall(function()
+                                local hum = Plr.Character and Plr.Character:FindFirstChild("Humanoid")
+                                if hum then
+                                    hum.WalkSpeed = 16
+                                    hum.JumpPower = 50
+                                end
+                            end)
                             ResumeFarms()
-                            WindUI:Notify({Title="اتو فارم کور", Content="کور زده شد یا تایمر ریست شد! بازگشت به فارم...", Duration=5})
+                        end
+                    end
+                    continue
+                end
+                
+                local isCoreAlive = (State.CoreTimer ~= -1 and State.CoreTimer >= 0)
+                
+                -- اگر اسکریپت در حال انجام کور است اما تایمر ریست شد (لغو اتوماتیک فقط برای WaitingTimer)
+                if State.CoreState ~= "Idle" then
+                    if State.CoreMode == "WaitingTimer" then
+                        if not isCoreAlive or State.CoreTimer > 20 then
+                            State.CoreState = "Idle"
+                            if State.IsDoingPriorityTask then
+                                State.IsDoingPriorityTask = false
+                                if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
+                                pcall(function()
+                                    local hum = Plr.Character and Plr.Character:FindFirstChild("Humanoid")
+                                    if hum then
+                                        hum.WalkSpeed = 16
+                                        hum.JumpPower = 50
+                                    end
+                                end)
+                                ResumeFarms()
+                                WindUI:Notify({Title="اتو فارم کور", Content="کور با موفقیت کشته شد! بازگشت به فارم...", Duration=5})
+                            end
                         end
                     end
                 end
 
                 if State.CoreState == "Idle" then
-                    if isCoreAlive then
-                        if State.CoreMode == "WaitingTimer" and State.CoreTimer <= 10 then
-                            State.CoreState = "Teleporting"
-                            if not State.IsDoingPriorityTask then 
-                                State.IsDoingPriorityTask = true
-                                PauseFarms()
-                                Deps.SetFarmMode("AutoCore") 
-                                WindUI:Notify({Title="اتو فارم کور", Content="تایمر رسید به 10 ثانیه، در حال حرکت...", Duration=3})
-                            end
-                        elseif State.CoreMode == "Immediate" then 
-                            State.CoreState = "Teleporting"
-                            if not State.IsDoingPriorityTask then 
-                                State.IsDoingPriorityTask = true
-                                PauseFarms()
-                                Deps.SetFarmMode("AutoCore")
-                                WindUI:Notify({Title="اتو فارم کور", Content="حمله فوری استارت شد!", Duration=3})
-                            end
+                    -- استارت فوری (دیگر اسپم نمی‌شود چون فقط یک بار اجرا می‌شود و تا خاموش نکنید همانجا می‌ماند)
+                    if State.CoreMode == "Immediate" then 
+                        State.CoreState = "Teleporting"
+                        if not State.IsDoingPriorityTask then 
+                            State.IsDoingPriorityTask = true
+                            PauseFarms()
+                            Deps.SetFarmMode("AutoCore")
+                            WindUI:Notify({Title="اتو فارم کور", Content="حمله فوری استارت شد!", Duration=3})
+                        end
+                    -- استارت با تایمر
+                    elseif State.CoreMode == "WaitingTimer" and isCoreAlive and State.CoreTimer <= 10 then
+                        State.CoreState = "Teleporting"
+                        if not State.IsDoingPriorityTask then 
+                            State.IsDoingPriorityTask = true
+                            PauseFarms()
+                            Deps.SetFarmMode("AutoCore") 
+                            WindUI:Notify({Title="اتو فارم کور", Content="تایمر رسید به 10 ثانیه، رفتیم سراغش...", Duration=3})
                         end
                     end
+
                 elseif State.CoreState == "Teleporting" then
                     local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart")
                     if root then
@@ -227,6 +262,7 @@ function ExtraModule.Init(Deps)
                             State.CoreState = "Attacking"
                         end
                     end
+
                 elseif State.CoreState == "Attacking" then
                     local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart")
                     if root then
@@ -242,6 +278,7 @@ function ExtraModule.Init(Deps)
             end
         end)
 
+        -- اسپم اتک کور با استفاده از RegisterHit اختصاصی
         task.spawn(function()
             while task.wait() do
                 if State.AutoCoreEnabled and State.CoreState == "Attacking" then
