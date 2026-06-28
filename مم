@@ -47,7 +47,6 @@ function ExtraModule.Init(Deps)
         CurrentTorchIndex = 1,
 
         AutoCoreEnabled = false,
-        CoreMode = "WaitingTimer",
         CoreState = "Idle",
         CoreTimer = -1,
     }
@@ -208,46 +207,35 @@ function ExtraModule.Init(Deps)
                 
                 local isCoreAlive = (State.CoreTimer ~= -1 and State.CoreTimer >= 0)
                 
-                -- اگر اسکریپت در حال انجام کور است اما تایمر ریست شد (لغو اتوماتیک فقط برای WaitingTimer)
+                -- اگر اسکریپت در حال انجام کور است اما باس مرد یا تایمر ریست شد
                 if State.CoreState ~= "Idle" then
-                    if State.CoreMode == "WaitingTimer" then
-                        if not isCoreAlive or State.CoreTimer > 20 then
-                            State.CoreState = "Idle"
-                            if State.IsDoingPriorityTask then
-                                State.IsDoingPriorityTask = false
-                                if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
-                                pcall(function()
-                                    local hum = Plr.Character and Plr.Character:FindFirstChild("Humanoid")
-                                    if hum then
-                                        hum.WalkSpeed = 16
-                                        hum.JumpPower = 50
-                                    end
-                                end)
-                                ResumeFarms()
-                                WindUI:Notify({Title="اتو فارم کور", Content="کور با موفقیت کشته شد! بازگشت به فارم...", Duration=5})
-                            end
+                    if not isCoreAlive or State.CoreTimer > 20 then
+                        State.CoreState = "Idle"
+                        if State.IsDoingPriorityTask then
+                            State.IsDoingPriorityTask = false
+                            if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
+                            pcall(function()
+                                local hum = Plr.Character and Plr.Character:FindFirstChild("Humanoid")
+                                if hum then
+                                    hum.WalkSpeed = 16
+                                    hum.JumpPower = 50
+                                end
+                            end)
+                            ResumeFarms()
+                            WindUI:Notify({Title="اتو فارم کور", Content="کور با موفقیت کشته شد! بازگشت به فارم...", Duration=5})
                         end
                     end
                 end
 
                 if State.CoreState == "Idle" then
-                    -- استارت فوری (دیگر اسپم نمی‌شود چون فقط یک بار اجرا می‌شود و تا خاموش نکنید همانجا می‌ماند)
-                    if State.CoreMode == "Immediate" then 
-                        State.CoreState = "Teleporting"
-                        if not State.IsDoingPriorityTask then 
-                            State.IsDoingPriorityTask = true
-                            PauseFarms()
-                            Deps.SetFarmMode("AutoCore")
-                            WindUI:Notify({Title="اتو فارم کور", Content="حمله فوری استارت شد!", Duration=3})
-                        end
-                    -- استارت با تایمر
-                    elseif State.CoreMode == "WaitingTimer" and isCoreAlive and State.CoreTimer <= 10 then
+                    -- استارت با تایمر (اگه زیر 10 باشه همون لحظه میره، اگه بیشتر باشه صبر میکنه تا بشه 10)
+                    if isCoreAlive and State.CoreTimer <= 10 then
                         State.CoreState = "Teleporting"
                         if not State.IsDoingPriorityTask then 
                             State.IsDoingPriorityTask = true
                             PauseFarms()
                             Deps.SetFarmMode("AutoCore") 
-                            WindUI:Notify({Title="اتو فارم کور", Content="تایمر رسید به 10 ثانیه، رفتیم سراغش...", Duration=3})
+                            WindUI:Notify({Title="اتو فارم کور", Content="زمان حمله رسید! رفتیم سراغ کور...", Duration=3})
                         end
                     end
 
