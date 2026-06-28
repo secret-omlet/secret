@@ -46,6 +46,7 @@ function ExtraModule.Init(Deps)
         TushitaPhase = "Idle",
         CurrentTorchIndex = 1,
 
+        -- متغیرهای آپدیت شده کور
         AutoCoreEnabled = false,
         CoreState = "Idle",
         CoreTimer = -1,
@@ -183,15 +184,13 @@ function ExtraModule.Init(Deps)
         -- کنترل لاجیک حرکتی اتو کور
         task.spawn(function()
             while task.wait(0.1) do
-                -- اگر کاربر در هر لحظه دکمه را خاموش کند، کاملاً ریست می‌شود
+                -- وقتی خاموش شد، همه‌چیز رو ریست کن
                 if not State.AutoCoreEnabled then
                     if State.CoreState ~= "Idle" then
                         State.CoreState = "Idle"
                         if State.IsDoingPriorityTask then
                             State.IsDoingPriorityTask = false
                             if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
-                            
-                            -- فیکس شدن باگ سرعت بعد از خاموش کردن
                             pcall(function()
                                 local hum = Plr.Character and Plr.Character:FindFirstChild("Humanoid")
                                 if hum then
@@ -207,7 +206,7 @@ function ExtraModule.Init(Deps)
                 
                 local isCoreAlive = (State.CoreTimer ~= -1 and State.CoreTimer >= 0)
                 
-                -- اگر اسکریپت در حال انجام کور است اما باس مرد یا تایمر ریست شد
+                -- چک کردن کشته شدن کور یا ریست شدن تایمر (برگشت به فارم عادی)
                 if State.CoreState ~= "Idle" then
                     if not isCoreAlive or State.CoreTimer > 20 then
                         State.CoreState = "Idle"
@@ -222,20 +221,20 @@ function ExtraModule.Init(Deps)
                                 end
                             end)
                             ResumeFarms()
-                            WindUI:Notify({Title="اتو فارم کور", Content="کور با موفقیت کشته شد! بازگشت به فارم...", Duration=5})
+                            WindUI:Notify({Title="اتو فارم کور", Content="کور زده شد یا تایمر ریست شد! بازگشت به فارم...", Duration=5})
                         end
                     end
                 end
 
+                -- استارت هوشمند (فقط وقتی تایمر زیر 10 است، به سمت آن میرود)
                 if State.CoreState == "Idle" then
-                    -- استارت با تایمر (اگه زیر 10 باشه همون لحظه میره، اگه بیشتر باشه صبر میکنه تا بشه 10)
                     if isCoreAlive and State.CoreTimer <= 10 then
                         State.CoreState = "Teleporting"
                         if not State.IsDoingPriorityTask then 
                             State.IsDoingPriorityTask = true
                             PauseFarms()
                             Deps.SetFarmMode("AutoCore") 
-                            WindUI:Notify({Title="اتو فارم کور", Content="زمان حمله رسید! رفتیم سراغ کور...", Duration=3})
+                            WindUI:Notify({Title="اتو فارم کور", Content="زمان حمله به کور فرا رسید!", Duration=3})
                         end
                     end
 
