@@ -30,12 +30,20 @@ return function(Settings, WindUI, Net, ReplicatedStorage, Workspace, TweenServic
     }
     
     local SpawnCache = {}
-    local Sea, SeaName = 1, "دریای اول"
-    local Map = game:GetService("Workspace"):WaitForChild("Map", 5)
-    if Map then
-        if Map:FindFirstChild("Dressrosa") or Map:FindFirstChild("Water7") then Sea = 2; SeaName = "دریای دوم"
-        elseif Map:FindFirstChild("Zou") or Map:FindFirstChild("Turtle") then Sea = 3; SeaName = "دریای سوم" end
-    end
+local Sea = 1
+local SeaName = "دریای اول"
+
+local PlayerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+local MainGui = PlayerGui:WaitForChild("Main", 5)
+
+if MainGui and MainGui:FindFirstChild("Version") then
+    task.wait(1.5) 
+    local text = string.lower(MainGui.Version.Text)
+    
+    if string.find(text, "sea1") then Sea = 1; SeaName = "دریای اول"
+    elseif string.find(text, "sea2") then Sea = 2; SeaName = "دریای دوم"
+    elseif string.find(text, "sea3") then Sea = 3; SeaName = "دریای سوم" end
+end
     
     local LevelUpDatabase = {}
     if Sea == 1 then
