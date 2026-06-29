@@ -83,7 +83,7 @@ function ExtraModule.Init(Deps)
                     if Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart") then
                         local hrp = Plr.Character.HumanoidRootPart
                         -- 14.2 بهترین ارتفاع سطح آب برای جلوگیری از دمیج میوه در بلاکس فروت است
-                        WaterWalkPart.Position = Vector3.new(hrp.Position.X, 14.2, hrp.Position.Z)
+                        WaterWalkPart.Position = Vector3.new(hrp.Position.X, 0.01, hrp.Position.Z)
                     end
                 end)
             end
