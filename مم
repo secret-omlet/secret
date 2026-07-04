@@ -243,30 +243,31 @@ function ExtraModule.Init(Deps)
         end
     end)
 
-
-    -- ================== سیستم راه رفتن روی آب (آپدیت شده) ==================
+    -- ================== سیستم راه رفتن روی آب (آپدیت شده و بسیار نازک) ==================
     local WaterWalkPart = nil
     local WaterWalkConnection = nil
 
     local function getWaterLevel()
+        local waterLevel = 14.2 -- مقدار پیش‌فرض
         pcall(function()
             local map = Workspace:FindFirstChild("Map")
             if map then
                 local waterPlane = map:FindFirstChild("WaterBase-Plane")
                 if waterPlane and waterPlane:IsA("BasePart") then
-                    -- دقیقاً سطح آب را پیدا میکنیم و یه لایه خیلی نازک روی اون قرار میدیم
-                    return waterPlane.Position.Y + (waterPlane.Size.Y / 2) + 0.5
+                    -- دقیقاً سطح آب واقعی بازی (بدون اضافه کردن ارتفاع اضافی)
+                    waterLevel = waterPlane.Position.Y + (waterPlane.Size.Y / 2)
                 end
             end
         end)
-        return 14.2 -- مقدار پشتیبان در صورت پیدا نشدن آب
+        return waterLevel
     end
 
     local function UpdateWalkOnWater(enabled)
         if enabled then
             if not WaterWalkPart then
                 WaterWalkPart = Instance.new("Part")
-                WaterWalkPart.Size = Vector3.new(20, 0.5, 20) -- سایز مناسب و بسیار نازک
+                -- سایز رو تغییر دادیم: ضخامت شد 0.1 (یک لایه فوق‌العاده نازک)
+                WaterWalkPart.Size = Vector3.new(20, 0.1, 20) 
                 WaterWalkPart.Anchored = true
                 WaterWalkPart.CanCollide = true
                 WaterWalkPart.Transparency = 1 
@@ -279,8 +280,8 @@ function ExtraModule.Init(Deps)
                     if Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart") then
                         local hrp = Plr.Character.HumanoidRootPart
                         local waterY = getWaterLevel()
-                        -- پارت نامرئی فقط در محورهای X و Z به دنبال پلیر میاد اما ارتفاعش روی سطح آب ثابته
-                        WaterWalkPart.Position = Vector3.new(hrp.Position.X, waterY, hrp.Position.Z)
+                        -- برای اینکه سطح بالایی این لایه نازک دقیقاً با آب یکی بشه، ارتفاع رو منهای نصف ضخامت میکنیم (0.05)
+                        WaterWalkPart.Position = Vector3.new(hrp.Position.X, waterY - 0.05, hrp.Position.Z)
                     end
                 end)
             end
