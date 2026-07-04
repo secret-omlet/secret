@@ -63,7 +63,6 @@ function ExtraModule.Init(Deps)
 
         WalkOnWaterEnabled = true,
 
-        -- ================= متغیرهای جدید اضافه شده =================
         AutoBerries = false,
         IsCollectingBerries = false,
 
@@ -93,9 +92,25 @@ function ExtraModule.Init(Deps)
             local sky = Lighting:FindFirstChildOfClass("Sky")
             if sky then
                 local extractedId = string.match(sky.MoonTextureId, "%d+")
+                local clockTime = Lighting.ClockTime
+                -- تشخیص روز یا شب بودن (بین 6 صبح تا 5:30 عصر روز محسوب میشه)
+                local isDay = (clockTime > 6 and clockTime < 17.5)
+
                 if extractedId and MoonPhasesMap[extractedId] then
-                    State.MoonPhaseStr = MoonPhasesMap[extractedId].Phase
-                    State.MoonTimeStr = MoonPhasesMap[extractedId].Time
+                    local data = MoonPhasesMap[extractedId]
+                    
+                    if extractedId == "9709149431" then -- ایدی ماه 100% (فول مون)
+                        if isDay then
+                            State.MoonPhaseStr = "امشب فول مونه (4/4)"
+                            State.MoonTimeStr = "4 یا 5 دقیقه"
+                        else
+                            State.MoonPhaseStr = "فول مونه (4/4)"
+                            State.MoonTimeStr = "فول مون است!"
+                        end
+                    else
+                        State.MoonPhaseStr = data.Phase
+                        State.MoonTimeStr = data.Time
+                    end
                 else
                     State.MoonPhaseStr = "نامشخص"
                     State.MoonTimeStr = "در حال محاسبه..."
@@ -104,7 +119,7 @@ function ExtraModule.Init(Deps)
         end
     end)
 
-    -- ================== سیستم Auto Aura Colors (خرید بدون توقف فارم) ==================
+    -- ================== سیستم Auto Aura Colors ==================
     task.spawn(function()
         while task.wait(2) do
             if State.AutoAuraColor and not State.IsBuyingAuraColor then
@@ -125,7 +140,7 @@ function ExtraModule.Init(Deps)
         end
     end)
 
-    -- ================== سیستم Auto Berries (توقف فارم هنگام کار) ==================
+    -- ================== سیستم Auto Berries ==================
     local noclipBerryConnection = nil
     local function ToggleBerryNoclip(enable)
         if enabled then
@@ -156,7 +171,7 @@ function ExtraModule.Init(Deps)
         if humanoid and humanoid.Sit then humanoid.Sit = false end
 
         local distance = (rootPart.Position - targetCFrame.Position).Magnitude
-        local timeToTake = math.max(distance / 340, 0.1) -- TWEEN_SPEED = 340
+        local timeToTake = math.max(distance / 340, 0.1)
 
         local tweenInfo = TweenInfo.new(timeToTake, Enum.EasingStyle.Linear)
         local tween = TweenService:Create(rootPart, tweenInfo, {CFrame = targetCFrame})
@@ -196,10 +211,10 @@ function ExtraModule.Init(Deps)
                     State.IsCollectingBerries = true
                     State.IsDoingPriorityTask = true
                     
-                    PauseFarms() -- توقف تمامی فارم های دیگر
+                    PauseFarms() 
                     
                     for _, targetData in ipairs(availableBerries) do
-                        if not State.AutoBerries then break end -- در صورت خاموش شدن توگل وسط کار
+                        if not State.AutoBerries then break end 
                         local targetModel = targetData.Model
                         local targetPrompt = targetData.Prompt
                         
@@ -220,7 +235,6 @@ function ExtraModule.Init(Deps)
                         end
                     end
 
-                    -- بازگشت به حالت قبلی
                     State.IsCollectingBerries = false
                     State.IsDoingPriorityTask = wasDoingPriority
                     ResumeFarms() 
@@ -230,15 +244,29 @@ function ExtraModule.Init(Deps)
     end)
 
 
-    -- ================== سیستم راه رفتن روی آب ==================
+    -- ================== سیستم راه رفتن روی آب (آپدیت شده) ==================
     local WaterWalkPart = nil
     local WaterWalkConnection = nil
+
+    local function getWaterLevel()
+        pcall(function()
+            local map = Workspace:FindFirstChild("Map")
+            if map then
+                local waterPlane = map:FindFirstChild("WaterBase-Plane")
+                if waterPlane and waterPlane:IsA("BasePart") then
+                    -- دقیقاً سطح آب را پیدا میکنیم و یه لایه خیلی نازک روی اون قرار میدیم
+                    return waterPlane.Position.Y + (waterPlane.Size.Y / 2) + 0.5
+                end
+            end
+        end)
+        return 14.2 -- مقدار پشتیبان در صورت پیدا نشدن آب
+    end
 
     local function UpdateWalkOnWater(enabled)
         if enabled then
             if not WaterWalkPart then
                 WaterWalkPart = Instance.new("Part")
-                WaterWalkPart.Size = Vector3.new(10, 0.5, 10)
+                WaterWalkPart.Size = Vector3.new(20, 0.5, 20) -- سایز مناسب و بسیار نازک
                 WaterWalkPart.Anchored = true
                 WaterWalkPart.CanCollide = true
                 WaterWalkPart.Transparency = 1 
@@ -250,7 +278,9 @@ function ExtraModule.Init(Deps)
                 WaterWalkConnection = RunService.Stepped:Connect(function()
                     if Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart") then
                         local hrp = Plr.Character.HumanoidRootPart
-                        WaterWalkPart.Position = Vector3.new(hrp.Position.X, 14.2, hrp.Position.Z)
+                        local waterY = getWaterLevel()
+                        -- پارت نامرئی فقط در محورهای X و Z به دنبال پلیر میاد اما ارتفاعش روی سطح آب ثابته
+                        WaterWalkPart.Position = Vector3.new(hrp.Position.X, waterY, hrp.Position.Z)
                     end
                 end)
             end
