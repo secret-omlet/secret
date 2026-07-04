@@ -243,31 +243,31 @@ function ExtraModule.Init(Deps)
         end
     end)
 
-    -- ================== سیستم راه رفتن روی آب (آپدیت شده و بسیار نازک) ==================
+        -- ================== سیستم راه رفتن روی آب (دقیقاً روی WaterBase-Plane) ==================
     local WaterWalkPart = nil
     local WaterWalkConnection = nil
 
-    local function getWaterLevel()
-        local waterLevel = 14.2 -- مقدار پیش‌فرض
+    local function getExactWaterTop()
+        local topSurfaceY = 14.2 -- مقدار پیش‌فرض اگر پارت پیدا نشد
         pcall(function()
             local map = Workspace:FindFirstChild("Map")
             if map then
                 local waterPlane = map:FindFirstChild("WaterBase-Plane")
                 if waterPlane and waterPlane:IsA("BasePart") then
-                    -- دقیقاً سطح آب واقعی بازی (بدون اضافه کردن ارتفاع اضافی)
-                    waterLevel = waterPlane.Position.Y + (waterPlane.Size.Y / 2)
+                    -- محاسبه دقیق بالاترین سطح (سقف) پارت آب:
+                    -- مرکز پارت آب + نصف ارتفاع پارت آب
+                    topSurfaceY = waterPlane.Position.Y + (waterPlane.Size.Y / 2)
                 end
             end
         end)
-        return waterLevel
+        return topSurfaceY
     end
 
     local function UpdateWalkOnWater(enabled)
         if enabled then
             if not WaterWalkPart then
                 WaterWalkPart = Instance.new("Part")
-                -- سایز رو تغییر دادیم: ضخامت شد 0.1 (یک لایه فوق‌العاده نازک)
-                WaterWalkPart.Size = Vector3.new(20, 0.1, 20) 
+                WaterWalkPart.Size = Vector3.new(20, 0.1, 20) -- ضخامت 0.1 (بسیار نازک)
                 WaterWalkPart.Anchored = true
                 WaterWalkPart.CanCollide = true
                 WaterWalkPart.Transparency = 1 
@@ -279,9 +279,11 @@ function ExtraModule.Init(Deps)
                 WaterWalkConnection = RunService.Stepped:Connect(function()
                     if Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart") then
                         local hrp = Plr.Character.HumanoidRootPart
-                        local waterY = getWaterLevel()
-                        -- برای اینکه سطح بالایی این لایه نازک دقیقاً با آب یکی بشه، ارتفاع رو منهای نصف ضخامت میکنیم (0.05)
-                        WaterWalkPart.Position = Vector3.new(hrp.Position.X, waterY - 0.05, hrp.Position.Z)
+                        local waterTop = getExactWaterTop()
+                        
+                        -- چون ضخامت 0.1 است، با اضافه کردن 0.05، دقیقاً کف پارت ما 
+                        -- روی سقف WaterBase-Plane قرار می‌گیرد بدون هیچ فاصله‌ای!
+                        WaterWalkPart.Position = Vector3.new(hrp.Position.X, waterTop + 0.05, hrp.Position.Z)
                     end
                 end)
             end
