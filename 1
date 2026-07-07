@@ -28,16 +28,20 @@ function ExtraModule1.Init(Deps)
         DarkbeardWaitTimer = nil,
         ActiveTween = nil,
         IsDoingPriorityTask = false,
-        DarkbeardTarget = nil -- برای قفل کردن روی باس
+        
+        -- متغیرهای اتک (دقیقاً مثل اتو لول آپ)
+        DarkbeardTarget = nil,
+        LastTargetEnemy = nil,
+        LastTargetTime = 0,
     }
 
     local DarkbeardSpawnPos = CFrame.new(3778.288, 11.682, -3499.631)
 
     -- ========================================================
-    -- توابع کمکی (دقیقاً کپی شده از سیستم اصلی شما)
+    -- توابع کمکی (دقیقاً کپی شده از سیستم لول آپ خودت)
     -- ========================================================
     
-    -- 1. گرفتن فقط و فقط میلی (Melee)
+    -- فقط گرفتن Melee
     local function EquipMeleeOnly()
         pcall(function()
             if not Plr.Character then return end
@@ -54,7 +58,7 @@ function ExtraModule1.Init(Deps)
         end)
     end
 
-    -- 2. آماده سازی باس (گنده کردن سر و فریز کردن)
+    -- آماده سازی باس و گنده کردن سر
     local function PrepareEnemyForDarkbeard(E)
         pcall(function()
             if not E or not E.Parent or not E:FindFirstChild("HumanoidRootPart") then return end
@@ -71,53 +75,51 @@ function ExtraModule1.Init(Deps)
         end)
     end
 
-    -- 3. جلوگیری از پرش و باگ خوردن کاراکتر در هنگام اتک
-    RunService.Stepped:Connect(function()
-        if State.DarkbeardState == "Attacking" and Plr.Character then
-            pcall(function()
-                for _,p in pairs(Plr.Character:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide=false end end
-                local hrp = Plr.Character:FindFirstChild("HumanoidRootPart")
-                if hrp then hrp.Velocity = Vector3.zero end
-                local hum = Plr.Character:FindFirstChild("Humanoid")
-                if hum and hum.Sit then hum.Sit = false; hum:ChangeState(Enum.HumanoidStateType.Jumping) end
-            end)
-        end
+    -- ========================================================
+    -- هسته اتک و ضد پرش (دقیقاً مثل سیستم اتو لول آپ شما)
+    -- ========================================================
+
+    -- ضد پرش و روی هوا موندن
+    RunService.Heartbeat:Connect(function()
+        pcall(function()
+            if State.DarkbeardState == "Attacking" and Plr.Character then
+                for _, p in pairs(Plr.Character:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end
+                if Plr.Character:FindFirstChild("HumanoidRootPart") then Plr.Character.HumanoidRootPart.Velocity = Vector3.zero end
+            end
+        end)
     end)
 
-    -- 4. حلقه اتک (دقیقاً مثل کد اصلی: کلیک مداوم و سریع)
+    -- لوپ اتک زدن مداوم (تند تند)
     task.spawn(function()
-        while true do
-            local Clicked = false
+        while task.wait(0.1) do
             pcall(function()
-                if State.DarkbeardState == "Attacking" and State.DarkbeardTarget then
-                    local E = State.DarkbeardTarget
-                    if E and E.Parent and E:FindFirstChild("HumanoidRootPart") and E:FindFirstChild("Humanoid") and E.Humanoid.Health > 0 then
-                        local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart")
-                        if root then
-                            local dist = (root.Position - E.HumanoidRootPart.Position).Magnitude
-                            -- فقط اگه به باس نزدیک بود دمیج بده
-                            if dist < Settings.AttackDistance + 15 then
-                                EquipMeleeOnly()
-                                if E:FindFirstChild("Head") then 
-                                    Workspace.CurrentCamera.CFrame = CFrame.lookAt(Workspace.CurrentCamera.CFrame.Position, E.Head.Position) 
-                                end
-                                
-                                Clicked = true
-                                local CX, CY = Workspace.CurrentCamera.ViewportSize.X/2, Workspace.CurrentCamera.ViewportSize.Y/2
-                                VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, true, game, 1)
-                                task.wait(Settings.HoldTime or 0.01)
-                                VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, false, game, 1)
-                                
-                                if RegisterAttack then 
-                                    RegisterAttack:FireServer(math.floor((0.5 + math.random() * 0.5) * 10000) / 10000) 
-                                end
-                            end
-                        end
-                    end
+                if State.DarkbeardState ~= "Attacking" or not State.DarkbeardTarget then return end
+                
+                local E = State.DarkbeardTarget
+                
+                -- سیستم WaitTime (مثل کد لول آپ خودت)
+                if E ~= State.LastTargetEnemy then 
+                    State.LastTargetEnemy = E
+                    State.LastTargetTime = tick() 
+                end
+                if tick() - State.LastTargetTime < (Settings.AttackWaitTime or 2) then return end
+                
+                if not E or not E.Parent or not E:FindFirstChild("Humanoid") or E.Humanoid.Health <= 0 then return end
+                if not Plr.Character or not Plr.Character:FindFirstChild("Humanoid") then return end
+
+                pcall(function() if E:FindFirstChild("Head") then Workspace.CurrentCamera.CFrame = CFrame.lookAt(Workspace.CurrentCamera.CFrame.Position, E.Head.Position) end end)
+
+                EquipMeleeOnly()
+                
+                local CX, CY = Workspace.CurrentCamera.ViewportSize.X/2, Workspace.CurrentCamera.ViewportSize.Y/2
+                VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, true, game, 1)
+                task.wait(Settings.HoldTime or 0.01)
+                VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, false, game, 1)
+                
+                if RegisterAttack then 
+                    RegisterAttack:FireServer(math.floor((0.5 + math.random() * 0.5) * 10000) / 10000) 
                 end
             end)
-            local delay = Settings.MinClickDelay + (math.random() * (Settings.MaxClickDelay - Settings.MinClickDelay))
-            task.wait(Clicked and delay or 0.15)
         end
     end)
 
@@ -221,8 +223,11 @@ function ExtraModule1.Init(Deps)
                 if State.DarkbeardState == "Spawning" then
                     local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart")
                     if root then
-                        if (root.Position - DarkbeardSpawnPos.Position).Magnitude > 15 then
-                            State.ActiveTween = SmartTween(root, DarkbeardSpawnPos, State.ActiveTween)
+                        local dist = (root.Position - DarkbeardSpawnPos.Position).Magnitude
+                        if dist > 15 then
+                            if State.ActiveTween then State.ActiveTween:Cancel() end
+                            State.ActiveTween = TweenService:Create(root, TweenInfo.new(math.max(dist/Settings.FlightSpeed, 0.05), Enum.EasingStyle.Linear), {CFrame=DarkbeardSpawnPos})
+                            State.ActiveTween:Play()
                         else
                             if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
                             root.CFrame = DarkbeardSpawnPos
@@ -257,25 +262,30 @@ function ExtraModule1.Init(Deps)
                         State.DarkbeardTarget = darkbeard
                         PrepareEnemyForDarkbeard(darkbeard)
                         
-                        -- قرارگیری دقیق روی سر باس (مثل کد اصلی)
-                        local ep = darkbeard.HumanoidRootPart.Position
-                        local d = (root.Position - ep); d = Vector3.new(d.X, 0, d.Z)
+                        -- سیستم حرکت (دقیقاً مثل اتو لول آپ شما)
+                        local EP = darkbeard.HumanoidRootPart.Position
+                        local d = (root.Position - EP); d = Vector3.new(d.X, 0, d.Z)
                         if d.Magnitude < 0.1 then d = Vector3.new(1,0,0) end; d = d.Unit
-                        local dest = CFrame.lookAt(ep + d * Settings.AttackDistance + Vector3.new(0, Settings.AttackHeight, 0), ep)
+                        local dest = CFrame.lookAt(EP + d * Settings.AttackDistance + Vector3.new(0, Settings.AttackHeight, 0), EP)
                         
-                        if (root.Position - dest.Position).Magnitude > 10 then 
-                            State.ActiveTween = SmartTween(root, dest, State.ActiveTween) 
-                        else
-                            if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
+                        local dist = (root.Position - dest.Position).Magnitude
+                        if dist < 10 then 
                             root.CFrame = dest
-                            -- اتک دادن توی اون Task.spawn بالای فایل هندل میشه!
+                            if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
+                        else
+                            if State.ActiveTween then State.ActiveTween:Cancel() end
+                            State.ActiveTween = TweenService:Create(root, TweenInfo.new(math.max(dist/Settings.FlightSpeed, 0.05), Enum.EasingStyle.Linear), {CFrame=dest})
+                            State.ActiveTween:Play()
                         end
                     else
                         State.DarkbeardTarget = nil
                         if not State.DarkbeardWaitTimer then State.DarkbeardWaitTimer = tick() end
                         
-                        if (root.Position - DarkbeardSpawnPos.Position).Magnitude > 15 then
-                            State.ActiveTween = SmartTween(root, DarkbeardSpawnPos, State.ActiveTween)
+                        local dist = (root.Position - DarkbeardSpawnPos.Position).Magnitude
+                        if dist > 15 then
+                            if State.ActiveTween then State.ActiveTween:Cancel() end
+                            State.ActiveTween = TweenService:Create(root, TweenInfo.new(math.max(dist/Settings.FlightSpeed, 0.05), Enum.EasingStyle.Linear), {CFrame=DarkbeardSpawnPos})
+                            State.ActiveTween:Play()
                         else
                             if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
                         end
