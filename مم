@@ -1,12 +1,1136 @@
---[[
- .____                  ________ ___.    _____                           __                
- |    |    __ _______   \_____  \\_ |___/ ____\_ __  ______ ____ _____ _/  |_  ___________ 
- |    |   |  |  \__  \   /   |   \| __ \   __\  |  \/  ___// ___\\__  \\   __\/  _ \_  __ \
- |    |___|  |  // __ \_/    |    \ \_\ \  | |  |  /\___ \\  \___ / __ \|  | (  <_> )  | \/
- |_______ \____/(____  /\_______  /___  /__| |____//____  >\___  >____  /__|  \____/|__|   
-         \/          \/         \/    \/                \/     \/     \/                   
-          \_Welcome to LuaObfuscator.com   (Alpha 0.10.9) ~  Much Love, Ferib 
+local ExtraModule = {}
 
-]]--
+function ExtraModule.Init(Deps)
+    local Plr = Deps.Plr
+    local ReplicatedStorage = Deps.ReplicatedStorage
+    local Workspace = Deps.Workspace
+    local VirtualInputManager = Deps.VirtualInputManager
+    local GuiService = Deps.GuiService
+    local WindUI = Deps.WindUI
+    local PauseFarms = Deps.PauseFarms
+    local ResumeFarms = Deps.ResumeFarms
+    local Sea = Deps.Sea
+    local SmartTween = Deps.SmartTween
+    local Settings = Deps.Settings
+    local RegisterAttack = Deps.RegisterAttack
 
-local v0={};v0["obf_stringchar%0"]=string.char;v0["obf_stringbyte%0"]=string.byte;v0["obf_stringsub%0"]=string.sub;v0["obf_bitlib%0"]=bit32 or bit ;v0["obf_XOR%0"]=v0["obf_bitlib%0"].bxor;v0["obf_tableconcat%0"]=table.concat;v0["obf_tableinsert%0"]=table.insert;local function v13(v15,v16) v0["result%0"]={};for v79=1, #v15 do v0["obf_tableinsert%0"](v0["result%0"],v0["obf_stringchar%0"](v0["obf_XOR%0"](v0["obf_stringbyte%0"](v0["obf_stringsub%0"](v15,v79,v79 + 1 )),v0["obf_stringbyte%0"](v0["obf_stringsub%0"](v16,1 + (v79% #v16) ,1 + (v79% #v16) + 1 )))%256 ));end return v0["obf_tableconcat%0"](v0["result%0"]);end v0["ExtraModule%0"]={};v0["ExtraModule%0"].Init=function(v18) v0["Plr%0"]=v18.Plr;v0["ReplicatedStorage%0"]=v18.ReplicatedStorage;v0["Workspace%0"]=v18.Workspace;v0["VirtualInputManager%0"]=v18.VirtualInputManager;v0["GuiService%0"]=v18.GuiService;v0["WindUI%0"]=v18.WindUI;v0["PauseFarms%0"]=v18.PauseFarms;v0["ResumeFarms%0"]=v18.ResumeFarms;v0["Sea%0"]=v18.Sea;v0["SmartTween%0"]=v18.SmartTween;v0["Settings%0"]=v18.Settings;v0["RegisterAttack%0"]=v18.RegisterAttack;v0["RegisterHit%0"]=v0["ReplicatedStorage%0"]:WaitForChild(v13("\252\204\223\48\234\190\212","\126\177\163\187\69\134\219\167")):WaitForChild(v13("\13\200\62","\156\67\173\74\165")):FindFirstChild(v13("\6\146\6\36\185\33\79\39\163\76\4\148\47\82","\38\84\215\41\118\220\70"));v0["RunService%0"]=game:GetService(v13("\98\3\44\33\251\66\0\43\17\251","\158\48\118\66\114"));v0["TweenService%0"]=game:GetService(v13("\159\51\21\51\125\150\254\185\50\25\53\118","\155\203\68\112\86\19\197"));v0["Lighting%0"]=game:GetService(v13("\106\212\49\244\84\113\235\255","\152\38\189\86\156\32\24\133"));v0["CommF%0"]=v0["ReplicatedStorage%0"]:WaitForChild(v13("\206\82\170\73\232\82\180","\38\156\55\199")):WaitForChild(v13("\139\114\113\37\53\75","\35\200\29\28\72\115\20\154"));v0["State%0"]={[v13("\56\170\197\208\171\37\39\17","\84\121\223\177\191\237\76")]=false,[v13("\154\67\221\175\24\69\41\227\186\95\221","\161\219\54\169\192\90\48\80")]=false,[v13("\104\87\20\42\122\71\12\41\111\75\19\45","\69\41\34\96")]=false,[v13("\143\198\219\6\43\37\168\198\197\28\3\39","\75\220\163\183\106\98")]=60,[v13("\35\175\159\56\235\13\182\135","\185\98\218\235\87")]=false,[v13("\234\41\51\233\237\190\196\46\34","\202\171\92\71\134\190")]=false,[v13("\8\212\56\135\11\212\53\172\44\192\32\141\59","\232\73\161\76")]=false,[v13("\143\216\80\90\27\175\255\80\72\23\175","\126\219\185\34\61")]=v13("\62\193\93\121\123\99\190\213\3\205\85\119\106","\135\108\174\62\18\30\23\147"),[v13("\151\252\62\196\43\186\50\211\165","\167\214\137\74\171\120\206\83")]=false,[v13("\184\228\51\73\235\151\132\249\60\73","\199\235\144\82\61\152")]=1,[v13("\52\19\181\46\4\2\188\47\52\2\184\63\20","\75\103\118\217")]={},[v13("\198\64\100\17\180\14\211\81\116\50\171\11\206\64\99","\126\167\52\16\116\217")]={},[v13("\228\47\51\148\151\17\249\203\37\37\132\134\28\239\220\33\35\139\128\16\241\205","\156\168\78\64\224\212\121")]=0,[v13("\46\253\151\193\11\226\172\192\0","\174\103\142\197")]=false,[v13("\127\59\108\44\42\76\241\88\47","\152\54\72\63\88\69\62")]=false,[v13("\253\215\204\73\205\205\224\91\246\197\231\72","\60\180\164\142")]=false,[v13("\108\81\17\40\43\203\27\75\86\38\40\50\234\26\76","\114\56\62\101\73\71\141")]=0,[v13("\153\252\207\203\139\236\218\225\182\232\217\200\189\237","\164\216\137\187")]=false,[v13("\230\231\35\181\163\234\56\215\231\29\183\176\251\7","\107\178\134\81\210\198\158")]=7,[v13("\11\11\142\195\169\44\11\134\228\165\57\26\163\212\173","\202\88\110\226\166")]=v13("\243\6\144\246\222\198\40\144\246\196\199\45\144\254\205\194\11\135","\170\163\111\226\151"),[v13("\51\63\179\44\126\54\61\3\63\190\28\71\36\61","\73\113\80\210\88\46\87")]=0,[v13("\163\35\204\6\215\128\56\223\29\235\165\37\223","\135\225\76\173\114")]=1,[v13("\51\254\180\177\162\185\147\31\225\189\160\163\175\179\63\227\185\178\160\184\163","\199\122\141\216\208\204\221")]=false,[v13("\158\216\28\245\123\226\168\217\57\227\116\247\163\217\36\241\106\241\168\201","\150\205\189\112\144\24")]=nil,[v13("\4\135\171\69\18\141\37\7\32\129\177","\112\69\228\223\44\100\232\113")]=nil,[v13("\245\10\19\220\147\112\143\192\26\47\198\184\104\131\198","\230\180\127\103\179\214\28")]=false,[v13("\173\16\75\73\221\64\237\141","\128\236\101\63\38\132\33")]=false,[v13("\152\187\8\104\163\232\196\149\168\28\69","\175\204\201\113\36\214\139")]=false,[v13("\110\223\17\211\13\73\203\5\206\13\72\222\60\200\29\115\205\38\215","\100\39\172\85\188")]=false,[v13("\136\116\176\148\54\136\96\169\129\61\169\125\189\165\61\168\117\160","\83\205\24\217\224")]=nil,[v13("\202\196\222\41\195\201\196\41\227\228\217\41\231\198\198\9\239\200\200","\93\134\165\173")]=0,[v13("\157\231\211\208\63\192\166\91\178\251\213\199\9\222\179\105\176\219\207\198\63\214","\30\222\146\161\162\90\174\210")]=1,[v13("\196\91\100\5\209\91\99\2\236\90\113","\106\133\46\16")]=false,[v13("\108\53\96\244\83\84\89\16\123\253\73\69","\32\56\64\19\156\58")]=v13("\115\204\233\83","\224\58\168\133\54\58\146"),[v13("\122\67\89\239\112\136\147\63\86\68\72\245\92\136\131\14\65","\107\57\54\43\157\21\230\231")]=1,[v13("\250\158\5\250\154\211\221\222\174\31\244\187\208\202\223","\175\187\235\113\149\217\188")]=false,[v13("\31\160\147\73\208\109\121\40\170","\24\92\207\225\44\131\25")]=v13("\98\215\180\73","\29\43\179\216\44\123"),[v13("\158\214\50\73\137\208\45\73\175","\44\221\185\64")]= -1,[v13("\32\242\92\80\67\8\245\73\75\118\36\233\73\93\127\4\227","\19\97\135\40\63")]=false,[v13("\135\79\3\50\61\48\186\89\1\58\38\53\143\95\39\50\57\52","\81\206\60\83\91\79")]=false,[v13("\126\162\194\115\59\198\121\165\92\172\213\102","\196\46\203\176\18\79\163\45")]=nil,[v13("\136\43\108\31\48\254\202\160\50\127\16\32\254\235\157\44\123\19\61","\143\216\66\30\126\68\155")]=nil,[v13("\154\193\31\202\209\166\251\224\185\220\57\202\215\164\210\245\158\193\0\206","\129\202\168\109\171\165\195\183")]=0,[v13("\17\89\49\221\235\26\226\39\74\48\202\209\1\232\38\104\56\203","\134\66\56\87\184\190\116")]=Vector3.new( -5536.476,295, -2961.032),[v13("\11\48\5\176\54\229\22\52\40\52\27\158\23\234\35\57\57\53","\85\92\81\105\219\121\139\65")]=true,[v13("\220\166\68\74\94\218\239\161\89\64\111","\191\157\211\48\37\28")]=false,[v13("\246\12\215\19\54\211\26\247\8\51\209\24\214\25\40\205\22\241\15","\90\191\127\148\124")]=false,[v13("\89\146\58\24\89\146\60\22\91\136\34\24\106","\119\24\231\78")]=false,[v13("\171\62\135\95\197\73\31\133\12\176\88\221\99\30\142\34\183","\113\226\77\197\42\188\32")]=false,[v13("\23\25\251\187\10\30\245\166\63\37\224\167","\213\90\118\148")]="در حال اسکن...",[v13("\118\33\187\88\121\82\35\177\101\89\73","\45\59\78\212\54")]="در حال محاسبه...",[v13("\49\67\151\132\175\32\169\226\17\115\141\138\132\34\168\244","\144\112\54\227\235\230\78\205")]=false,[v13("\154\59\43\243\217\85\180\1\1\248\194\90","\59\211\72\111\156\176")]=false};v0["MoonPhasesMap%0"]={[v13("\23\208\179\116\31\211\186\121\29\214","\77\46\231\131")]={[v13("\138\92\183\83\191","\32\218\52\214")]=v13("\26\88\101","\58\46\119\81\200\145\208\37"),[v13("\31\133\61\169","\86\75\236\80\204\201\221")]="فول مون است!"},[v13("\43\22\39\220\175\223\43\17\34\215","\235\18\33\23\229\158")]={[v13("\96\178\192\168\85","\219\48\218\161")]=v13("\183\62\40","\128\132\17\28\41\187\47"),[v13("\53\59\11\63","\61\97\82\102\90")]="8 تا 10 دقیقه"},[v13("\245\121\251\18\150\3\71\81\255\126","\105\204\78\203\43\167\55\126")]={[v13("\149\162\34\13\22","\49\197\202\67\126\115\100\167")]=v13("\100\20\139","\62\87\59\191\73\224\54"),[v13("\211\11\247\204","\169\135\98\154")]="8 تا 10 دقیقه"},[v13("\146\32\116\13\172\103\145\157\47\116","\168\171\23\68\52\157\83")]={[v13("\196\121\244\190\32","\231\148\17\149\205\69\77")]=v13("\211\232\147","\159\224\199\167\155\55"),[v13("\195\250\49\215","\178\151\147\92")]="8 تا 10 دقیقه"},[v13("\213\170\28\107\67\29\46\213\171\20\98","\26\236\157\44\82\114\44")]={[v13("\26\38\212\72\47","\59\74\78\181")]=v13("\118\158\14","\211\69\177\58\58"),[v13("\131\236\116\240","\171\215\133\25\149\137")]="8 تا 10 دقیقه"},[v13("\184\159\98\163\190\101\172\18\185\158","\34\129\168\82\154\143\80\156")]={[v13("\181\186\50\24\77","\233\229\210\83\107\40\46")]=v13("\147\13\102","\101\161\34\82\182"),[v13("\220\4\84\251","\78\136\109\57\158\187\130\226")]="16 تا 20 دقیقه"},[v13("\103\104\169\168\111\107\170\166\109\108","\145\94\95\153")]={[v13("\205\197\21\198\75","\215\157\173\116\181\46")]=v13("\103\251\223","\186\85\212\235\146"),[v13("\246\136\27\251","\56\162\225\118\158\89\142")]="16 تا 20 دقیقه"},[v13("\5\82\144\246\115\139\5\80\153\248","\184\60\101\160\207\66")]={[v13("\1\138\125\175\52","\220\81\226\28")]=v13("\66\154\214","\167\115\181\226\155\138"),[v13("\214\43\234\89","\166\130\66\135\60\27\17")]="24 تا 30 دقیقه"},[v13("\29\29\158\44\97\17\26\154\37\97","\80\36\42\174\21")]={[v13("\126\24\54\105\75","\26\46\112\87")]=v13("\233\108\255","\212\217\67\203\20\223\223\37"),[v13("\142\132\165\215","\178\218\237\200")]="32 تا 40 دقیقه"},[v13("\239\226\182\137\231\230\179\136\239\224","\176\214\213\134")]={[v13("\196\165\183\199\173","\57\148\205\214\180\200\54")]=v13("\66\178\97","\22\114\157\85\84"),[v13("\240\194\30\193","\200\164\171\115\164\61\150")]="32 تا 40 دقیقه"}};task.spawn(function() while task.wait(1) do v0["sky%0"]=v0["Lighting%0"]:FindFirstChildOfClass(v13("\141\255\26","\227\222\148\99\37"));if (v0["sky%0"] or (4593<=2672)) then v0["extractedId%0"]=string.match(v0["sky%0"].MoonTextureId,v13("\118\86\25","\153\83\50\50\150"));v0["clockTime%0"]=v0["Lighting%0"].ClockTime;v0["isDay%0"]=(v0["clockTime%0"]>6) and (v0["clockTime%0"]<17.5) ;if ((2995>1541) and ((v0["extractedId%0"] and v0["MoonPhasesMap%0"][v0["extractedId%0"]]) or (1168>3156))) then v0["data%0"]=v0["MoonPhasesMap%0"][v0["extractedId%0"]];if (v0["extractedId%0"]==v13("\4\33\35\69\34\255\20\9\37\34","\45\61\22\19\124\19\203")) then if ((3249>953) and v0["isDay%0"]) then v0["State%0"].MoonPhaseStr="امشب فول مونه (4/4)";v0["State%0"].MoonTimeStr="4 یا 5 دقیقه";else v0["State%0"].MoonPhaseStr="فول مونه (4/4)";v0["State%0"].MoonTimeStr="فول مون است!";end else v0["State%0"].MoonPhaseStr=v0["data%0"].Phase;v0["State%0"].MoonTimeStr=v0["data%0"].Time;end else v0["State%0"].MoonPhaseStr="نامشخص";v0["State%0"].MoonTimeStr="در حال محاسبه...";end end end end);task.spawn(function() while task.wait(2) do if ((v0["State%0"].AutoAuraColor and  not v0["State%0"].IsBuyingAuraColor) or (572>4486) or (3273>4573)) then v0["npcsFolder%0"]=v0["ReplicatedStorage%0"]:FindFirstChild(v13("\239\34\46\230","\217\161\114\109\149\98\16"));v0["hasNPC%0"]=(v0["npcsFolder%0"] and v0["npcsFolder%0"]:FindFirstChild(v13("\48\33\42\117\175\96\19\96\27\115\169\103\27\46","\20\114\64\88\28\220"))) or v0["Workspace%0"]:FindFirstChild(v13("\19\0\192\189\235\196\188\113\34\221\161\235\217\179","\221\81\97\178\212\152\176")) ;if v0["hasNPC%0"] then v0["State%0"].IsBuyingAuraColor=true;pcall(function() v0["CommF%0"]:InvokeServer(v13("\238\232\17\244\8\222\195\24\250\22\200\245","\122\173\135\125\155"),"1");task.wait(1);v0["CommF%0"]:InvokeServer(v13("\167\206\12\182\45\34\236\129\192\12\188\45","\168\228\161\96\217\95\81"),"2");end);task.wait(5);v0["State%0"].IsBuyingAuraColor=false;end end end end);v0["noclipBerryConnection%0"]=nil;local function v51(v80) if v80 then if v0["noclipBerryConnection%0"] then v0["noclipBerryConnection%0"]:Disconnect();end v0["noclipBerryConnection%0"]=v0["RunService%0"].Stepped:Connect(function() if v0["Plr%0"].Character then for v334,v335 in pairs(v0["Plr%0"].Character:GetDescendants()) do if (v335:IsA(v13("\249\208\61\89\31\86\201\197","\55\187\177\78\60\79")) and v335.CanCollide) then v335.CanCollide=false;end end end end);elseif v0["noclipBerryConnection%0"] then v0["noclipBerryConnection%0"]:Disconnect();v0["noclipBerryConnection%0"]=nil;end end local function v52(v81) v0["character%0"]=v0["Plr%0"].Character;v0["rootPart%0"]=v0["character%0"] and v0["character%0"]:FindFirstChild(v13("\5\219\82\234\72\192\137\41\252\80\228\82\255\129\63\218","\224\77\174\63\139\38\175")) ;if (((1404==1404) and  not v0["rootPart%0"]) or (3151<1284)) then return;end v0["humanoid%0"]=v0["character%0"]:FindFirstChildOfClass(v13("\172\84\85\47\138\78\81\42","\78\228\33\56"));if (v0["humanoid%0"] and v0["humanoid%0"].Sit) then v0["humanoid%0"].Sit=false;end v0["distance%0"]=(v0["rootPart%0"].Position-v81.Position).Magnitude;v0["timeToTake%0"]=math.max(v0["distance%0"]/340 ,0.1);v0["tweenInfo%0"]=TweenInfo.new(v0["timeToTake%0"],Enum.EasingStyle.Linear);v0["tween%0"]=v0["TweenService%0"]:Create(v0["rootPart%0"],v0["tweenInfo%0"],{[v13("\237\88\160\2\136\203","\229\174\30\210\99")]=v81});v0["bodyVel%0"]=Instance.new(v13("\57\226\130\72\219\56\53\20\238\143\69\244","\89\123\141\230\49\141\93"));v0["bodyVel%0"].Velocity=Vector3.new(0,0,0);v0["bodyVel%0"].MaxForce=Vector3.new(math.huge,math.huge,math.huge);v0["bodyVel%0"].Parent=v0["rootPart%0"];v51(true);v0["tween%0"]:Play();v0["tween%0"].Completed:Wait();v0["bodyVel%0"]:Destroy();v51(false);end task.spawn(function() while task.wait(0.5) do if ((v0["State%0"].AutoBerries and  not v0["State%0"].IsCollectingBerries) or (3748<2212) or (1850==1529)) then v0["availableBerries%0"]={};for v263,v264 in pairs(v0["Workspace%0"]:GetDescendants()) do if ((821<2123) and (((v264.Name==v13("\209\116\228\30\25\79\224","\42\147\17\150\108\112")) and (v264:IsA(v13("\41\169\33\123\226\250","\136\111\198\77\31\135")) or v264:IsA(v13("\33\6\169\80\180\227\2\187\3\29\174\89\179","\201\98\105\199\54\221\132\119")))) or (1180==2180))) then for v366,v367 in pairs(v264:GetChildren()) do if ((902<2325) and (4090<4653) and v367:IsA(v13("\148\3\135\36\14","\204\217\108\227\65\98\85"))) then v0["prompt%0"]=v367:FindFirstChildWhichIsA(v13("\110\209\250\253\37\205\87\215\236\213\62\207\83\211\225","\160\62\163\149\133\76"),true);if v0["prompt%0"] then table.insert(v0["availableBerries%0"],{[v13("\251\175\9\42\207","\163\182\192\109\79")]=v367,[v13("\4\52\15\205\229\32","\149\84\70\96\160")]=v0["prompt%0"]});end end end end end if ( #v0["availableBerries%0"]>0) then v0["wasDoingPriority%0"]=v0["State%0"].IsDoingPriorityTask;v0["State%0"].IsCollectingBerries=true;v0["State%0"].IsDoingPriorityTask=true;v0["PauseFarms%0"]();for v336,v337 in ipairs(v0["availableBerries%0"]) do if ((858<=2962) and ( not v0["State%0"].AutoBerries or (2652<196))) then break;end v0["targetModel%0"]=v337.Model;v0["targetPrompt%0"]=v337.Prompt;if (((4135<4817) and v0["targetModel%0"] and v0["targetModel%0"].Parent) or (3946<1288)) then v0["targetCFrame%0"]=v0["targetModel%0"]:GetPivot();if (((272==272) and v0["targetCFrame%0"]) or (3242==567)) then v52(v0["targetCFrame%0"]);task.wait(0.3);pcall(function() if ((type(fireproximityprompt)==v13("\62\19\3\238\44\15\2\227","\141\88\102\109")) or (847>=1263)) then fireproximityprompt(v0["targetPrompt%0"]);elseif ((100<=3123) and (type(fireclickdetector)==v13("\181\70\196\115\14\52\90\207","\161\211\51\170\16\122\93\53"))) then fireclickdetector(v0["targetPrompt%0"]);end end);task.wait(1);end end end v0["State%0"].IsCollectingBerries=false;v0["State%0"].IsDoingPriorityTask=v0["wasDoingPriority%0"];v0["ResumeFarms%0"]();end end end end);v0["WaterWalkPart%0"]=nil;v0["WaterWalkConnection%0"]=nil;local function v55(v92) if (v92 or (1369>4987) or (2253==1851)) then if ( not v0["WaterWalkPart%0"] or (863>=4584) or (2087>2372)) then v0["WaterWalkPart%0"]=Instance.new(v13("\203\175\160\60","\72\155\206\210"));v0["WaterWalkPart%0"].Size=Vector3.new(20,0.5,20);v0["WaterWalkPart%0"].Anchored=true;v0["WaterWalkPart%0"].CanCollide=true;v0["WaterWalkPart%0"].Transparency=1;v0["WaterWalkPart%0"].Material=Enum.Material.SmoothPlastic;v0["WaterWalkPart%0"].Parent=v0["Workspace%0"];end if ( not v0["WaterWalkConnection%0"] or (724>=1668)) then v0["WaterWalkConnection%0"]=v0["RunService%0"].Stepped:Connect(function() if ((428<1804) and v0["Plr%0"].Character and v0["Plr%0"].Character:FindFirstChild(v13("\110\111\89\15\61\73\115\80\60\60\73\110\100\15\33\82","\83\38\26\52\110"))) then v0["hrp%0"]=v0["Plr%0"].Character.HumanoidRootPart;v0["WaterWalkPart%0"].Position=Vector3.new(v0["hrp%0"].Position.X, -3.149,v0["hrp%0"].Position.Z);end end);end else if v0["WaterWalkConnection%0"] then v0["WaterWalkConnection%0"]:Disconnect();v0["WaterWalkConnection%0"]=nil;end if (v0["WaterWalkPart%0"] or (4445<4149)) then v0["WaterWalkPart%0"]:Destroy();v0["WaterWalkPart%0"]=nil;end end end v55(v0["State%0"].WalkOnWaterEnabled);v0["TushitaLocations%0"]={[v13("\124\24\40\84","\38\56\119\71")]=CFrame.new(5712,24,257),[v13("\212\231\87\197\49\101\227\238\79\216","\54\147\143\56\182\69")]=CFrame.new(5265,16,457),[v13("\226\142\237\74\215\211\146","\191\182\225\159\41")]={CFrame.new( -10753,412, -9367),CFrame.new( -11673,331, -9474),CFrame.new( -12134,524, -10655),CFrame.new( -13337,485, -6985),CFrame.new( -13487,332, -7926)},[v13("\7\29\38\82\134\134\241\59\19\63\91","\162\75\114\72\53\235\231")]=CFrame.new( -10166,332, -9447)};v0["FishingRequest%0"]=v0["ReplicatedStorage%0"]:WaitForChild(v13("\170\53\87\234\97\7\156\48\77\225\82\22\137\56","\98\236\92\36\130\51"),5) and v0["ReplicatedStorage%0"].FishReplicated:FindFirstChild(v13("\130\16\31\178\76\166\178\2\161\8\25\191\86\188","\80\196\121\108\218\37\200\213")) ;v0["BoatsMap%0"]={[v13("\36\122\12\120\67\23","\234\96\19\98\31\43\110")]=v13("\34\22\92\192\164\107","\235\102\127\50\167\204\18"),[v13("\96\168\231\34\80\43\16\146\249\44\75\62","\78\48\193\149\67\36")]=v13("\0\23\146\25\85\53\45\140\23\78\32","\33\80\126\224\120"),[v13("\220\161\17\197\72\233\232\33\214\85\235\169\7\193","\60\140\200\99\164")]=v13("\183\253\22\39\182\130\214\22\47\165\134\240\1","\194\231\148\100\70"),["Pirate Grand Brigade (پیشنهادی)"]=v13("\118\69\211\162\226\205\97\94\192\173\242\234\84\69\198\162\242\205","\168\38\44\161\195\150"),["Miracle (نیاز به گیم پس)"]=v13("\173\245\144\119\51\228\179","\118\224\156\226\22\80\136\214"),["The Sentinel (نیاز به گیم پس)"]=v13("\118\230\92\192\113\235\87\148\75\224\92\140","\224\34\142\57"),["Guardian (نیاز به کوئست)"]=v13("\249\178\196\207\119\248\92\0","\110\190\199\165\189\19\145\61"),["Lantern (نیاز به کوئست)"]=v13("\246\234\121\252\142\213\212","\167\186\139\23\136\235")};v0["BoatNames%0"]={v13("\62\188\134\10\18\172","\109\122\213\232"),v13("\222\254\176\49\250\242\226\3\226\248\173\32","\80\142\151\194"),v13("\51\207\101\77\23\195\55\110\17\207\112\77\7\195","\44\99\166\23"),"Pirate Grand Brigade (پیشنهادی)","Miracle (نیاز به گیم پس)","The Sentinel (نیاز به گیم پس)","Guardian (نیاز به کوئست)","Lantern (نیاز به کوئست)"};local v60,v61={},{};if ((v0["Sea%0"]==1) or (3325>4613) or (1818==85)) then v60={[v13("\79\227\40\36\39\161\110\183\0\37\63\165\114\243","\196\28\151\73\86\83")]=CFrame.new(1060,17,1549),[v13("\217\22\39\23\142\93","\22\147\99\73\112\226\56\120")]=CFrame.new( -1602,37,154),[v13("\136\124\240\244\153\189\53\212\252\129\180\116\229\240","\237\216\21\130\149")]=CFrame.new( -1140,5,3830),[v13("\166\75\76\90\162\221","\62\226\46\63\63\208\169")]=CFrame.new(897,7,4390),[v13("\214\23\90\148\95\36\60\82\228\23\81","\62\133\121\53\227\127\109\79")]=CFrame.new(1386,87, -1299),[v13("\61\21\32\252\216\171\226\54\27\32\225\196\171\177\3","\194\112\116\82\149\182\206")]=CFrame.new( -5036,28,4325),[v13("\10\163\85\20\193\236\10\42","\110\89\200\44\120\160\130")]=CFrame.new( -4840,717, -2620),[v13("\155\209\66\85\76\68","\45\203\163\43\38\35\42\91")]=CFrame.new(5308,2,475),[v13("\241\138\208\44\148\186\81\199\136","\52\178\229\188\67\231\201")]=CFrame.new( -1576,8, -2985),[v13("\12\64\87\9\246\28\21\40\77\92\5\240\89","\67\65\33\48\100\151\60")]=CFrame.new( -5315,12,8516),[v13("\234\233\170\221\225\200\230\186\221\225\159\196\167\204\234","\147\191\135\206\184")]=CFrame.new(61122,19,1568),[v13("\162\39\179\207\204\82\187\138\104\133\200\204\74","\210\228\72\198\161\184\51")]=CFrame.new(5259,39,4050)};elseif (v0["Sea%0"]==2) then v60={[v13("\29\64\253\23\119\193\59\9\252\22\51\252\57\90\246","\174\86\41\147\112\19")]=CFrame.new( -425,73,1835),[v13("\120\1\139\14","\203\59\96\237\107\69\111\113")]=CFrame.new( -380,73,255),[v13("\17\5\163\241\33\176\254\55\26\173\239\53","\183\68\118\204\129\81\144")]=CFrame.new(4816,8,2863),[v13("\41\191\117\225\5\194\52\162\126\225","\226\110\205\16\132\107")]=CFrame.new( -2442,75, -3219),[v13("\204\209\225\207\68\242\194\242\221","\33\139\163\128\185")]=CFrame.new( -5492,49, -794),[v13("\100\86\11\201\23\117\11\203\89\76\5\215\89","\190\55\56\100")]=CFrame.new(606,402, -5369),[v13("\126\160\40\94\18\237\247\22\140\51\18\23","\147\54\207\92\126\115\131")]=CFrame.new( -5430,16, -5295),[v13("\46\36\39\110\8\122\77\2\61\116\29","\30\109\81\85\29\109")]=v13("\204\97\81\181\63\223\240\192\82\65\164\37\219\248\204\121\93\166","\156\159\17\52\214\86\190"),[v13("\135\236\184\252\141\238\174\168\162\234","\220\206\143\221")]=CFrame.new(6115,29, -6222),[v13("\160\114\63\16\215\216\198\131\115\109\62\203\192\211\136\121","\178\230\29\77\119\184\172")]=CFrame.new( -3053,237, -10146),[v13("\209\191\24\16\55\217\231\187\4\26","\152\149\222\106\123\23")]=CFrame.new(3800,20, -3500)};elseif ((v0["Sea%0"]==3) or (4950<=4553)) then v60={[v13("\237\41\228\87\245\233\41\225\77","\213\189\70\150\35")]=CFrame.new( -288,43,5433),[v13("\103\76\112\26\78\21\93\27\67\84\122\12","\104\47\53\20")]=CFrame.new(5228,18,345),[v13("\132\94\132\29\168\79\151\94\132\25","\111\195\44\225\124\220")]=CFrame.new(2300,50, -6800),[v13("\254\74\15\114\191\162\214\65\64\71\190\185\204\74\5\51\227\134\217\72\19\122\164\165\145","\203\184\38\96\19\203")]=CFrame.new( -12488,332, -7553),[v13("\26\114\106\85\194\60\51\118\79\142\45\123\124\1\253\60\114","\174\89\19\25\33")]=CFrame.new( -5000,315, -3000),[v13("\7\19\71\64\227\130\15\111\49\83\93\227\139\14","\107\79\114\50\46\151\231")]=CFrame.new( -9515,142,5537),[v13("\9\163\180\39\159\45\247\233\42\170\180\39\142","\160\89\198\213\73\234\89\215")]=CFrame.new( -2022,37, -12025),[v13("\97\114\177\190\230\90\116\181\243\133\97\98\184\255\203\76","\165\40\17\212\158")]=CFrame.new( -818,65, -10965),[v13("\198\216\3\54\102\204\202\4\50\40\225","\70\133\185\104\83")]=CFrame.new( -1926,37, -12850),[v13("\39\77\75\41\198\8\68\80\47\137\45\86\72\43\199\0","\169\100\37\36\74")]=CFrame.new( -1149,13, -12836),[v13("\52\142\169\89\64\168\183\68\16\136\177\68","\48\96\231\194")]=CFrame.new( -16234,9,331),[v13("\251\79\12\32\28\202\168\134\204\26\39\62\21\217\161\135","\227\168\58\110\77\121\184\207")]=v13("\72\44\186\67\184\218\125\154\72\41\189\77\180\201\118\160\127","\197\27\92\223\32\209\187\17")};end for v93,v94 in pairs(v60) do table.insert(v61,v93);end table.sort(v61);local function v62() v0["x%0"]=workspace.CurrentCamera.ViewportSize.X/2 ;v0["y%0"]=workspace.CurrentCamera.ViewportSize.Y/2 ;v0["VirtualInputManager%0"]:SendMouseButtonEvent(v0["x%0"],v0["y%0"],0,true,game,1);task.wait();v0["VirtualInputManager%0"]:SendMouseButtonEvent(v0["x%0"],v0["y%0"],0,false,game,1);end local function v63() v0["c%0"]=v0["Plr%0"].Character;v0["cp%0"]=(v0["c%0"] and v0["c%0"]:FindFirstChild(v13("\43\74\206\250\13\80\202\255\49\80\204\239\51\94\209\239","\155\99\63\163")) and ((v0["c%0"].HumanoidRootPart.Position + (v0["c%0"].HumanoidRootPart.CFrame.LookVector * 50)) -Vector3.new(0,12,0))) or Vector3.new(0,0,0) ;v0["x%0"]=workspace.CurrentCamera.ViewportSize.X/2 ;v0["y%0"]=workspace.CurrentCamera.ViewportSize.Y/2 ;v0["VirtualInputManager%0"]:SendMouseButtonEvent(v0["x%0"],v0["y%0"],0,true,game,1);task.wait(0.65);pcall(function() if v0["FishingRequest%0"] then v0["FishingRequest%0"]:InvokeServer(v13("\161\208\178\153\149\141\140\212\128\153\149\139\129\208\181\132\182\138","\228\226\177\193\237\217"),v0["cp%0"],100,true);end end);v0["VirtualInputManager%0"]:SendMouseButtonEvent(v0["x%0"],v0["y%0"],0,false,game,1);end local function v64() v0["Character%0"]=v0["Plr%0"].Character or v0["Plr%0"].CharacterAdded:Wait() ;v0["Backpack%0"]=v0["Plr%0"].Backpack;v0["Humanoid%0"]=v0["Character%0"]:WaitForChild(v13("\28\165\46\231\58\191\42\226","\134\84\208\67"));v0["Head%0"]=v0["Character%0"]:WaitForChild(v13("\59\169\135\88","\60\115\204\230"));v0["tool%0"]=v0["Character%0"]:FindFirstChild(v13("\193\51\248\120\238\52\236\48\213\53\239","\16\135\90\139")) or v0["Backpack%0"]:FindFirstChild(v13("\114\125\21\59\71\90\127\20\70\9\55","\24\52\20\102\83\46\52")) ;if ((630<2127) and (2665<=3933) and  not v0["tool%0"]) then return;end if (((3273==3273) and (v0["tool%0"].Parent==v0["Backpack%0"])) or (1938==2514)) then v0["Humanoid%0"]:EquipTool(v0["tool%0"]);pcall(function() if ((3824>409) and v0["FishingRequest%0"]) then v0["FishingRequest%0"]:InvokeServer(v13("\246\32\37\1\30\209\38\49\52\10\192","\111\164\79\65\68"));end end);task.wait(0.4);end v63();v0["FishDetected%0"]=false;v0["StartTime%0"]=tick();v0["oldAttachments%0"]={};for v139,v140 in pairs(v0["Head%0"]:GetChildren()) do if v140:IsA(v13("\231\205\151\223\45\226\203\220\141\202","\138\166\185\227\190\78")) then v0["oldAttachments%0"][v140]=true;end end repeat task.wait();for v173,v174 in pairs(v0["Head%0"]:GetChildren()) do if ((2087==2087) and v174:IsA(v13("\234\96\209\54\81\43\20\206\122\209","\121\171\20\165\87\50\67")) and  not v0["oldAttachments%0"][v174]) then v0["FishDetected%0"]=true;break;end end if ((4255>=55) and ( not v0["Character%0"]:FindFirstChild(v13("\224\49\170\62\176\12\193\120\139\57\189","\98\166\88\217\86\217")) or (3404>4503))) then break;end until v0["FishDetected%0"] or ((tick() -v0["StartTime%0"])>40)  if ((2999>1156) and v0["FishDetected%0"]) then v62();task.wait(2);pcall(function() if ((2350>1155) and v0["FishingRequest%0"] and v0["FishingRequest%0"]:InvokeServer(v13("\213\247\109\2\142","\188\150\150\25\97\230"),1,0,1)) then v0["State%0"].TotalFishCaught=v0["State%0"].TotalFishCaught + 1 ;end end);task.wait(1);else v62();end end local function v65() v0["spinnerWindow%0"]=v0["Plr%0"].PlayerGui:FindFirstChild(v13("\233\153\86\12\2\232\200\190\86\12\8\226\205","\141\186\233\63\98\108"));if ((4029<=4853) and v0["spinnerWindow%0"]) then v0["aboveSpinner%0"]=v0["spinnerWindow%0"]:FindFirstChild(v13("\208\232\35\160\32\194\250\37\184\43\244\248","\69\145\138\76\214"));if v0["aboveSpinner%0"] then v0["navigation%0"]=v0["aboveSpinner%0"]:FindFirstChild(v13("\94\206\159\128\184\23\100\198\134\135","\118\16\175\233\233\223"));if (v0["navigation%0"] or (516>3434)) then return v0["navigation%0"]:FindFirstChild(v13("\168\136\58\168\235\169\104\159\144\58\181","\29\235\228\85\219\142\235")),v0["spinnerWindow%0"],v0["aboveSpinner%0"];end end end return nil,nil,nil;end local function v66() local v112,v113,v114=v65();if ((4046>=3033) and ((v112 and v113 and v114) or (3506<=1309))) then return v113.Enabled and v114.Visible and v112.Visible and (v112.AbsoluteSize.X>0) ,v112;end return false,nil;end local function v67(v115) pcall(function() v0["x%0"]=v115.AbsolutePosition.X + (v115.AbsoluteSize.X/2) ;v0["y%0"]=v115.AbsolutePosition.Y + (v115.AbsoluteSize.Y/2) ;v0["inset%0"]=v0["GuiService%0"]:GetGuiInset();v0["VirtualInputManager%0"]:SendMouseButtonEvent(v0["x%0"],v0["y%0"] + v0["inset%0"].Y ,0,true,game,1);task.wait(0.05);v0["VirtualInputManager%0"]:SendMouseButtonEvent(v0["x%0"],v0["y%0"] + v0["inset%0"].Y ,0,false,game,1);end);end v0["ValidFruitsForStore%0"]={v13("\15\219\185\214\114\90","\50\93\180\218\189\23\46\71"),v13("\237\180\82\66","\40\190\196\59\44\36\188"),v13("\31\77\211\164","\109\92\37\188\212\154\29"),v13("\55\255\182\202\63\93","\58\100\143\196\163\81"),v13("\56\77\46\161","\110\122\34\67\195\95\41\133"),v13("\70\161\82\65\211","\182\21\209\59\42"),v13("\145\91\196\16\36","\222\215\55\165\125\65"),v13("\10\208\202\25\253\207","\42\76\177\166\122\146\161\141"),v13("\140\137\0","\22\197\234\101\174\25"),v13("\30\53\171\216","\230\77\84\197\188\22\207\183"),v13("\221\21\212\247","\85\153\116\166\156\236\193\144"),v13("\128\233\76\190\235\14\160","\96\196\128\45\211\132"),v13("\25\132\124\87\198","\184\85\237\27\63\178\207\212"),v13("\58\76\11\93\13\75","\63\104\57\105"),v13("\41\134\182\86\2\130\182","\36\107\231\196"),v13("\122\189\173\148\73","\231\61\213\194"),v13("\36\172\58\126\8","\19\105\205\93"),v13("\152\29\223\138\58","\95\201\104\190\225"),v13("\141\222\197\202\167\202","\174\207\171\161"),v13("\193\241\27\246","\183\141\158\109\147\152"),v13("\31\25\239\8\41\27","\108\76\105\134"),v13("\216\202\164\239\202","\174\139\165\209\129"),v13("\147\187\237\196\200\10\104","\24\195\211\130\161\166\99\16"),v13("\118\12\251\56\82\26","\118\38\99\137\76\51"),v13("\207\51\8\16\5\37","\64\157\70\101\114\105"),v13("\112\169\174\237","\112\32\200\199\131"),v13("\14\92\85\162\217\170\48\40","\66\76\48\60\216\163\203"),v13("\157\148\120\229\86\218\61","\68\218\230\25\147\63\174"),v13("\128\43\94\65\185\185\34","\214\205\74\51\44"),v13("\206\1\208\249\111","\23\154\44\130\156"),v13("\53\169\184\169\62","\115\113\198\205\206\86"),v13("\183\95\255\94\139\64","\58\228\55\158"),v13("\130\140\222\33\49","\85\212\233\176\78\92\205"),v13("\105\87\134\246\88\87\132","\130\42\56\232"),v13("\217\165\45\241\73\43","\95\138\213\68\131\32"),v13("\14\58\160\68\121\36","\22\74\72\193\35"),v13("\0\124\235\72\45\107\224","\56\76\25\132"),v13("\117\200\191\53\218\80\196","\175\62\161\203\70")};local function v69(v116) v0["tName%0"]=v116:lower();for v144,v145 in ipairs(v0["ValidFruitsForStore%0"]) do if (v0["tName%0"]:find(v145:lower()) or (2719<=1447)) then return v145   .. "-"   .. v145 ;end end v0["baseName%0"]=v116:gsub(v13("\124\251\209\6\60\40","\85\92\189\163\115"),""):match(v13("\23\233\35\114\97\226\125\113\108\191\122\124","\88\73\204\80"));if (v0["baseName%0"] or (4134<3926)) then return v0["baseName%0"]   .. "-"   .. v0["baseName%0"] ;end return v116;end local function v70(v119) if ( not v0["State%0"].AutoStore or (164>=2785)) then return;end if ( not v119:IsA(v13("\26\140\31\74","\186\78\227\112\38\73")) or  not v119.Name:lower():find(v13("\250\69\232\92\71","\26\156\55\157\53\51"))) then return;end if (((2955==2955) and v0["State%0"].attemptedFruits[v119]) or (525==2109)) then return;end v0["State%0"].attemptedFruits[v119]=true;v0["wasPaused%0"]=v0["State%0"].IsStoring;if ( not v0["wasPaused%0"] or (2903==1495)) then v0["State%0"].IsStoring=true;v0["PauseFarms%0"]();end task.spawn(function() task.wait(0.3);v0["char%0"]=v0["Plr%0"].Character;v0["hum%0"]=v0["char%0"] and v0["char%0"]:FindFirstChildOfClass(v13("\164\205\27\216\182\95\133\220","\48\236\184\118\185\216")) ;if  not v0["hum%0"] then if ((33==33) and  not v0["wasPaused%0"]) then v0["ResumeFarms%0"]();v0["State%0"].IsStoring=false;end return;end if ((3054<=4015) and (v119.Parent~=v0["char%0"])) then v0["hum%0"]:EquipTool(v119);task.wait(0.5);end if ((4546>=2275) and (v119.Parent==v0["char%0"])) then v0["ReplicatedStorage%0"]:WaitForChild(v13("\215\184\90\63\219\49\246","\84\133\221\55\80\175")):WaitForChild(v13("\158\232\41\171\225\99","\60\221\135\68\198\167")):InvokeServer(v13("\221\169\247\145\71\255\252\168\241\151","\185\142\221\152\227\34"),v69(v119.Name),v119);task.wait(0.5);if ((1871<3382) and ((v119.Parent==v0["char%0"]) or (v119.Parent==v0["Plr%0"].Backpack))) then v0["hum%0"]:UnequipTools();end end if ((819>=22) and  not v0["wasPaused%0"]) then task.wait(0.5);v0["ResumeFarms%0"]();v0["State%0"].IsStoring=false;end end);end local function v71() v0["level%0"]=0;pcall(function() v0["text%0"]=v0["Plr%0"].PlayerGui.Main.Compass.Frame.DangerLevel.TextLabel.Text;if ((3162==3162) and string.find(v0["text%0"],"?")) then v0["level%0"]=6;else v0["num%0"]=string.match(v0["text%0"],v13("\29\193\28","\151\56\165\55\154\35\83"));if (v0["num%0"] or (2369>4429)) then v0["level%0"]=tonumber(v0["num%0"]);end end end);return v0["level%0"];end local function v72() local v123,v124=nil,1000;v0["root%0"]=v0["Plr%0"].Character and v0["Plr%0"].Character:FindFirstChild(v13("\136\86\8\239\174\76\12\234\146\76\10\250\144\66\23\250","\142\192\35\101")) ;if ((1293<=2166) and  not v0["root%0"]) then return nil;end for v151,v152 in pairs(v0["Workspace%0"].Boats:GetChildren()) do v0["seat%0"]=v152:FindFirstChild(v13("\224\112\33\170\228\128\169\37\211\116\61","\118\182\21\73\195\135\236\204"));if (((4095>=3183) and v0["seat%0"] and  not v0["seat%0"].Occupant) or (2579<123)) then v0["d%0"]=(v0["root%0"].Position-v0["seat%0"].Position).Magnitude;if ((v0["d%0"]<v124) or (3711<1008) or (846>=2368)) then v124=v0["d%0"];v123=v152;end end end return v123;end local function v73() return  not v0["Plr%0"].Character or  not v0["Plr%0"].Character:FindFirstChild(v13("\32\41\23\65\10\2\244\12","\157\104\92\122\32\100\109")) or (v0["Plr%0"].Character.Humanoid.Health<=0) ;end local function v74(v126) return v126 and v126.Parent and v126:FindFirstChild(v13("\139\179\194\203\51\40\132\175","\203\195\198\175\170\93\71\237")) and (v126.Humanoid.Health>0) and v126:FindFirstChild(v13("\6\94\51\212\95\30\245\42\121\49\218\69\33\253\60\95","\156\78\43\94\181\49\113")) ;end local function v75(v127) v0["enemies%0"]=v0["Workspace%0"]:FindFirstChild(v13("\87\230\193\174\2\70\106","\25\18\136\164\195\107\35"));if ( not v0["enemies%0"] or (1049<=906)) then return nil;end for v154,v155 in pairs(v0["enemies%0"]:GetChildren()) do if ((string.find(v155.Name,v127) and v74(v155)) or (4012<=3358)) then return v155;end end return nil;end local function v76(v129) pcall(function() if ( not v129 or  not v129.Parent or  not v129:FindFirstChild(v13("\192\56\164\78\124\179\200\188\218\34\166\91\66\189\211\172","\216\136\77\201\47\18\220\161"))) then return;end v0["H%0"]=v129:FindFirstChild(v13("\5\233\42\222","\226\77\140\75\186\104\188"));if (v0["H%0"] and  not v129:FindFirstChild(v13("\159\207\219\58\103\188\207\212","\47\217\174\176\95"))) then v0["FH%0"]=v0["H%0"]:Clone();v0["FH%0"].Name=v13("\158\220\125\7\154\81\121\34","\70\216\189\22\98\210\52\24");v0["FH%0"].CanCollide=false;v0["FH%0"].Massless=true;v0["FH%0"].Size=v0["H%0"].Size;v0["FH%0"].Transparency=v0["H%0"].Transparency;v0["FH%0"].Parent=v129;v0["W%0"]=Instance.new(v13("\237\218\175\131\240\213\209\176\147\193\219\214\173\147","\179\186\191\195\231"));v0["W%0"].Part0=v0["H%0"];v0["W%0"].Part1=v0["FH%0"];v0["W%0"].Parent=v0["FH%0"];v0["H%0"].Size=Vector3.new(v0["Settings%0"].HeadSize,v0["Settings%0"].HeadSize,v0["Settings%0"].HeadSize);v0["H%0"].Transparency=1;v0["H%0"].CanCollide=false;for v273,v274 in pairs(v0["H%0"]:GetChildren()) do if ((1494<=3005) and (4513>2726) and (v274:IsA(v13("\202\47\29\231\240\62\20\201\252\44\16","\132\153\95\120")) or v274:IsA(v13("\149\183\13\44\251","\192\209\210\110\77\151\186")))) then v274:Destroy();end end end v0["hum%0"]=v129:FindFirstChild(v13("\200\22\47\232\241\203\233\7","\164\128\99\66\137\159"));if (v0["hum%0"] or (1481>=2658) or (3111==2134)) then v0["hum%0"].WalkSpeed=0;v0["hum%0"].JumpPower=0;if ((2355==2355) and (v0["hum%0"]:FindFirstChild(v13("\33\135\224\179\1\157\230\172","\222\96\233\137")) or (3220==1364))) then v0["hum%0"].Animator:Destroy();end end for v177,v178 in pairs(v129:GetDescendants()) do if (v178:IsA(v13("\155\178\180\26\184\242\226\173","\144\217\211\199\127\232\147")) or (1054>3392) or (588<=432)) then v178.CanCollide=false;end end end);end local function v77() pcall(function() v0["h%0"]=v0["Plr%0"].Character:FindFirstChild(v13("\208\58\51\41\219\74\11\64","\36\152\79\94\72\181\37\98"));v0["current%0"]=v0["Plr%0"].Character:FindFirstChildOfClass(v13("\227\215\72\51","\95\183\184\39"));if (v0["current%0"] and ((v0["current%0"].ToolTip==v13("\152\58\235\35\81","\98\213\95\135\70\52\224")) or (v0["current%0"].ToolTip==v13("\205\180\198\101\80","\52\158\195\169\23")) or (v0["current%0"].ToolTip==v13("\88\176\61\108\198\19\105\158\115\168","\235\26\220\82\20\230\85\27")))) then return;end for v179,v180 in pairs(v0["Plr%0"].Backpack:GetChildren()) do if ((v180:IsA(v13("\188\174\230\206","\20\232\193\137\162")) and ((v180.ToolTip==v13("\17\200\202\180\227","\17\66\191\165\198\135\236\119")) or (v180.ToolTip==v13("\45\163\161\11\191\206\254\196\6\187","\177\111\207\206\115\159\136\140")) or (v180.ToolTip==v13("\40\140\28\17\209","\63\101\233\112\116\180\47")))) or (676>=1642)) then v0["h%0"]:EquipTool(v180);break;end end end);end if ((4136>2397) and (v0["Sea%0"]==2)) then v0["CoreLocation%0"]=CFrame.new(424.1,198.4, -408.1);task.spawn(function() while task.wait(0.5) do v0["foundTime%0"]=false;pcall(function() v0["worldOrigin%0"]=v0["Workspace%0"]:FindFirstChild(v13("\252\12\226\0\244\50\236\41\228\21\241\56","\86\163\91\141\114\152"));if ((4797>=3895) and (v0["worldOrigin%0"] or (4334==4245))) then v0["marker%0"]=v0["worldOrigin%0"]:FindFirstChild(v13("\112\36\70\86\122\97\14\103\99\59\68\5\52\94\59\65\0\113\97","\90\51\107\20\19"));if ((3577==3577) and v0["marker%0"]) then v0["timerUI%0"]=v0["marker%0"]:FindFirstChild(v13("\191\245\150\255\60\154\254\177\230\48\136\226","\93\237\144\229\143"));if ((3794>3693) and ((v0["timerUI%0"] and v0["timerUI%0"]:FindFirstChild(v13("\51\228\241\20\14","\38\117\150\144\121\107")) and v0["timerUI%0"].Frame:FindFirstChild(v13("\25\178\227\63\63","\90\77\219\142"))) or (4276<=3031))) then v0["timerLbl%0"]=v0["timerUI%0"].Frame.Timer;v0["cleanText%0"]=v0["timerLbl%0"].ContentText;if ((v0["cleanText%0"]==nil) or (v0["cleanText%0"]=="")) then v0["cleanText%0"]=v0["timerLbl%0"].Text;end local v471,v472=string.match(v0["cleanText%0"],v13("\174\65\37\114\5\93\50\163\0\106\112","\26\134\100\65\89\44\103"));if ((v471 and v472) or (1275==4100)) then v0["State%0"].CoreTimer=(tonumber(v471) * 60) + tonumber(v472) ;v0["foundTime%0"]=true;end end if ( not v0["foundTime%0"] or (4782<=1199)) then v0["State%0"].CoreTimer= -2;end else v0["State%0"].CoreTimer= -1;end end end);end end);task.spawn(function() while task.wait(0.1) do if ( not v0["State%0"].AutoCoreEnabled or (4864<1902)) then if (v0["State%0"].CoreState~=v13("\216\231\60\38","\196\145\131\80\67")) then v0["State%0"].CoreState=v13("\55\180\10\13","\136\126\208\102\104\120");if (((4839>=3700) and v0["State%0"].IsDoingPriorityTask) or (1591>=3580)) then v0["State%0"].IsDoingPriorityTask=false;if (v0["State%0"].ActiveTween or (1075>1918)) then v0["State%0"].ActiveTween:Cancel();v0["State%0"].ActiveTween=nil;end pcall(function() v0["hum%0"]=v0["Plr%0"].Character and v0["Plr%0"].Character:FindFirstChild(v13("\80\159\195\66\161\93\52\85","\49\24\234\174\35\207\50\93")) ;if ((396<=3804) and v0["hum%0"]) then v0["hum%0"].WalkSpeed=16;v0["hum%0"].JumpPower=50;end end);v0["ResumeFarms%0"]();end end continue;end v0["isCoreAlive%0"]=(v0["State%0"].CoreTimer~= -1) and (v0["State%0"].CoreTimer>=0) ;if ((983<=1808) and (v0["State%0"].CoreState~=v13("\37\246\241\141","\17\108\146\157\232"))) then if ( not v0["isCoreAlive%0"] or (v0["State%0"].CoreTimer>20) or (4169==2187) or (2150<=1197)) then v0["State%0"].CoreState=v13("\98\199\24\232","\200\43\163\116\141\79");if ((3769>=1173) and (1406==1406) and v0["State%0"].IsDoingPriorityTask) then v0["State%0"].IsDoingPriorityTask=false;if ((1485==1485) and v0["State%0"].ActiveTween) then v0["State%0"].ActiveTween:Cancel();v0["State%0"].ActiveTween=nil;end pcall(function() v0["hum%0"]=v0["Plr%0"].Character and v0["Plr%0"].Character:FindFirstChild(v13("\151\35\48\130\190\251\234\187","\131\223\86\93\227\208\148")) ;if (v0["hum%0"] or (3315<=2782)) then v0["hum%0"].WalkSpeed=16;v0["hum%0"].JumpPower=50;end end);v0["ResumeFarms%0"]();v0["WindUI%0"]:Notify({[v13("\215\76\162\186\24","\213\131\37\214\214\125")]="اتو فارم کور",[v13("\5\36\43\171\228\40\63","\129\70\75\69\223")]="کور زده شد یا تایمر ریست شد! بازگشت به فارم...",[v13("\98\222\225\232\104\230\73\197","\143\38\171\147\137\28")]=5});end end end if ((v0["State%0"].CoreState==v13("\249\134\181\246","\180\176\226\217\147\99\131")) or (876>=2964)) then if (v0["isCoreAlive%0"] and (v0["State%0"].CoreTimer<=10)) then v0["State%0"].CoreState=v13("\231\188\35\2\195\182\61\19\218\183\40","\103\179\217\79");if (((1531<4271) and  not v0["State%0"].IsDoingPriorityTask) or (2232>2497)) then v0["State%0"].IsDoingPriorityTask=true;v0["PauseFarms%0"]();v18.SetFarmMode(v13("\107\162\8\218\98\131\177\79","\195\42\215\124\181\33\236"));v0["WindUI%0"]:Notify({[v13("\57\80\35\50\32","\152\109\57\87\94\69")]="اتو فارم کور",[v13("\218\216\4\183\187\220\64","\200\153\183\106\195\222\178\52")]="زمان حمله به کور فرا رسید!",[v13("\22\246\154\60\93\83\61\237","\58\82\131\232\93\41")]=3});end end elseif ((v0["State%0"].CoreState==v13("\183\82\220\16\77\48\145\67\217\27\90","\95\227\55\176\117\61")) or (2110<=332)) then v0["root%0"]=v0["Plr%0"].Character and v0["Plr%0"].Character:FindFirstChild(v13("\48\107\46\74\165\23\119\39\121\164\23\106\19\74\185\12","\203\120\30\67\43")) ;if ((635==635) and v0["root%0"]) then if ((3373<=3556) and ((v0["root%0"].Position-v0["CoreLocation%0"].Position).Magnitude>10)) then v0["State%0"].ActiveTween=v0["SmartTween%0"](v0["root%0"],v0["CoreLocation%0"],v0["State%0"].ActiveTween);else if ((3686>3172) and (v0["State%0"].ActiveTween or (3291<3280))) then v0["State%0"].ActiveTween:Cancel();v0["State%0"].ActiveTween=nil;end v0["root%0"].CFrame=v0["CoreLocation%0"];v0["State%0"].CoreState=v13("\208\49\89\238\218\250\44\67\232","\185\145\69\45\143");end end elseif ((v0["State%0"].CoreState==v13("\171\11\13\167\223\129\22\23\161","\188\234\127\121\198")) or (4474<820)) then v0["root%0"]=v0["Plr%0"].Character and v0["Plr%0"].Character:FindFirstChild(v13("\16\39\30\130\54\61\26\135\10\61\28\151\8\51\1\151","\227\88\82\115")) ;if v0["root%0"] then if ((4386>=873) and ((v0["root%0"].Position-v0["CoreLocation%0"].Position).Magnitude>15)) then v0["State%0"].CoreState=v13("\119\26\182\162\18\124\81\11\179\169\5","\19\35\127\218\199\98");else v0["root%0"].CFrame=v0["CoreLocation%0"];v0["Workspace%0"].CurrentCamera.CFrame=CFrame.lookAt(v0["Workspace%0"].CurrentCamera.CFrame.Position,v0["CoreLocation%0"].Position);v77();end end end end end);task.spawn(function() while task.wait() do if ((4279>=2882) and v0["State%0"].AutoCoreEnabled and (v0["State%0"].CoreState==v13("\61\239\30\227\31\240\3\236\27","\130\124\155\106"))) then pcall(function() local v343,v344=v0["Workspace%0"].CurrentCamera.ViewportSize.X/2 ,v0["Workspace%0"].CurrentCamera.ViewportSize.Y/2 ;v0["VirtualInputManager%0"]:SendMouseButtonEvent(v343,v344,0,true,game,1);v0["VirtualInputManager%0"]:SendMouseButtonEvent(v343,v344,0,false,game,1);if (((921<=1102) and v0["RegisterHit%0"]) or (2029>=3521)) then v0["dummyPart%0"]=Instance.new(v13("\229\202\228\187","\223\181\171\150\207\195\150\28"));v0["args%0"]={v0["dummyPart%0"],{},nil,v13("\28\106\179\249\88\79\109\230","\105\44\90\131\206")};for v448=1,3 do v0["RegisterHit%0"]:FireServer(unpack(v0["args%0"],1,4));end v0["dummyPart%0"]:Destroy();end end);end end end);end if ((v0["Sea%0"]==3) or (2037>=4642)) then local function v161(v181) pcall(function() if ((1720<4458) and ( not v181 or  not v181.Parent or  not v181:FindFirstChild(v13("\215\245\191\184\6\49\246\228\128\182\7\42\207\225\160\173","\94\159\128\210\217\104")))) then return;end v0["H%0"]=v181:FindFirstChild(v13("\120\252\7\187","\26\48\153\102\223\63\31\153"));if (((4706>=963) and v0["H%0"] and  not v181:FindFirstChild(v13("\36\65\230\246\42\69\236\247","\147\98\32\141"))) or (436>3021)) then if ((713<=847) and ((v0["State%0"].PirateExpandedEnemy and (v0["State%0"].PirateExpandedEnemy~=v181)) or (960<=876))) then pcall(function() v0["oldH%0"]=v0["State%0"].PirateExpandedEnemy:FindFirstChild(v13("\48\70\226\206","\43\120\35\131\170\102\54"));v0["oldFH%0"]=v0["State%0"].PirateExpandedEnemy:FindFirstChild(v13("\114\7\140\179\141\181\133\80","\228\52\102\231\214\197\208"));if ((2154<=4031) and ((v0["oldFH%0"] and v0["oldH%0"]) or (2066==932))) then v0["oldH%0"].Size=v0["oldFH%0"].Size;v0["oldH%0"].Transparency=v0["oldFH%0"].Transparency;v0["oldFH%0"]:Destroy();end end);end v0["FH%0"]=v0["H%0"]:Clone();v0["FH%0"].Name=v13("\56\225\126\207\194\142\24\210","\182\126\128\21\170\138\235\121");v0["FH%0"].CanCollide=false;v0["FH%0"].Massless=true;v0["FH%0"].Size=v0["H%0"].Size;v0["FH%0"].Transparency=v0["H%0"].Transparency;v0["FH%0"].Parent=v181;v0["W%0"]=Instance.new(v13("\188\223\57\226\165\28\62\21\159\200\52\239\136\7","\102\235\186\85\134\230\115\80"));v0["W%0"].Part0=v0["H%0"];v0["W%0"].Part1=v0["FH%0"];v0["W%0"].Parent=v0["FH%0"];v0["H%0"].Size=Vector3.new(v0["Settings%0"].HeadSize,v0["Settings%0"].HeadSize,v0["Settings%0"].HeadSize);v0["H%0"].Transparency=1;v0["H%0"].CanCollide=false;v0["State%0"].PirateExpandedEnemy=v181;end v0["hum%0"]=v181:FindFirstChild(v13("\127\25\51\94\124\219\43\83","\66\55\108\94\63\18\180"));if ((4615==4615) and v0["hum%0"]) then v0["hum%0"].WalkSpeed=0;v0["hum%0"].JumpPower=0;if (((4825<4843) and v0["hum%0"]:FindFirstChild(v13("\53\131\140\58\38\77\27\159","\57\116\237\229\87\71"))) or (3790==500)) then v0["hum%0"].Animator:Destroy();end end for v277,v278 in pairs(v181:GetDescendants()) do if ((89<221) and (v278:IsA(v13("\136\176\254\226\71\239\85\190","\39\202\209\141\135\23\142")) or (3877>=4537))) then v278.CanCollide=false;end end end);end task.spawn(function() v0["Notifications%0"]=v0["Plr%0"]:WaitForChild(v13("\207\63\8\19\55\234\216\38\0","\152\159\83\105\106\82")):WaitForChild(v13("\175\201\69\251\207\85\130\199\69\251\198\82\146","\60\225\166\49\146\169"),10);if ((2054>=1421) and (v0["Notifications%0"] or (4315<1726))) then v0["Notifications%0"].ChildAdded:Connect(function(v311) if ((692<3058) and  not v0["State%0"].AutoPirateEnabled) then return;end v0["textLabel%0"]=v311:WaitForChild(v13("\27\27\55\62\45\6\45\27\35","\103\79\126\79\74\97"),2) or v311:FindFirstChildOfClass(v13("\142\122\203\103\114\27\184\122\223","\122\218\31\179\19\62")) ;if ( not v0["textLabel%0"] or (3254==1655)) then for v418,v419 in pairs(v311:GetDescendants()) do if (v419:IsA(v13("\135\211\213\213\229\160\71\182\218","\37\211\182\173\161\169\193")) or (1296==4910)) then v0["textLabel%0"]=v419;break;end end end if ((3368==3368) and v0["textLabel%0"]) then v0["timeout%0"]=tick() + 3 ;while tick()<v0["timeout%0"]  do v0["txt%0"]=v0["textLabel%0"].Text;if ((2643<3815) and (((v0["txt%0"]~="") and (v0["txt%0"]~=v13("\219\59\79\220\36","\217\151\90\45\185\72\27"))) or (3679<625))) then if (string.find(v0["txt%0"],v13("\247\116\226\82\70\202\110\230\6\83\208\60\230\0\83\131\110\230\27\82\202\114\224","\54\163\28\135\114")) or (4625<632)) then if ((1913>493) and ( not v0["State%0"].IsPirateRaidActive or (83>1780))) then v0["State%0"].IsPirateRaidActive=true;if ((546<=1077) and  not v0["State%0"].IsDoingPriorityTask) then v0["State%0"].IsDoingPriorityTask=true;v0["PauseFarms%0"]();v18.SetFarmMode(v13("\24\210\79\131\90\122\26\218\84\134","\31\72\187\61\226\46"));v0["WindUI%0"]:Notify({[v13("\247\15\87\222\66","\68\163\102\35\178\39\30")]=v13("\142\121\200\198\23\176\195\35\191\121\222","\113\222\16\186\167\99\213\227"),[v13("\13\1\245\226\43\0\239","\150\78\110\155")]="حمله شروع شد! توقف سایر فارم‌ها و حرکت...",[v13("\161\208\53\224\176\23\176\78","\32\229\165\71\129\196\126\223")]=5});end end elseif ((4755>3428) and string.find(v0["txt%0"],v13("\228\134\203\133\193\223\204\139\133","\181\163\233\164\225\225"))) then if ((1381<=2369) and (v0["State%0"].IsPirateRaidActive or (996>4301))) then v0["State%0"].IsPirateRaidActive=false;v0["State%0"].PirateTarget=nil;if (((4070>687) and v0["State%0"].PirateExpandedEnemy) or (4843==4084)) then pcall(function() v0["h%0"]=v0["State%0"].PirateExpandedEnemy:FindFirstChild(v13("\120\142\63\115","\23\48\235\94"));v0["fh%0"]=v0["State%0"].PirateExpandedEnemy:FindFirstChild(v13("\90\219\211\88\127\54\211\120","\178\28\186\184\61\55\83"));if ((4669>363) and v0["fh%0"] and v0["h%0"]) then v0["h%0"].Size=v0["fh%0"].Size;v0["h%0"].Transparency=v0["fh%0"].Transparency;v0["fh%0"]:Destroy();end end);v0["State%0"].PirateExpandedEnemy=nil;end if (v0["State%0"].ActiveTween or (656>=3330) or (1877>=3138)) then v0["State%0"].ActiveTween:Cancel();v0["State%0"].ActiveTween=nil;end if ((4742>=3626) and (v0["State%0"].IsDoingPriorityTask or (2492<=335))) then v0["State%0"].IsDoingPriorityTask=false;v0["ResumeFarms%0"]();v0["WindUI%0"]:Notify({[v13("\240\196\83\48\247","\149\164\173\39\92\146\110")]=v13("\195\46\2\30\14\30\179\21\17\22\30","\123\147\71\112\127\122"),[v13("\239\194\140\101\67\194\217","\38\172\173\226\17")]="رید تمام شد! بازگشت به فارم عادی.",[v13("\105\4\62\238\89\24\35\225","\143\45\113\76")]=5});end end end break;end task.wait(0.05);end end end);end end);task.spawn(function() while task.wait(0.1) do if (v0["State%0"].AutoPirateEnabled and v0["State%0"].IsPirateRaidActive and v0["Plr%0"].Character and v0["Plr%0"].Character:FindFirstChild(v13("\144\173\17\61\182\183\21\56\138\183\19\40\136\185\14\40","\92\216\216\124"))) then v0["Root%0"]=v0["Plr%0"].Character.HumanoidRootPart;v0["nearestMob%0"]=nil;v0["minDist%0"]=800;v0["enemies%0"]=v0["Workspace%0"]:FindFirstChild(v13("\126\60\169\77\244\94\33","\157\59\82\204\32"));if (((4322>=2562) and v0["enemies%0"]) or (4540==916)) then for v422,v423 in pairs(v0["enemies%0"]:GetChildren()) do if (v74(v423) or (3637>=3770) or (1156>4345)) then v0["dist%0"]=(v423.HumanoidRootPart.Position-v0["State%0"].SafeUndergroundPos).Magnitude;if ((2237<4249) and ((v0["dist%0"]<v0["minDist%0"]) or (2379>4578))) then v0["minDist%0"]=v0["dist%0"];v0["nearestMob%0"]=v423;end end end end v0["Dest%0"]=nil;if (v0["nearestMob%0"] or (483>743) or (2683<23)) then v161(v0["nearestMob%0"]);v0["State%0"].PirateTarget=v0["nearestMob%0"];v0["EP%0"]=v0["nearestMob%0"].HumanoidRootPart.Position;v0["d%0"]=v0["Root%0"].Position-v0["EP%0"] ;d=Vector3.new(v0["d%0"].X,0,v0["d%0"].Z);if ((697<=826) and (2454>578) and (d.Magnitude<0.1)) then d=Vector3.new(1,0,0);end d=d.Unit;v0["Dest%0"]=CFrame.lookAt(v0["EP%0"] + (d * v0["Settings%0"].AttackDistance) + Vector3.new(0,v0["Settings%0"].AttackHeight,0) ,v0["EP%0"]);else v0["State%0"].PirateTarget=nil;v0["Dest%0"]=CFrame.new(v0["State%0"].SafeUndergroundPos);end if ((1105<=1176) and (930<4458) and v0["Dest%0"]) then v0["rootDist%0"]=(v0["Root%0"].Position-v0["Dest%0"].Position).Magnitude;if ((662<=972) and (v0["rootDist%0"]<10)) then v0["Root%0"].CFrame=v0["Dest%0"];if ((4370==4370) and v0["State%0"].ActiveTween) then v0["State%0"].ActiveTween:Cancel();v0["State%0"].ActiveTween=nil;end if ((3379<=3812) and v0["State%0"].PirateTarget and ((tick() -v0["State%0"].PirateLastTargetTime)>v0["Settings%0"].AttackWaitTime)) then v0["State%0"].PirateLastTargetTime=tick();pcall(function() v77();if (v0["State%0"].PirateTarget:FindFirstChild(v13("\16\59\226\254","\209\88\94\131\154\137\138\179")) or (788>=1616)) then v0["Workspace%0"].CurrentCamera.CFrame=CFrame.lookAt(v0["Workspace%0"].CurrentCamera.CFrame.Position,v0["State%0"].PirateTarget.Head.Position);end local v527,v528=v0["Workspace%0"].CurrentCamera.ViewportSize.X/2 ,v0["Workspace%0"].CurrentCamera.ViewportSize.Y/2 ;v0["VirtualInputManager%0"]:SendMouseButtonEvent(v527,v528,0,true,game,1);task.wait(v0["Settings%0"].HoldTime);v0["VirtualInputManager%0"]:SendMouseButtonEvent(v527,v528,0,false,game,1);if v0["RegisterAttack%0"] then v0["RegisterAttack%0"]:FireServer(math.floor((0.5 + (math.random() * 0.5)) * 10000 )/10000 );end end);end else if ((1854<=3379) and v0["State%0"].ActiveTween) then v0["State%0"].ActiveTween:Cancel();end v0["State%0"].ActiveTween=v0["SmartTween%0"](v0["Root%0"],v0["Dest%0"],v0["State%0"].ActiveTween);end end elseif ((4549==4549) and  not v0["State%0"].AutoPirateEnabled and v0["State%0"].IsPirateRaidActive) then v0["State%0"].IsPirateRaidActive=false;v0["State%0"].PirateTarget=nil;if (v0["State%0"].PirateExpandedEnemy or (4762<=861) or (3022>=3024)) then pcall(function() v0["h%0"]=v0["State%0"].PirateExpandedEnemy:FindFirstChild(v13("\0\164\197\120","\66\72\193\164\28\126\67\81"));v0["fh%0"]=v0["State%0"].PirateExpandedEnemy:FindFirstChild(v13("\193\45\163\93\14\115\230\40","\22\135\76\200\56\70"));if ((4820>2198) and ((v0["fh%0"] and v0["h%0"]) or (1412==4264))) then v0["h%0"].Size=v0["fh%0"].Size;v0["h%0"].Transparency=v0["fh%0"].Transparency;v0["fh%0"]:Destroy();end end);v0["State%0"].PirateExpandedEnemy=nil;end if (v0["State%0"].ActiveTween or (3168<2153) or (1061>=4891)) then v0["State%0"].ActiveTween:Cancel();v0["State%0"].ActiveTween=nil;end if v0["State%0"].IsDoingPriorityTask then v0["State%0"].IsDoingPriorityTask=false;v0["ResumeFarms%0"]();v0["WindUI%0"]:Notify({[v13("\185\57\236\40\88","\129\237\80\152\68\61")]=v13("\97\161\22\242\8\18\24\99\169\13\247","\56\49\200\100\147\124\119"),[v13("\239\49\177\228\201\48\171","\144\172\94\223")]="سیستم رید به صورت دستی خاموش شد. بازگشت...",[v13("\0\26\176\70\48\6\173\73","\39\68\111\194")]=5});end end end end);task.spawn(function() v0["Notifications%0"]=v0["Plr%0"]:WaitForChild(v13("\230\170\230\222\124\165\241\179\238","\215\182\198\135\167\25")):WaitForChild(v13("\163\70\254\65\139\64\233\73\153\64\229\70\158","\40\237\41\138"),5);if ((1364<=4473) and v0["Notifications%0"]) then v0["Notifications%0"].ChildAdded:Connect(function(v319) task.wait(0.1);v0["txt%0"]="";if v319:IsA(v13("\243\113\226\236\102\198\118\255\244","\42\167\20\154\152")) then v0["txt%0"]=v319.Text;else for v424,v425 in pairs(v319:GetDescendants()) do if v425:IsA(v13("\126\251\186\86\93\32\72\251\174","\65\42\158\194\34\17")) then v0["txt%0"]=v425.Text;break;end end end if ((string.find(v0["txt%0"],v13("\59\103\80\13\63\255\18\235\8\103\90\13\62\173\25\235\31\41\18\14\63\226\16\235\20","\142\122\71\50\108\77\141\123")) and v0["State%0"].AutoTushita and (v0["State%0"].TushitaPhase==v13("\60\166\243\29","\91\117\194\159\120"))) or (3595<=3)) then v0["State%0"].TushitaPhase=v13("\49\20\50\20\60\255\35\61\21\49\11\33\226","\68\122\125\94\120\85\145");v0["PauseFarms%0"]();v0["WindUI%0"]:Notify({[v13("\35\21\219\82\205","\218\119\124\175\62\168\185")]=v13("\145\229\91\204\172\228\73\132\149\229\82\222\169\245","\164\197\144\40"),[v13("\160\255\164\159\216\184\151","\214\227\144\202\235\189")]="نوتیفیکیشن دریافت شد! توقف فارم‌ها و شروع پازل...",[v13("\201\176\149\122\4\186\92\50","\92\141\197\231\27\112\211\51")]=5});end end);end end);task.spawn(function() while task.wait(0.1) do if ( not v0["State%0"].AutoTushita or (4976<1332)) then continue;end v0["root%0"]=v0["Plr%0"].Character and v0["Plr%0"].Character:FindFirstChild(v13("\206\234\135\162\223\233\246\142\145\222\233\235\186\162\195\242","\177\134\159\234\195")) ;if (((4628==4628) and ( not v0["root%0"] or v73())) or (4672==3852)) then continue;end if (v0["State%0"].TushitaPhase==v13("\150\226\51\172\192\179\236\24\168\198\174\255\44","\169\221\139\95\192")) then v0["ghost%0"]=v75(v13("\249\131\112\44\54","\70\190\235\31\95\66"));if (v0["ghost%0"] or (54==395)) then v76(v0["ghost%0"]);v0["ep%0"]=v0["ghost%0"].HumanoidRootPart.Position;v0["d%0"]=v0["root%0"].Position-v0["ep%0"] ;d=Vector3.new(v0["d%0"].X,0,v0["d%0"].Z);if (d.Magnitude<0.1) then d=Vector3.new(1,0,0);end d=d.Unit;v0["dest%0"]=CFrame.lookAt(v0["ep%0"] + (d * v0["Settings%0"].AttackDistance) + Vector3.new(0,v0["Settings%0"].AttackHeight,0) ,v0["ep%0"]);if ((82==82) and ((v0["root%0"].Position-v0["dest%0"].Position).Magnitude>10)) then v0["State%0"].ActiveTween=v0["SmartTween%0"](v0["root%0"],v0["dest%0"],v0["State%0"].ActiveTween);else if ((1559==1559) and (v0["State%0"].ActiveTween or (581<282))) then v0["State%0"].ActiveTween:Cancel();v0["State%0"].ActiveTween=nil;end v0["root%0"].CFrame=v0["dest%0"];v77();if (v0["ghost%0"]:FindFirstChild(v13("\146\231\27\226","\133\218\130\122\134")) or (4609<2495) or (1752<=788)) then v0["Workspace%0"].CurrentCamera.CFrame=CFrame.lookAt(v0["Workspace%0"].CurrentCamera.CFrame.Position,v0["ghost%0"].Head.Position);end task.spawn(function() local v485,v486=v0["Workspace%0"].CurrentCamera.ViewportSize.X/2 ,v0["Workspace%0"].CurrentCamera.ViewportSize.Y/2 ;for v512=1,3 do v0["VirtualInputManager%0"]:SendMouseButtonEvent(v485,v486,0,true,game,1);task.wait(0.05);v0["VirtualInputManager%0"]:SendMouseButtonEvent(v485,v486,0,false,game,1);if ((1152==1152) and v0["RegisterAttack%0"]) then v0["RegisterAttack%0"]:FireServer(math.floor((0.5 + (math.random() * 0.5)) * 10000 )/10000 );end end end);end else if (((1896<=3422) and v0["State%0"].ActiveTween) or (3907==177)) then v0["State%0"].ActiveTween:Cancel();v0["State%0"].ActiveTween=nil;end v0["State%0"].ActiveTween=v0["SmartTween%0"](v0["root%0"],v0["TushitaLocations%0"].Door,v0["State%0"].ActiveTween);if ((v0["root%0"].Position-v0["TushitaLocations%0"].Door.Position).Magnitude<15) then task.wait(4);v0["State%0"].TushitaPhase=v13("\31\247\230\199\215\170\54\59\203\236\214\223\171","\88\92\159\131\164\188\195");end end elseif ((v0["State%0"].TushitaPhase==v13("\163\38\186\72\220\226\211\135\26\176\89\212\227","\189\224\78\223\43\183\139")) or (990>1620)) then v0["torchTool%0"]=v0["Plr%0"].Backpack:FindFirstChild(v13("\6\243\134\15\129\26\243\152\21\201","\161\78\156\234\118")) or v0["Plr%0"].Character:FindFirstChild(v13("\143\184\197\197\231\131\198\206\164\191","\188\199\215\169")) ;if v0["torchTool%0"] then v0["Plr%0"].Character.Humanoid:EquipTool(v0["torchTool%0"]);task.wait(0.5);v0["State%0"].TushitaPhase=v13("\208\0\88\115\252\245\7\88\79\231\238\10\87\126\251","\136\156\105\63\27");v0["State%0"].CurrentTorchIndex=1;else v0["State%0"].TushitaPhase=v13("\50\136\117\49","\84\123\236\25");v0["ResumeFarms%0"]();v0["WindUI%0"]:Notify({[v13("\196\130\190\27\169","\213\144\235\202\119\204")]=v13("\23\13\205\34\33\55\76\99\40\203\48\50\47\72","\45\67\120\190\74\72\67"),[v13("\3\45\227\177\252\134\250","\137\64\66\141\197\153\232\142")]="تورچ در اینونتوری یافت نشد! بازگشت به فارم...",[v13("\39\197\48\167\156\10\223\44","\232\99\176\66\198")]=5});end elseif (v0["State%0"].TushitaPhase==v13("\192\40\47\14\111\132\247\43\216\46\58\5\115\136\234","\76\140\65\72\102\27\237\153")) then v0["targetTorch%0"]=v0["TushitaLocations%0"].Torches[v0["State%0"].CurrentTorchIndex];if ((3470>555) and v0["targetTorch%0"]) then v0["State%0"].ActiveTween=v0["SmartTween%0"](v0["root%0"],v0["targetTorch%0"],v0["State%0"].ActiveTween);if (((v0["root%0"].Position-v0["targetTorch%0"].Position).Magnitude<15) or (972==645)) then task.wait(1.5);v0["State%0"].CurrentTorchIndex=v0["State%0"].CurrentTorchIndex + 1 ;end else v0["State%0"].TushitaPhase=v13("\97\211\26\222\222\15\185\102\213\24\213\218\0","\222\42\186\118\178\183\97");end elseif ((3182>=2115) and ((v0["State%0"].TushitaPhase==v13("\118\229\72\134\84\226\67\166\82\226\67\135\92","\234\61\140\36")) or (877>4695))) then v0["longma%0"]=v75(v13("\13\210\180\117\2\32","\111\65\189\218\18"));if ((3893<4429) and v0["longma%0"]) then v76(v0["longma%0"]);v0["ep%0"]=v0["longma%0"].HumanoidRootPart.Position;v0["d%0"]=v0["root%0"].Position-v0["ep%0"] ;d=Vector3.new(v0["d%0"].X,0,v0["d%0"].Z);if ((d.Magnitude<0.1) or (2867<1905)) then d=Vector3.new(1,0,0);end d=d.Unit;v0["dest%0"]=CFrame.lookAt(v0["ep%0"] + (d * v0["Settings%0"].AttackDistance) + Vector3.new(0,v0["Settings%0"].AttackHeight,0) ,v0["ep%0"]);if (((2691>=1851) and ((v0["root%0"].Position-v0["dest%0"].Position).Magnitude>10)) or (1796>=4051)) then v0["State%0"].ActiveTween=v0["SmartTween%0"](v0["root%0"],v0["dest%0"],v0["State%0"].ActiveTween);else if ((1619<=3756) and (v0["State%0"].ActiveTween or (2985>=4856))) then v0["State%0"].ActiveTween:Cancel();v0["State%0"].ActiveTween=nil;end v0["root%0"].CFrame=v0["dest%0"];v77();if ((604==604) and v0["longma%0"]:FindFirstChild(v13("\107\78\26\49","\207\35\43\123\85\107\60"))) then v0["Workspace%0"].CurrentCamera.CFrame=CFrame.lookAt(v0["Workspace%0"].CurrentCamera.CFrame.Position,v0["longma%0"].Head.Position);end task.spawn(function() local v597,v598=v0["Workspace%0"].CurrentCamera.ViewportSize.X/2 ,v0["Workspace%0"].CurrentCamera.ViewportSize.Y/2 ;for v608=1,3 do v0["VirtualInputManager%0"]:SendMouseButtonEvent(v597,v598,0,true,game,1);task.wait(0.05);v0["VirtualInputManager%0"]:SendMouseButtonEvent(v597,v598,0,false,game,1);if v0["RegisterAttack%0"] then v0["RegisterAttack%0"]:FireServer(math.floor((0.5 + (math.random() * 0.5)) * 10000 )/10000 );end end end);end else v0["State%0"].TushitaPhase=v13("\71\171\169\254\112\126\173\140\229\119\119\167\161","\25\16\202\192\138");v0["ResumeFarms%0"]();v0["WindUI%0"]:Notify({[v13("\201\194\185\238\172","\148\157\171\205\130\201")]=v13("\23\193\103\33\216\226\34\148\68\60\203\236\47\209","\150\67\180\20\73\177"),[v13("\174\23\20\89\136\22\14","\45\237\120\122")]="باس Longma هنوز اسپان نیست! بازگشت به فارم تا اسپان شود...",[v13("\243\253\176\45\195\225\173\34","\76\183\136\194")]=5});end elseif (((4276>=1195) and (v0["State%0"].TushitaPhase==v13("\77\231\236\44\89\65\19\86\233\235\63\93\78","\116\26\134\133\88\48\47"))) or (4484==900)) then v0["longma%0"]=v75(v13("\50\206\174\227\176\115","\18\126\161\192\132\221"));if (v0["longma%0"] or (4459<=1113)) then v0["PauseFarms%0"]();v0["State%0"].TushitaPhase=v13("\116\33\162\8\95\81\47\130\11\88\88\37\175","\54\63\72\206\100");v0["WindUI%0"]:Notify({[v13("\252\80\81\118\224","\27\168\57\37\26\133")]=v13("\25\191\111\160\222\57\171\60\152\194\55\176\112\173","\183\77\202\28\200"),[v13("\52\60\135\28\18\61\157","\104\119\83\233")]="باس Longma اسپان شد! رفتن برای کشتن...",[v13("\209\237\53\35\87\252\247\41","\35\149\152\71\66")]=5});else v0["inv%0"]=v0["ReplicatedStorage%0"].Remotes.CommF_:InvokeServer(v13("\30\237\86\153\52\15\237\76\164\53\11\241","\90\121\136\34\208"));v0["hasTushita%0"]=false;if ((3632>3398) and (3232<=4690) and (type(v0["inv%0"])==v13("\211\15\87\18\194","\126\167\110\53"))) then for v616,v617 in pairs(v0["inv%0"]) do if ((4082<=4917) and (v617.Name==v13("\9\5\61\240\213\43\60","\95\93\112\78\152\188"))) then v0["hasTushita%0"]=true;break;end end end if ((4832>=1386) and (v0["hasTushita%0"] or (896>=3146))) then v0["State%0"].TushitaPhase=v13("\232\241\137\16","\178\161\149\229\117\132\222");v0["State%0"].AutoTushita=false;v0["WindUI%0"]:Notify({[v13("\188\210\201\160\164","\67\232\187\189\204\193\118\198")]=v13("\191\59\166\40\50\22\238","\143\235\78\213\64\91\98"),[v13("\174\71\138\253\117\184\153","\214\237\40\228\137\16")]="تبریک! شمشیر Tushita را گرفتید. سیستم خاموش شد.",[v13("\161\246\253\216\23\175\138\237","\198\229\131\143\185\99")]=5});end end end end end);end if ((137==137) and (3061>=2958) and (v0["Sea%0"]==3)) then task.spawn(function() v0["EliteSpawns%0"]={[v13("\121\149\172\97\80\204\129\96\93\141\166\119","\19\49\236\200")]={CFrame.new(4509,1209, -2),CFrame.new(6218,76,2120),CFrame.new(7076,246, -444),CFrame.new(6126,184, -2208)},[v13("\216\59\249\182\240\179\240\48\182\131\241\168\234\59\243","\218\158\87\150\215\132")]={CFrame.new( -10964,707, -7108),CFrame.new( -11512,639, -8910),CFrame.new( -12411,334, -9654),CFrame.new( -13797,331, -9126),CFrame.new( -13746,401, -10072),CFrame.new( -11797,457, -10306),CFrame.new( -10827,453, -9786)},[v13("\203\17\203\246\118\22\194\236\16","\173\155\126\185\130\86\66")]={CFrame.new( -1362,151,7334)},[v13("\194\180\191\198\156\172\209\180\191\194","\140\133\198\218\167\232")]={CFrame.new(2532,567, -8343),CFrame.new(4341,565, -6169)}};local function v185(v245) pcall(function() if ((3187>=644) and ( not v245 or  not v245.Parent)) then return;end v0["H%0"]=v245:FindFirstChild(v13("\157\43\181\121","\228\213\78\212\29"));v0["FH%0"]=v245:FindFirstChild(v13("\161\77\189\0\195\130\77\178","\139\231\44\214\101"));if (v0["FH%0"] or (1570>=4332)) then if (((644<=704) and v0["H%0"]) or (4064<=1819)) then v0["H%0"].Size=v0["FH%0"].Size;v0["H%0"].Transparency=v0["FH%0"].Transparency;end v0["FH%0"]:Destroy();end end);end while task.wait(0.5) do if ((958>947) and  not v0["State%0"].AutoEliteHunter and  not v0["State%0"].AutoYama and  not v0["State%0"].TryLuckYama) then if (((4492>=2654) and v0["State%0"].IsDoingPriorityTask and  not v0["State%0"].AutoCoreEnabled and  not v0["State%0"].AutoPirateEnabled and  not v0["State%0"].IsDoingIndra) or (4986<1574)) then v0["State%0"].IsDoingPriorityTask=false;v0["ResumeFarms%0"]();end continue;end pcall(function() v0["root%0"]=v0["Plr%0"].Character and v0["Plr%0"].Character:FindFirstChild(v13("\241\250\11\95\30\190\56\18\235\224\9\74\32\176\35\2","\118\185\143\102\62\112\209\81")) ;if ((4426>172) and ( not v0["root%0"] or v73())) then return;end v0["progressRaw%0"]=v0["CommF%0"]:InvokeServer(v13("\121\124\32\242\160\61\9\54\72\117\59","\88\60\16\73\134\197\117\124"),v13("\96\248\247\207\83\85\249\235","\33\48\138\152\168"));v0["kills%0"]=tonumber(tostring(v0["progressRaw%0"]):match(v13("\55\18\123","\87\18\118\80\49\161"))) or 0 ;v0["shouldDoYama%0"]=false;if ((586>455) and (3442>=1503) and v0["State%0"].AutoYama and (v0["kills%0"]>=30)) then v0["shouldDoYama%0"]=true;end if ((826==826) and v0["State%0"].TryLuckYama and (v0["kills%0"]>=20) and (v0["kills%0"]<30)) then v0["shouldDoYama%0"]=true;end if v0["shouldDoYama%0"] then if  not v0["State%0"].IsDoingPriorityTask then v0["State%0"].IsDoingPriorityTask=true;v0["PauseFarms%0"]();v18.SetFarmMode(v13("\117\31\215\161\129\89\27\201\180","\208\44\126\186\192"));end v0["hitbox%0"]=v0["Workspace%0"].Map:FindFirstChild(v13("\192\27\176\195\6\250\200\66\251","\46\151\122\196\166\116\156\169")) and v0["Workspace%0"].Map.Waterfall:FindFirstChild(v13("\214\232\71\22\254\225\198\71\14\250\235\236","\155\133\141\38\122")) and v0["Workspace%0"].Map.Waterfall.SealedKatana:FindFirstChild(v13("\13\35\184\67\64\103","\197\69\74\204\33\47\31")) ;if (v0["hitbox%0"] or (3170<=1464)) then if ((v0["root%0"].Position-v0["hitbox%0"].Position).Magnitude>15) then v0["State%0"].ActiveTween=v0["SmartTween%0"](v0["root%0"],v0["hitbox%0"].CFrame * CFrame.new(0,5,5) ,v0["State%0"].ActiveTween);else if v0["State%0"].ActiveTween then v0["State%0"].ActiveTween:Cancel();v0["State%0"].ActiveTween=nil;end v0["Workspace%0"].CurrentCamera.CFrame=CFrame.lookAt(v0["Workspace%0"].CurrentCamera.CFrame.Position,v0["hitbox%0"].Position);v0["x%0"]=v0["Workspace%0"].CurrentCamera.ViewportSize.X/2 ;v0["y%0"]=v0["Workspace%0"].CurrentCamera.ViewportSize.Y/2 ;v0["VirtualInputManager%0"]:SendMouseButtonEvent(v0["x%0"],v0["y%0"],0,true,game,1);task.wait(0.1);v0["VirtualInputManager%0"]:SendMouseButtonEvent(v0["x%0"],v0["y%0"],0,false,game,1);v0["notifs%0"]=v0["Plr%0"].PlayerGui:FindFirstChild(v13("\222\64\78\142\246\70\89\134\228\70\85\137\227","\231\144\47\58"));if (v0["notifs%0"] or (4797==4388)) then for v558,v559 in pairs(v0["notifs%0"]:GetChildren()) do if ((v559.Name==v13("\156\215\206\124\30\52\204\56\166\209\213\123\44\56\194\41\190\217\206\112","\89\210\184\186\21\120\93\175")) and v559:IsA(v13("\151\65\125\216\124","\90\209\51\28\181\25"))) then v0["textLabel%0"]=v559:FindFirstChild(v13("\228\126\79\250\147\209\121\82\226","\223\176\27\55\142")) or v559:FindFirstChildOfClass(v13("\16\190\214\161\8\186\204\176\40","\213\68\219\174")) ;if ((v0["textLabel%0"] and (v0["textLabel%0"].Text~="")) or (4019>4441)) then if ((2017<4261) and (551<=681) and string.find(v0["textLabel%0"].Text:lower(),v13("\5\239\55\167\61\202\45\107\3\249","\31\107\128\67\135\74\165\95"))) then v0["WindUI%0"]:Notify({[v13("\236\225\232\65\68","\209\184\136\156\45\33")]="یاما سورد",[v13("\36\199\123\28\189\9\220","\216\103\168\21\104")]="شانس ناموفق بود! ادامه شکار...",[v13("\92\184\81\165\108\164\76\170","\196\24\205\35")]=5});v559:Destroy();v0["State%0"].IsDoingPriorityTask=false;v0["ResumeFarms%0"]();task.wait(2);return;elseif string.find(v0["textLabel%0"].Text:lower(),v13("\47\136\224\3\62\159\230\2\110\146\236\19","\102\78\235\131")) then v0["WindUI%0"]:Notify({[v13("\206\39\32\72\66","\84\154\78\84\36\39\89\215")]="تبریک!",[v13("\222\238\88\76\0\243\245","\101\157\129\54\56")]="شمشیر یاما رو گرفتی!",[v13("\57\188\152\170\55\112\18\167","\25\125\201\234\203\67")]=10});v0["State%0"].AutoYama=false;v0["State%0"].TryLuckYama=false;v559:Destroy();v0["State%0"].IsDoingPriorityTask=false;v0["ResumeFarms%0"]();return;end end end end end end end return;end if v0["State%0"].AutoEliteHunter then v0["npcText%0"]=v0["CommF%0"]:InvokeServer(v13("\92\248\17\23\17\15\6\119\224\29\17","\115\25\148\120\99\116\71"));if ((4716>80) and (3277>407) and (type(v0["npcText%0"])==v13("\31\41\171\45\79\11","\33\108\93\217\68")) and  not string.find(v0["npcText%0"],"doesn't have anything") and  not string.find(v0["npcText%0"],v13("\248\68\172\168\155\73\160\174\208\11\173\172\207\78\179","\205\187\43\193"))) then v0["islandName%0"]=nil;if string.find(v0["npcText%0"],v13("\206\125\23\203\190\70\10\200\240","\191\158\18\101")) then v0["islandName%0"]=v13("\245\204\149\163\239\241\204\144\185","\207\165\163\231\215");elseif (string.find(v0["npcText%0"],v13("\238\224\253\68\37\48\239\234\245\87\42\116","\16\166\153\153\54\68")) or (3507==3272)) then v0["islandName%0"]=v13("\250\170\196\84\53\97\208\193\191\193\72\48","\153\178\211\160\38\84\65");elseif string.find(v0["npcText%0"],v13("\165\25\95\42\150\75\110\57\135\14","\75\226\107\58")) then v0["islandName%0"]=v13("\127\204\20\123\5\130\249\74\219\20","\173\56\190\113\26\113\162");elseif (((4695>=1415) and string.find(v0["npcText%0"],v13("\237\210\34\4\227\194\208\42\69\195\222\204\57\9\242","\151\171\190\77\101"))) or (876>=3075)) then v0["islandName%0"]=v13("\227\35\247\168\236\116\5\194\111\204\188\234\105\7\192","\107\165\79\152\201\152\29");end if (v0["islandName%0"] or (3212<=944)) then if  not v0["State%0"].IsDoingPriorityTask then v0["State%0"].IsDoingPriorityTask=true;v0["PauseFarms%0"]();v18.SetFarmMode(v13("\114\66\225\223\81\87\66\64\252\206\70","\31\55\46\136\171\52"));end v0["bossFound%0"]=nil;v0["enemies%0"]=v0["Workspace%0"]:FindFirstChild(v13("\244\38\217\249\216\45\207","\148\177\72\188"));if (v0["enemies%0"] or (3096<=1798)) then for v560,v561 in pairs(v0["enemies%0"]:GetChildren()) do if ((v561.Name==v13("\130\179\86\221\162\164\82","\179\198\214\55")) or (v561.Name==v13("\212\5\115\116\73\220","\179\144\108\18\22\37")) or (v561.Name==v13("\243\177\25\136\193","\175\166\195\123\233"))) then v0["hum%0"]=v561:FindFirstChild(v13("\199\215\80\72\254\224\203\89","\144\143\162\61\41"));if (v0["hum%0"] and (v0["hum%0"].Health>0) and v561:FindFirstChild(v13("\200\198\16\81\124\136\58\228\225\18\95\102\183\50\242\199","\83\128\179\125\48\18\231"))) then v0["bossFound%0"]=v561;break;end end end end if ((3537==3537) and v0["bossFound%0"]) then v0["H%0"]=v0["bossFound%0"]:FindFirstChild(v13("\117\178\242\217","\126\61\215\147\189\39"));if ((4352>2554) and v0["H%0"] and  not v0["bossFound%0"]:FindFirstChild(v13("\94\254\22\64\80\250\28\65","\37\24\159\125"))) then if (v0["State%0"].EliteExpandedEnemy and (v0["State%0"].EliteExpandedEnemy~=v0["bossFound%0"])) then v185(v0["State%0"].EliteExpandedEnemy);end v0["FH%0"]=v0["H%0"]:Clone();v0["FH%0"].Name=v13("\252\167\126\71\242\163\116\70","\34\186\198\21");v0["FH%0"].CanCollide=false;v0["FH%0"].Massless=true;v0["FH%0"].Size=v0["H%0"].Size;v0["FH%0"].Transparency=v0["H%0"].Transparency;v0["FH%0"].Parent=v0["bossFound%0"];v0["W%0"]=Instance.new(v13("\207\13\201\89\225\247\6\214\73\208\249\1\203\73","\162\152\104\165\61"));v0["W%0"].Part0=v0["H%0"];v0["W%0"].Part1=v0["FH%0"];v0["W%0"].Parent=v0["FH%0"];v0["H%0"].Size=Vector3.new(v0["Settings%0"].HeadSize,v0["Settings%0"].HeadSize,v0["Settings%0"].HeadSize);v0["H%0"].Transparency=1;v0["H%0"].CanCollide=false;for v590,v591 in pairs(v0["H%0"]:GetChildren()) do if (v591:IsA(v13("\254\63\183\126\121\228\193\2\183\110\120","\133\173\79\210\29\16")) or v591:IsA(v13("\169\121\238\42\129","\75\237\28\141"))) then v591:Destroy();end end v0["State%0"].EliteExpandedEnemy=v0["bossFound%0"];end v0["hum%0"]=v0["bossFound%0"]:FindFirstChild(v13("\244\74\193\176\33\20\238\229","\129\188\63\172\209\79\123\135"));if (v0["hum%0"] or (4406<4043)) then v0["hum%0"].WalkSpeed=0;v0["hum%0"].JumpPower=0;end for v562,v563 in pairs(v0["bossFound%0"]:GetDescendants()) do if v563:IsA(v13("\98\229\245\200\112\229\244\217","\173\32\132\134")) then v563.CanCollide=false;end end v0["ep%0"]=v0["bossFound%0"].HumanoidRootPart.Position;v0["d%0"]=v0["root%0"].Position-v0["ep%0"] ;d=Vector3.new(v0["d%0"].X,0,v0["d%0"].Z);if (((3837>=1570) and (d.Magnitude<0.1)) or (1889>=3383)) then d=Vector3.new(1,0,0);end d=d.Unit;v0["dest%0"]=CFrame.lookAt(v0["ep%0"] + (d * v0["Settings%0"].AttackDistance) + Vector3.new(0,v0["Settings%0"].AttackHeight,0) ,v0["ep%0"]);if ((v0["root%0"].Position-v0["dest%0"].Position).Magnitude>10) then v0["State%0"].ActiveTween=v0["SmartTween%0"](v0["root%0"],v0["dest%0"],v0["State%0"].ActiveTween);else if ((1892<=2734) and v0["State%0"].ActiveTween) then v0["State%0"].ActiveTween:Cancel();v0["State%0"].ActiveTween=nil;end v0["root%0"].CFrame=v0["dest%0"];if ((1923<2218) and v0["bossFound%0"]:FindFirstChild(v13("\102\30\9\235","\173\46\123\104\143\206\81"))) then v0["Workspace%0"].CurrentCamera.CFrame=CFrame.lookAt(v0["Workspace%0"].CurrentCamera.CFrame.Position,v0["bossFound%0"].Head.Position);end v0["h%0"]=v0["Plr%0"].Character:FindFirstChild(v13("\156\8\47\139\75\140\8\176","\97\212\125\66\234\37\227"));v0["t%0"]=v0["Plr%0"].Character:FindFirstChildOfClass(v13("\190\236\185\57","\126\234\131\214\85"));if  not (v0["t%0"] and ((v0["t%0"].ToolTip==v13("\169\208\69\95\74","\47\228\181\41\58")) or (v0["t%0"].ToolTip==v13("\149\235\214\41\7","\127\198\156\185\91\99\80")) or (v0["t%0"].ToolTip==v13("\215\22\195\232\231\45\43\203\252\14","\190\149\122\172\144\199\107\89")))) then for v611,v612 in pairs(v0["Plr%0"].Backpack:GetChildren()) do if ((2173>379) and v612:IsA(v13("\6\10\254\242","\158\82\101\145\158")) and ((v612.ToolTip==v13("\67\233\13\4\64","\36\16\158\98\118")) or (v612.ToolTip==v13("\226\26\204\227\24\206\53\240\201\2","\133\160\118\163\155\56\136\71")) or (v612.ToolTip==v13("\219\167\125\247\179","\213\150\194\17\146\214\127")))) then v0["h%0"]:EquipTool(v612);break;end end end task.spawn(function() local v593,v594=v0["Workspace%0"].CurrentCamera.ViewportSize.X/2 ,v0["Workspace%0"].CurrentCamera.ViewportSize.Y/2 ;for v602=1,4 do v0["VirtualInputManager%0"]:SendMouseButtonEvent(v593,v594,0,true,game,1);task.wait(v0["Settings%0"].HoldTime or 0.05 );v0["VirtualInputManager%0"]:SendMouseButtonEvent(v593,v594,0,false,game,1);if (v0["RegisterAttack%0"] or (2950==3812) or (2591==3409)) then v0["RegisterAttack%0"]:FireServer(math.floor((0.5 + (math.random() * 0.5)) * 10000 )/10000 );end task.wait(0.1);end end);end else v0["spawns%0"]=v0["EliteSpawns%0"][v0["islandName%0"]];if v0["spawns%0"] then if ((4723>=2318) and (v0["State%0"].CurrentEliteSpawnIndex> #v0["spawns%0"])) then v0["State%0"].CurrentEliteSpawnIndex=1;end v0["targetDest%0"]=v0["spawns%0"][v0["State%0"].CurrentEliteSpawnIndex] * CFrame.new(0,40,0) ;if ((v0["root%0"].Position-v0["targetDest%0"].Position).Magnitude>20) then v0["State%0"].ActiveTween=v0["SmartTween%0"](v0["root%0"],v0["targetDest%0"],v0["State%0"].ActiveTween);else if (v0["State%0"].ActiveTween or (2027>2852)) then v0["State%0"].ActiveTween:Cancel();v0["State%0"].ActiveTween=nil;end task.wait(0.5);v0["State%0"].CurrentEliteSpawnIndex=v0["State%0"].CurrentEliteSpawnIndex + 1 ;end end end end elseif (v0["State%0"].IsDoingPriorityTask or (1136>4317)) then if v0["State%0"].EliteExpandedEnemy then v185(v0["State%0"].EliteExpandedEnemy);v0["State%0"].EliteExpandedEnemy=nil;end v0["State%0"].IsDoingPriorityTask=false;v0["WindUI%0"]:Notify({[v13("\47\160\176\216\67","\86\123\201\196\180\38\196\194")]="الایت هانتر",[v13("\212\231\215\187\242\230\205","\207\151\136\185")]="الایت کشته شد. بازگشت...",[v13("\140\150\58\131\96\113\126\166","\17\200\227\72\226\20\24")]=5});v0["ResumeFarms%0"]();end end end);end end);end task.spawn(function() while task.wait(0.5) do if ((4514>3324) and v0["State%0"].AutoFish) then pcall(v64);end end end);task.spawn(function() while task.wait(5) do if ((v0["State%0"].AutoBuyBait and  not v0["State%0"].IsBuyingBait) or (208>=4828)) then pcall(function() v0["inv%0"]=v0["ReplicatedStorage%0"].Remotes.CommF_:InvokeServer(v13("\183\68\15\254\199\231\234\241\164\78\9\206","\159\208\33\123\183\169\145\143"));v0["baitCount%0"]=0;if ((type(v0["inv%0"])==v13("\230\91\58\58\247","\86\146\58\88")) or (1583>3567)) then for v398,v399 in pairs(v0["inv%0"]) do if (((4748==4748) and (type(v399)==v13("\76\222\232\204\171","\154\56\191\138\160\206\137\86")) and v399.Name and string.find(v399.Name,v13("\164\88\252\147","\172\230\57\149\231\28\90\225"))) or (1313==794)) then v0["baitCount%0"]=v399.Count or 0 ;break;end end end if ((3174>2902) and (3736<=4740) and (v0["baitCount%0"]<15)) then v0["State%0"].IsBuyingBait=true;while v0["State%0"].AutoBuyBait and (v0["baitCount%0"]<85)  do if (v0["Plr%0"].Data.Beli.Value<10000) then break;end v0["ReplicatedStorage%0"]:WaitForChild(v13("\47\165\130\199\36\222\17","\187\98\202\230\178\72")):WaitForChild(v13("\15\228\176","\42\65\129\196\80")):WaitForChild(v13("\48\108\18\249\5\6\4\250","\142\98\42\61\186\119\103\98")):InvokeServer(v13("\27\173\3\14\44","\104\88\223\98"),v13("\102\246\241\199\1\173\102\246\235\218","\141\36\151\130\174\98"),1,{});v0["baitCount%0"]=v0["baitCount%0"] + 10 ;task.wait(0.8);end v0["State%0"].IsBuyingBait=false;end end);end end end);task.spawn(function() v0["lastSell%0"]=tick();while task.wait(1) do if ((4120<=4260) and ((v0["State%0"].AutoSellFish and ((tick() -v0["lastSell%0"])>=v0["State%0"].SellInterval)) or (3390<=3060))) then pcall(function() v0["ReplicatedStorage%0"]:WaitForChild(v13("\169\117\198\24\136\127\209","\109\228\26\162")):WaitForChild(v13("\112\224\233","\134\62\133\157\24\128")):WaitForChild(v13("\53\131\85\243\32\179\197\53\160\23\214\59\180\240\18\171\25\205\38\190\216","\182\103\197\122\185\79\209")):InvokeServer(v13("\213\142\242\127\9\70\244\169\209\84","\40\147\231\129\23\96"),v13("\70\253\128\73\157\165\207\125","\188\21\152\236\37\219\204"));end);v0["lastSell%0"]=tick();end end end);task.spawn(function() while task.wait(0.1) do if (v0["State%0"].AutoRoll or (999>2693)) then local v247,v248=v66();if ((v247 and v248) or (883>4778)) then v67(v248);task.wait(0.5);end end end end);task.spawn(function() while task.wait(1) do if (((463<601) and v0["State%0"].AutoRoll) or (3620>=4891)) then local v249,v250=v66();if ((4258>937) and v249) then if  not v0["State%0"].IsRolling then v0["State%0"].IsRolling=true;v0["PauseFarms%0"]();end else if (v0["State%0"].IsRolling or (2183<687) or (4869<906)) then v0["State%0"].IsRolling=false;task.wait(1);v0["ResumeFarms%0"]();end local v322,v323=pcall(function() return v0["ReplicatedStorage%0"].Remotes.CommF_:InvokeServer(v13("\99\230\34\31\73\231","\108\32\137\87"),v13("\137\224\5\165\36\205\66\84\175","\57\202\136\96\198\79\153\43"),v13("\143\15\137\133\130\191\220\170\55\171","\152\203\67\202\199\237\199"));end);if ((4549==4549) and v322 and ((v323==true) or tostring(v323):lower():find(v13("\232\70\161\11\6","\134\154\35\192\111\127\21\25")) or (v323==0))) then local v403,v404=pcall(function() return v0["ReplicatedStorage%0"].Remotes.CommF_:InvokeServer(v13("\155\41\28\25\41\220","\178\216\70\105\106\64"),v13("\28\35\127\245\194\246\213\142\29\62\99\194\208\197\209","\224\95\75\26\150\169\181\180"),v13("\47\246\251\10\75\180\82\10\206\217","\22\107\186\184\72\36\204"));end);if ((4672==4672) and v403 and ((v404==1) or (v404==true))) then if  not v0["State%0"].IsRolling then v0["State%0"].IsRolling=true;v0["PauseFarms%0"]();end if (pcall(function() return v0["ReplicatedStorage%0"].Remotes.CommF_:InvokeServer(v13("\196\178\49\93\7\233","\110\135\221\68\46"),v13("\193\35\21","\91\131\86\108\139\174\211"),v13("\223\7\155\53\82\227\15\185\3\92","\61\155\75\216\119"));end) or (1225>4228)) then task.wait(5);else if v0["State%0"].IsRolling then v0["State%0"].IsRolling=false;v0["ResumeFarms%0"]();end task.wait(2);end end end end elseif v0["State%0"].IsRolling then v0["State%0"].IsRolling=false;v0["ResumeFarms%0"]();end end end);task.spawn(function() v0["idx%0"]=1;while true do if ((3328>2238) and (v0["State%0"].AutoStats or (3668<395))) then v0["toUp%0"]={};for v287,v288 in ipairs({v13("\41\174\190\57\93","\189\100\203\210\92\56\105"),v13("\11\84\251\45\33\66\248","\72\79\49\157"),v13("\187\167\62\174\140","\220\232\208\81"),v13("\210\171\235","\193\149\222\133\80\76\58"),v13("\226\88\66\221\200\29\105\192\211\84\91","\178\166\61\47")}) do if ((3839>1405) and (v0["State%0"].SelectedStats[v288] or (4166==455))) then table.insert(v0["toUp%0"],v288);end end if (( #v0["toUp%0"]>0) or (1293<=507)) then if ((v0["idx%0"]> #v0["toUp%0"]) or (4449==2663)) then v0["idx%0"]=1;end pcall(function() v0["ReplicatedStorage%0"]:WaitForChild(v13("\201\79\229\117\222\59\232","\94\155\42\136\26\170")):WaitForChild(v13("\167\48\43\184\162\0","\213\228\95\70")):InvokeServer(v13("\11\191\198\180\120\35\181\214","\23\74\219\162\228"),v0["toUp%0"][v0["idx%0"]],v0["State%0"].StatsPoint);end);v0["idx%0"]=v0["idx%0"] + 1 ;end task.wait(5);else task.wait(1);end end end);task.spawn(function() while task.wait(1) do if ((v0["State%0"].AutoBuyDealer and v0["State%0"].TargetFruit) or (4277<2989) or (2896<805)) then v0["cUTC%0"]=os.time();v0["cCycle%0"]=math.floor(v0["cUTC%0"]/14400 );if ((2316==2316) and ((v0["State%0"].LastCheckedRestockTime~=v0["cCycle%0"]) or (870>=4149))) then if (((14400 -(v0["cUTC%0"]%14400))>14390) or (2570==1533)) then task.wait(8);end v0["State%0"].LastCheckedRestockTime=math.floor(os.time()/14400 );pcall(function() v0["stock%0"]=v0["ReplicatedStorage%0"].Remotes.CommF_:InvokeServer(v13("\30\227\82\137\41\44\239\82\188","\91\89\134\38\207"),false);if (type(v0["stock%0"])==v13("\80\239\202\58\22","\71\36\142\168\86\115\176")) then for v465,v466 in pairs(v0["stock%0"]) do if (((2212<3183) and (v466.Name==v0["State%0"].TargetFruit) and v466.OnSale) or (883==1460)) then if ((v0["Plr%0"].Data.Beli.Value>=v466.Price) or (4619<=999)) then v0["ReplicatedStorage%0"].Remotes.CommF_:InvokeServer(v13("\239\180\96\188\11\191\69\76\237\160\101\153\17\171\95\93","\41\191\193\18\223\99\222\54"),v0["State%0"].TargetFruit,false);v0["State%0"].AutoBuyDealer=false;end break;end end end end);end end end end);v0["Plr%0"].Backpack.ChildAdded:Connect(function(v132) if ((4646>2992) and v0["State%0"].AutoStore and  not v0["State%0"].attemptedFruits[v132]) then v70(v132);end end);local function v78(v133) v133.ChildAdded:Connect(function(v162) if (((1434<3106) and v0["State%0"].AutoStore and v162:IsA(v13("\159\41\200\38","\202\203\70\167\74")) and v162.Name:lower():find(v13("\42\19\201\58\101","\17\76\97\188\83")) and  not v0["State%0"].attemptedFruits[v162]) or (3410>4116)) then v70(v162);end end);end if v0["Plr%0"].Character then v78(v0["Plr%0"].Character);end v0["Plr%0"].CharacterAdded:Connect(v78);task.spawn(function() while task.wait(0.05) do pcall(function() if  not v0["State%0"].AutoSeaEnabled then return;end if ((786<3023) and v73()) then v18.SetFarmMode(v13("\183\34\202\39\49\148\69\170\139\32","\195\229\71\185\87\80\227\43"));task.wait(5);return;end v0["root%0"]=v0["Plr%0"].Character and v0["Plr%0"].Character:FindFirstChild(v13("\200\233\13\81\225\239\245\4\98\224\239\232\48\81\253\244","\143\128\156\96\48")) ;v0["hum%0"]=v0["Plr%0"].Character and v0["Plr%0"].Character:FindFirstChild(v13("\144\196\253\19\25\183\216\244","\119\216\177\144\114")) ;if ( not v0["root%0"] or  not v0["hum%0"]) then return;end v0["ActiveBoat%0"]=nil;if ((v0["hum%0"].SeatPart and v0["hum%0"].SeatPart:IsA(v13("\255\44\241\75\202\37\252\113\204\40\237","\34\169\73\153")) and (v0["hum%0"].SeatPart.Parent.Parent==v0["Workspace%0"].Boats)) or (903>=3059)) then v0["ActiveBoat%0"]=v0["hum%0"].SeatPart.Parent;end if  not v0["ActiveBoat%0"] then v18.SetFarmMode(v13("\141\233\31\159\163\226\12\169\165\237\31","\235\202\140\107"));v0["existingBoat%0"]=v72();if v0["existingBoat%0"] then v0["seat%0"]=v0["existingBoat%0"]:FindFirstChild(v13("\58\113\60\161\234\43\242\246\9\117\32","\165\108\20\84\200\137\71\151"));if (v0["seat%0"] or (2442<74) or (3976<2857)) then v0["root%0"].CFrame=v0["seat%0"].CFrame * CFrame.new(0,3,0) ;task.wait(0.5);v0["seat%0"]:Sit(v0["hum%0"]);task.wait(1);end else v0["npcPos%0"]=CFrame.new( -16929,8,464);if ((v0["root%0"].Position-v0["npcPos%0"].Position).Magnitude>20) then v0["State%0"].ActiveTween=v0["SmartTween%0"](v0["root%0"],v0["npcPos%0"] * CFrame.new(0,50,0) ,v0["State%0"].ActiveTween);else if v0["State%0"].ActiveTween then v0["State%0"].ActiveTween:Cancel();v0["State%0"].ActiveTween=nil;end v0["ReplicatedStorage%0"].Remotes.CommF_:InvokeServer(v13("\88\161\50\170\117\181\63","\232\26\212\75"),v0["State%0"].SelectedBoatArg);task.wait(1.5);end end return;end v18.SetFarmMode(v13("\22\92\102\231\196\50\72","\151\87\41\18\136"));v0["seat%0"]=v0["ActiveBoat%0"]:FindFirstChild(v13("\109\170\194\217\253\87\170\249\213\255\79","\158\59\207\170\176"));if ((4535==4535) and  not v0["seat%0"]) then return;end for v254,v255 in pairs(v0["ActiveBoat%0"]:GetDescendants()) do if ((4930>2307) and v255:IsA(v13("\109\95\32\76\188\78\76\39","\236\47\62\83\41"))) then v255.CanCollide=false;end end for v256,v257 in pairs(v0["Plr%0"].Character:GetChildren()) do if v257:IsA(v13("\216\168\51\62\154\131\232\189","\226\154\201\64\91\202")) then v257.CanCollide=false;end end v0["currentLevel%0"]=v71();v0["moveSpeed%0"]=v0["Settings%0"].BoatSpeed/20 ;if ((v0["State%0"].TargetSeaLevel==7) or (v0["currentLevel%0"]<v0["State%0"].TargetSeaLevel)) then v0["seat%0"].CFrame=v0["seat%0"].CFrame * CFrame.new(0,0, -v0["moveSpeed%0"]) ;v0["State%0"].BoatPatrolDist=0;elseif ((v0["State%0"].BoatPatrolDir==1) or (3009<=2105)) then v0["seat%0"].CFrame=v0["seat%0"].CFrame * CFrame.new(v0["moveSpeed%0"],0,0) ;v0["State%0"].BoatPatrolDist=v0["State%0"].BoatPatrolDist + v0["moveSpeed%0"] ;if ((1830<3669) and (v0["State%0"].BoatPatrolDist>=200)) then v0["State%0"].BoatPatrolDir= -1;end else v0["seat%0"].CFrame=v0["seat%0"].CFrame * CFrame.new( -v0["moveSpeed%0"],0,0) ;v0["State%0"].BoatPatrolDist=v0["State%0"].BoatPatrolDist-v0["moveSpeed%0"] ;if (v0["State%0"].BoatPatrolDist<= -200) then v0["State%0"].BoatPatrolDir=1;end end end);end end);task.spawn(function() while task.wait(0.2) do pcall(function() if ( not v0["State%0"].IslandTeleportEnabled or  not v0["State%0"].SelectedIslandTarget) then return;end if (v73() or (4046<1291)) then task.wait(2);return;end v0["root%0"]=v0["Plr%0"].Character and v0["Plr%0"].Character:FindFirstChild(v13("\233\92\16\25\68\179\200\77\47\23\69\168\241\72\15\12","\220\161\41\125\120\42")) ;if ( not v0["root%0"] or (4241==3545)) then return;end v0["targetData%0"]=v60[v0["State%0"].SelectedIslandTarget];v0["inCursedShip%0"]=(v0["root%0"].Position-Vector3.new(923,126,32852)).Magnitude<3000 ;v0["inSubmerged%0"]=(v0["root%0"].Position-Vector3.new(10779, -2088,9262)).Magnitude<3000 ;v0["inFishman%0"]=(v0["root%0"].Position-Vector3.new(61583,18,987)).Magnitude<2000 ;if ((v0["inCursedShip%0"] and (v0["targetData%0"]~=v13("\143\97\165\13\181\112\172\49\159\100\178\29\185\117\147\6\181\97","\110\220\17\192"))) or (1430>=3612) or (4048>4232)) then if v0["State%0"].ActiveTween then v0["State%0"].ActiveTween:Cancel();v0["State%0"].ActiveTween=nil;end v0["ReplicatedStorage%0"].Remotes.CommF_:InvokeServer(v13("\102\124\37\15\238\36\229\130\122\109\38\27\229\52\244","\199\20\25\84\122\139\87\145"),Vector3.new( -6508.558,89.035, -132.84));task.wait(2.5);return;end if ((v0["inSubmerged%0"] and (v0["targetData%0"]~=v13("\116\25\216\173\18\235\75\54\238\187\25\231\66\27\218\171\31","\138\39\105\189\206\123"))) or (1750>=3473)) then if v0["State%0"].ActiveTween then v0["State%0"].ActiveTween:Cancel();v0["State%0"].ActiveTween=nil;end v0["ReplicatedStorage%0"].Net:WaitForChild(v13("\45\33\198\30\230\251\194\254\13\14\135\40\199\235\206\241\12\23\134\63\231\248\219\246\16\9","\159\127\103\233\77\147\153\175")):InvokeServer(v13("\46\254\237\190\73\202\19\245\208\175\76\206\23\255\246\190","\171\103\144\132\202\32"),v13("\36\38\226\5\80\0\252\24\0\32\250\24","\108\112\79\137"));task.wait(2.5);return;end if ((3166==3166) and v0["inFishman%0"] and (v0["targetData%0"]~=v13("\10\204\112\45\191\22\232\33\58\208\52\11\164\21\240","\85\95\162\20\72\205\97\137"))) then if ((1763<3724) and (2683>=2460) and v0["State%0"].ActiveTween) then v0["State%0"].ActiveTween:Cancel();v0["State%0"].ActiveTween=nil;end v0["ReplicatedStorage%0"].Remotes.CommF_:InvokeServer(v13("\229\248\59\201\8\235\217\210\243\62\206\12\246\206\242","\173\151\157\74\188\109\152"),Vector3.new(3864.69,6.74, -1926.21));task.wait(2.5);return;end if ((57<=2723) and ((type(v0["targetData%0"])==v13("\55\28\42\212\210\83","\147\68\104\88\189\188\52\181")) or (1804>=3275))) then if ((v0["targetData%0"]==v13("\41\152\142\211\19\137\135\239\57\157\153\195\31\140\184\216\19\152","\176\122\232\235")) or (2070==443)) then if  not v0["inCursedShip%0"] then if v0["State%0"].ActiveTween then v0["State%0"].ActiveTween:Cancel();v0["State%0"].ActiveTween=nil;end v0["ReplicatedStorage%0"].Remotes.CommF_:InvokeServer(v13("\146\112\43\90\235\147\97\31\65\250\146\116\52\76\235","\142\224\21\90\47"),Vector3.new(923.213,126.976,32852.832));task.wait(2.5);else v0["State%0"].IslandTeleportEnabled=false;v0["WindUI%0"]:Notify({[v13("\64\221\51\90\161","\229\20\180\71\54\196\235")]="تلپورت انجام شد",[v13("\10\113\207\247\240\164\148","\224\73\30\161\131\149\202")]="به Cursed Ship رسیدید!",[v13("\213\240\227\81\229\236\254\94","\48\145\133\145")]=3});end elseif ((v0["targetData%0"]==v13("\105\92\176\237\216\45\86\115\134\251\211\33\95\94\178\235\213","\76\58\44\213\142\177")) or (1417>3629) or (2705==1393)) then if  not v0["inSubmerged%0"] then v0["npcPos%0"]=CFrame.new( -16271,25,1372);if (((v0["root%0"].Position-v0["npcPos%0"].Position).Magnitude>20) or (4601<61)) then v0["State%0"].ActiveTween=v0["SmartTween%0"](v0["root%0"],v0["npcPos%0"],v0["State%0"].ActiveTween);else if (((4795>402) and v0["State%0"].ActiveTween) or (1390>=4744)) then v0["State%0"].ActiveTween:Cancel();v0["State%0"].ActiveTween=nil;end v0["ReplicatedStorage%0"].Net:WaitForChild(v13("\249\2\93\30\109\201\41\19\63\113\197\33\37\34\106\192\33\0\30\104\206\37\25","\24\171\68\114\77")):InvokeServer(v13("\219\15\81\68\130\210\48\162\220\8\82\95\130\204\3\168\235\52\67\94\134\208\0","\205\143\125\48\50\231\190\100"));task.wait(2.5);end else v0["State%0"].IslandTeleportEnabled=false;v0["WindUI%0"]:Notify({[v13("\245\174\0\9\228","\194\161\199\116\101\129\131\191")]="تلپورت انجام شد",[v13("\207\43\198\188\242\172\248","\194\140\68\168\200\151")]="به Submerged Island رسیدید!",[v13("\102\238\199\36\225\75\244\219","\149\34\155\181\69")]=3});end end else if (((4813>3565) and (v0["Sea%0"]==1) and (v0["targetData%0"]==v60[v13("\54\243\209\255\17\234\212\238\6\239\149\217\10\233\204","\154\99\157\181")]) and  not v0["inFishman%0"]) or (2003>3834)) then if (((3912==3912) and v0["State%0"].ActiveTween) or (156>3913)) then v0["State%0"].ActiveTween:Cancel();v0["State%0"].ActiveTween=nil;end v0["ReplicatedStorage%0"].Remotes.CommF_:InvokeServer(v13("\159\10\253\181\233\158\27\201\174\248\159\14\226\163\233","\140\237\111\140\192"),Vector3.new(61163.85,11.68,1819.78));task.wait(2.5);return;end if ((195==195) and (2821<=4824) and ((v0["root%0"].Position-v0["targetData%0"].Position).Magnitude>20)) then v0["State%0"].ActiveTween=v0["SmartTween%0"](v0["root%0"],v0["targetData%0"] * CFrame.new(0,40,0) ,v0["State%0"].ActiveTween);else if v0["State%0"].ActiveTween then v0["State%0"].ActiveTween:Cancel();v0["State%0"].ActiveTween=nil;end v0["State%0"].IslandTeleportEnabled=false;v0["WindUI%0"]:Notify({[v13("\50\16\105\20\3","\120\102\121\29")]="تلپورت انجام شد",[v13("\143\236\183\47\169\237\173","\91\204\131\217")]="به "   .. v0["State%0"].SelectedIslandTarget   .. " رسیدید!" ,[v13("\234\234\71\213\167\212\241\192","\158\174\159\53\180\211\189")]=3});end end end);end end);if ((3105>=1796) and (1738<=2195) and (v0["Sea%0"]==3)) then local function v163() return v0["Plr%0"].Backpack:FindFirstChild("God's Chalice") or (v0["Plr%0"].Character and v0["Plr%0"].Character:FindFirstChild("God's Chalice")) ;end v0["PlatesData%0"]={{[v13("\124\252\224\216","\213\50\157\141\189\23")]=v13("\209\63\151\180\119\182","\196\158\70\228\192\18"),[v13("\98\94\26\71\247\75\82\20","\185\42\63\113\46")]=v13("\231\211\46\46\91\227\213\40\45\30","\123\180\189\65\89"),[v13("\246\141\226\227\140\214\175\214\246\136\207\137","\233\162\236\144\132")]=CFrame.new( -4971.49,332.26, -3720.277)},{[v13("\156\197\243\31","\63\210\164\158\122\217\150")]=v13("\27\196\226\172\89\241\61\192","\152\83\171\150\140\41"),[v13("\170\228\136\58\250\26\5\135","\104\226\133\227\83\180\123")]=v13("\52\2\45\68\6\25\99\99\8\18","\48\99\107\67"),[v13("\234\167\111\215\40\111\253\128\111\209\32\126","\27\190\198\29\176\77")]=CFrame.new( -5420.487,1085.66, -2666.637)},{[v13("\193\74\240\49","\46\143\43\157\84\201")]=v13("\101\125\87\206\83\10\136\69\125\82","\168\55\24\54\162\63\115"),[v13("\63\251\43\137\252\207\26\255","\174\119\154\64\224\178")]=v13("\26\107\215\126\69\149\31\224","\132\74\30\165\27\101\199\122"),[v13("\27\230\237\160\162\161\151\9\245\254\170\162","\212\79\135\159\199\199\213")]=CFrame.new( -5414.417,310.56, -2212.492)}};local function v165() v0["status%0"]={[v13("\86\185\166\83\89\197","\120\25\192\213\39\60\183")]=true,[v13("\48\79\43\8\8\73\49\67","\40\120\32\95")]=true,[v13("\8\174\56\118\163\6\122\185\60\126","\127\90\203\89\26\207")]=true};v0["boatCastle%0"]=v0["Workspace%0"].Map:FindFirstChild(v13("\255\58\174\223\73\222\220\38\187\199\12","\157\189\85\207\171\105"));if ((4379>=2131) and v0["boatCastle%0"]) then for v329,v330 in pairs(v0["boatCastle%0"]:GetDescendants()) do if (v330:IsA(v13("\228\160\203\176\51\199\179\204","\99\166\193\184\213")) and (v0["status%0"][v330.BrickColor.Name]~=nil)) then v0["parentColor%0"]=v330.BrickColor.Name;v0["isGreen%0"]=false;for v437,v438 in pairs(v330:GetChildren()) do if (v438:IsA(v13("\244\182\147\190\60\139\196\163","\234\182\215\224\219\108")) and (v438.BrickColor.Name==v13("\236\136\182\48\128\134\169\48\197\143","\85\160\225\219"))) then v0["isGreen%0"]=true;break;end end v0["status%0"][v0["parentColor%0"]]=v0["isGreen%0"];end end end return v0["status%0"];end local function v166(v200) v0["NotificationsFolder%0"]=v0["Plr%0"].PlayerGui:WaitForChild(v13("\114\10\151\192\48\213\72\93\17\138\198\56\207","\43\60\101\227\169\86\188"),5);if  not v0["NotificationsFolder%0"] then return false;end v0["verificationResult%0"]=nil;v0["targetNameLower%0"]=string.lower(v200);v0["connection%0"]=v0["NotificationsFolder%0"].ChildAdded:Connect(function(v258) task.wait(0.1);v0["textLabel%0"]=(v258:IsA(v13("\68\205\201\171\118\205\187\50\124","\87\16\168\177\223\58\172\217")) and v258) or v258:FindFirstChildWhichIsA(v13("\0\200\65\201\23\53\207\92\209","\91\84\173\57\189"),true) ;if ((41<=3018) and v0["textLabel%0"]) then v0["lowerText%0"]=string.lower(v0["textLabel%0"].Text);if string.find(v0["lowerText%0"],v0["targetNameLower%0"]) then if string.find(v0["lowerText%0"],v13("\21\183\13\254\172\211\20","\182\112\217\108\156\192")) then v0["verificationResult%0"]=true;elseif (string.find(v0["lowerText%0"],"don't own") or string.find(v0["lowerText%0"],v13("\174\7\70\251\203\165\31\70","\235\202\104\40\143"))) then v0["verificationResult%0"]=false;end end end end);v0["args%0"]={[1]={[v13("\62\159\20\171\12\140\30\151\12\134\30","\217\109\235\123")]=v200,[v13("\19\144\110\83","\221\71\233\30\54\16\176\173")]=v13("\21\233\76\190\7\247\87\177","\223\84\156\62"),[v13("\245\243\236\201\178\35\194","\91\182\156\130\189\215")]=v13("\91\98\185\92\110","\53\30\19\204")}};pcall(function() v0["ReplicatedStorage%0"].Modules.Net:FindFirstChild(v13("\203\198\63\162\181\236\233\100\167\178\234\244\127\137\174\227\229\98\182\129","\199\153\128\16\228")):InvokeServer(unpack(v0["args%0"]));end);v0["timeout%0"]=tick() + 3 ;while (v0["verificationResult%0"]==nil) and (tick()<v0["timeout%0"])  do task.wait(0.1);end v0["connection%0"]:Disconnect();return v0["verificationResult%0"]==true ;end v0["indraNoclipConn%0"]=nil;local function v168(v207) if ((2145<=4104) and v207) then if ((3844>=2043) and (2689<4845) and v0["indraNoclipConn%0"]) then v0["indraNoclipConn%0"]:Disconnect();end v0["indraNoclipConn%0"]=v0["RunService%0"].Stepped:Connect(function() if (v0["Plr%0"].Character or (2322>2622)) then for v439,v440 in pairs(v0["Plr%0"].Character:GetDescendants()) do if ((v440:IsA(v13("\243\43\246\28\151\208\56\241","\199\177\74\133\121")) and v440.CanCollide) or (4534==2082)) then v440.CanCollide=false;end end end end);elseif v0["indraNoclipConn%0"] then v0["indraNoclipConn%0"]:Disconnect();v0["indraNoclipConn%0"]=nil;end end local function v169(v208) v0["root%0"]=v0["Plr%0"].Character and v0["Plr%0"].Character:FindFirstChild(v13("\144\220\177\255\57\201\35\188\251\179\241\35\246\43\170\221","\74\216\169\220\158\87\166")) ;if ( not v0["root%0"] or (3232<=2731)) then return;end v0["hum%0"]=v0["Plr%0"].Character:FindFirstChildOfClass(v13("\192\54\30\45\84\231\42\23","\58\136\67\115\76"));if ((4905==4905) and v0["hum%0"] and v0["hum%0"].Sit) then v0["hum%0"].Sit=false;end v0["dist%0"]=(v0["root%0"].Position-v208.Position).Magnitude;v0["time%0"]=math.max(v0["dist%0"]/300 ,0.1);v0["tweenInfo%0"]=TweenInfo.new(v0["time%0"],Enum.EasingStyle.Linear);v0["tween%0"]=v0["TweenService%0"]:Create(v0["root%0"],v0["tweenInfo%0"],{[v13("\210\140\202\88\136\37","\61\145\202\184\57\229\64\203")]=v208});v0["bv%0"]=Instance.new(v13("\126\93\141\94\106\87\133\72\95\91\157\94","\39\60\50\233"));v0["bv%0"].Velocity=Vector3.zero;v0["bv%0"].MaxForce=Vector3.new(math.huge,math.huge,math.huge);v0["bv%0"].Parent=v0["root%0"];v168(true);v0["tween%0"]:Play();v0["tween%0"].Completed:Wait();v0["bv%0"]:Destroy();v168(false);end local function v170() if (v0["State%0"].IsDoingIndra or (1571>1867)) then return;end v0["State%0"].IsDoingIndra=true;v0["wasDoingPriority%0"]=v0["State%0"].IsDoingPriorityTask;v0["State%0"].IsDoingPriorityTask=true;v0["PauseFarms%0"]();v18.SetFarmMode(v13("\51\61\167\62\131\24\167\185\0\63\166","\195\122\83\195\76\226\72\210"));v0["WindUI%0"]:Notify({[v13("\208\221\47\242\36","\65\132\180\91\158")]=v13("\44\114\213\60\4\60\240\59\17\115","\78\101\28\177"),[v13("\6\187\238\69\32\186\244","\49\69\212\128")]="جام یافت شد! شروع خودکار پازل...",[v13("\51\25\194\243\245\30\3\222","\129\119\108\176\146")]=5});v169(CFrame.new( -4997.836,310.864, -3006.647));task.wait(2);v0["plateStatus%0"]=v165();v0["allDone%0"]=true;for v260,v261 in ipairs(v0["PlatesData%0"]) do if (v0["plateStatus%0"][v261.Name]==true) then else v0["allDone%0"]=false;v0["WindUI%0"]:Notify({[v13("\8\198\19\193\32","\124\92\175\103\173\69\110")]=v13("\232\54\7\37\192\120\34\34\213\55","\87\161\88\99"),[v13("\49\246\225\216\178\222\55","\67\114\153\143\172\215\176")]="بررسی رنگ: "   .. v261.HakiName ,[v13("\154\183\252\15\170\171\225\0","\110\222\194\142")]=3});v0["successEquip%0"]=v166(v261.HakiName);if v0["successEquip%0"] then pcall(function() v0["ReplicatedStorage%0"].Remotes.CommF_:InvokeServer(v13("\53\204\8\166","\193\119\185\123\201\50"));end);v169(v261.TargetCFrame);task.wait(2.5);else v0["WindUI%0"]:Notify({[v13("\67\1\237\42\10","\127\23\104\153\70\111\25")]="Indra Auto توقف",[v13("\42\8\168\187\46\34\163","\211\105\103\198\207\75\76\215")]="شما رنگ ["   .. v261.HakiName   .. "] را ندارید! عملیات متوقف شد." ,[v13("\234\178\162\238\106\5\181\184","\214\174\199\208\143\30\108\218")]=5});break;end end end if (v0["allDone%0"] or (2654>=2996)) then v0["WindUI%0"]:Notify({[v13("\37\141\31\166\160","\41\113\228\107\202\197\54\184")]=v13("\83\131\60\78\123\205\25\73\110\130","\60\26\237\88"),[v13("\251\37\122\242\171\214\62","\206\184\74\20\134")]="هر ۳ دکمه از قبل سبز بودند!",[v13("\28\241\252\176\231\67\55\194","\172\88\132\142\209\147\42\88")]=4});end v0["State%0"].AutoIndraEnabled=false;v0["State%0"].IsDoingIndra=false;v0["State%0"].IsDoingPriorityTask=v0["wasDoingPriority%0"];v0["ResumeFarms%0"]();v0["WindUI%0"]:Notify({[v13("\179\131\216\1\51","\222\231\234\172\109\86\149")]=v13("\196\225\196\10\236\175\225\13\249\224","\120\141\143\160"),[v13("\99\163\184\70\69\162\162","\50\32\204\214")]="پایان عملیات ایندرا. بازگشت به فارم...",[v13("\162\82\39\120\167\24\137\73","\113\230\39\85\25\211")]=5});end task.spawn(function() while task.wait(1) do if (v0["State%0"].AutoIndraEnabled and  not v0["State%0"].IsDoingIndra) then if v163() then v170();end end end end);end return {[v13("\237\190\18","\43\190\219\102\136\71\171\203")]=function(v134,v135) v0["State%0"][v134]=v135;if (((3978>2104) and (v134==v13("\21\127\60\82\13\112\7\88\54\123\34\124\44\127\50\85\39\122","\57\66\30\80"))) or (4136>=4411)) then v55(v135);end end,[v13("\14\221\180","\228\73\184\192\117\228\89\148")]=function(v137) return v0["State%0"][v137];end,[v13("\232\140\97\54\192\136\97\7","\116\175\233\21")]=function() return v0["BoatNames%0"],v0["BoatsMap%0"];end,[v13("\217\253\170\111\200\61\62\240\252\173","\95\158\152\222\38\187\81")]=function() return v61;end,[v13("\219\188\59\177\166\196\204\170\48\183\173\219","\168\152\221\85\210\195")]=function() if v0["State%0"].ActiveTween then v0["State%0"].ActiveTween:Cancel();v0["State%0"].ActiveTween=nil;end end};end;return v0["ExtraModule%0"];
+    local RegisterHit = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Net"):FindFirstChild("RE/RegisterHit")
+    local RunService = game:GetService("RunService")
+    local TweenService = game:GetService("TweenService")
+    local Lighting = game:GetService("Lighting")
+    local CommF = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("CommF_")
+
+    local State = {
+        AutoFish = false, AutoBuyBait = false,
+        AutoSellFish = false, SellInterval = 60,
+        AutoRoll = false, AutoStore = false,
+        AutoBuyDealer = false, TargetFruit = "Rocket-Rocket",
+        AutoStats = false, StatsPoint = 1, SelectedStats = {},
+        attemptedFruits = {},
+        LastCheckedRestockTime = 0,
+        IsRolling = false, IsStoring = false, IsBuyingBait = false,
+        TotalFishCaught = 0,
+        
+        AutoSeaEnabled = false, TargetSeaLevel = 7,
+        SelectedBoatArg = "PirateGrandBrigade",
+        BoatPatrolDist = 0, BoatPatrolDir = 1,
+        
+        IslandTeleportEnabled = false, SelectedIslandTarget = nil,
+        ActiveTween = nil,
+
+        AutoEliteHunter = false,
+        AutoYama = false,
+        TryLuckYama = false,
+        IsDoingPriorityTask = false,
+        EliteExpandedEnemy = nil,
+        LastEliteAttackTime = 0,
+        CurrentEliteSpawnIndex = 1,
+
+        AutoTushita = false,
+        TushitaPhase = "Idle",
+        CurrentTorchIndex = 1,
+
+        AutoCoreEnabled = false,
+        CoreState = "Idle",
+        CoreTimer = -1,
+
+        AutoPirateEnabled = false,
+        IsPirateRaidActive = false,
+        PirateTarget = nil,
+        PirateExpandedEnemy = nil,
+        PirateLastTargetTime = 0,
+        SafeUndergroundPos = Vector3.new(-5536.476, 295, -2961.032),
+
+        WalkOnWaterEnabled = true,
+
+        AutoBerries = false,
+        IsCollectingBerries = false,
+
+        AutoAuraColor = false,
+        IsBuyingAuraColor = false,
+
+        MoonPhaseStr = "در حال اسکن...",
+        MoonTimeStr = "در حال محاسبه...",
+
+        -- متغیرهای جدید اضافه شده برای سیستم توقف چست و دارک بیرد
+        StopChestOnSpecialItem = false,
+        AutoDarkbeardEnabled = false,
+        AutoKillDarkbeardEventEnabled = false,
+        DarkbeardState = "Idle"
+    }
+
+    -- ================== سیستم ردیاب وضعیت ماه (پس‌زمینه) ==================
+    local MoonPhasesMap = {
+        ["9709149431"] = {Phase = "4/4", Time = "فول مون است!"},
+        ["9709149052"] = {Phase = "3/4", Time = "8 تا 10 دقیقه"},
+        ["9709149830"] = {Phase = "3/4", Time = "8 تا 10 دقیقه"},
+        ["9709149680"] = {Phase = "3/4", Time = "8 تا 10 دقیقه"},
+        ["97091149680"]= {Phase = "3/4", Time = "8 تا 10 دقیقه"},
+        ["9709150086"] = {Phase = "2/4", Time = "16 تا 20 دقیقه"},
+        ["9709143733"] = {Phase = "2/4", Time = "16 تا 20 دقیقه"},
+        ["9709139597"] = {Phase = "1/4", Time = "24 تا 30 دقیقه"},
+        ["9709150401"] = {Phase = "0/4", Time = "32 تا 40 دقیقه"},
+        ["9709135895"] = {Phase = "0/4", Time = "32 تا 40 دقیقه"},
+    }
+
+    task.spawn(function()
+        while task.wait(1) do
+            local sky = Lighting:FindFirstChildOfClass("Sky")
+            if sky then
+                local extractedId = string.match(sky.MoonTextureId, "%d+")
+                local clockTime = Lighting.ClockTime
+                -- تشخیص روز یا شب بودن (بین 6 صبح تا 5:30 عصر روز محسوب میشه)
+                local isDay = (clockTime > 6 and clockTime < 17.5)
+
+                if extractedId and MoonPhasesMap[extractedId] then
+                    local data = MoonPhasesMap[extractedId]
+                    
+                    if extractedId == "9709149431" then -- ایدی ماه 100% (فول مون)
+                        if isDay then
+                            State.MoonPhaseStr = "امشب فول مونه (4/4)"
+                            State.MoonTimeStr = "4 یا 5 دقیقه"
+                        else
+                            State.MoonPhaseStr = "فول مونه (4/4)"
+                            State.MoonTimeStr = "فول مون است!"
+                        end
+                    else
+                        State.MoonPhaseStr = data.Phase
+                        State.MoonTimeStr = data.Time
+                    end
+                else
+                    State.MoonPhaseStr = "نامشخص"
+                    State.MoonTimeStr = "در حال محاسبه..."
+                end
+            end
+        end
+    end)
+
+    -- ================== سیستم توقف اتو چست در صورت گرفتن آیتم ویژه ==================
+    task.spawn(function()
+        while task.wait(1) do
+            if State.StopChestOnSpecialItem then
+                local shouldStop = false
+                
+                if Sea == 2 then
+                    local hasFist = Plr.Backpack:FindFirstChild("Fist of Darkness") or (Plr.Character and Plr.Character:FindFirstChild("Fist of Darkness"))
+                    if hasFist then shouldStop = true end
+                elseif Sea == 3 then
+                    local hasChalice = Plr.Backpack:FindFirstChild("God's Chalice") or (Plr.Character and Plr.Character:FindFirstChild("God's Chalice"))
+                    if hasChalice then shouldStop = true end
+                end
+                
+                if shouldStop then
+                    State.StopChestOnSpecialItem = false -- خاموش میکنیم که اسپم نشه
+                    PauseFarms()
+                    if Deps.SetFarmMode then Deps.SetFarmMode("None") end
+                    if Sea == 2 then
+                        WindUI:Notify({Title="توقف خودکار", Content="اسکریپت متوقف شد! (Fist of Darkness دریافت شد)", Duration=5})
+                    else
+                        WindUI:Notify({Title="توقف خودکار", Content="اسکریپت متوقف شد! (God's Chalice دریافت شد)", Duration=5})
+                    end
+                end
+            end
+        end
+    end)
+
+    -- ================== سیستم Auto Aura Colors ==================
+    task.spawn(function()
+        while task.wait(2) do
+            if State.AutoAuraColor and not State.IsBuyingAuraColor then
+                local npcsFolder = ReplicatedStorage:FindFirstChild("NPCs")
+                local hasNPC = (npcsFolder and npcsFolder:FindFirstChild("Barista Cousin")) or Workspace:FindFirstChild("Barista Cousin")
+                
+                if hasNPC then
+                    State.IsBuyingAuraColor = true
+                    pcall(function()
+                        CommF:InvokeServer("ColorsDealer", "1")
+                        task.wait(1)
+                        CommF:InvokeServer("ColorsDealer", "2")
+                    end)
+                    task.wait(5)
+                    State.IsBuyingAuraColor = false
+                end
+            end
+        end
+    end)
+
+    -- ================== سیستم Auto Berries ==================
+    local noclipBerryConnection = nil
+    local function ToggleBerryNoclip(enable)
+        if enable then
+            if noclipBerryConnection then noclipBerryConnection:Disconnect() end
+            noclipBerryConnection = RunService.Stepped:Connect(function()
+                if Plr.Character then
+                    for _, part in pairs(Plr.Character:GetDescendants()) do
+                        if part:IsA("BasePart") and part.CanCollide then
+                            part.CanCollide = false
+                        end
+                    end
+                end
+            end)
+        else
+            if noclipBerryConnection then
+                noclipBerryConnection:Disconnect()
+                noclipBerryConnection = nil
+            end
+        end
+    end
+
+    local function CustomTweenToBerry(targetCFrame)
+        local character = Plr.Character
+        local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+        if not rootPart then return end
+
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if humanoid and humanoid.Sit then humanoid.Sit = false end
+
+        local distance = (rootPart.Position - targetCFrame.Position).Magnitude
+        local timeToTake = math.max(distance / 340, 0.1)
+
+        local tweenInfo = TweenInfo.new(timeToTake, Enum.EasingStyle.Linear)
+        local tween = TweenService:Create(rootPart, tweenInfo, {CFrame = targetCFrame})
+
+        local bodyVel = Instance.new("BodyVelocity")
+        bodyVel.Velocity = Vector3.new(0, 0, 0)
+        bodyVel.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+        bodyVel.Parent = rootPart
+
+        ToggleBerryNoclip(true)
+        tween:Play()
+        tween.Completed:Wait() 
+        
+        bodyVel:Destroy()
+        ToggleBerryNoclip(false)
+    end
+
+    task.spawn(function()
+        while task.wait(0.5) do
+            if State.AutoBerries and not State.IsCollectingBerries then
+                local availableBerries = {}
+                for _, obj in pairs(Workspace:GetDescendants()) do
+                    if obj.Name == "Berries" and (obj:IsA("Folder") or obj:IsA("Configuration")) then
+                        for _, childModel in pairs(obj:GetChildren()) do
+                            if childModel:IsA("Model") then
+                                local prompt = childModel:FindFirstChildWhichIsA("ProximityPrompt", true)
+                                if prompt then
+                                    table.insert(availableBerries, {Model = childModel, Prompt = prompt})
+                                end
+                            end
+                        end
+                    end
+                end
+
+                if #availableBerries > 0 then
+                    local wasDoingPriority = State.IsDoingPriorityTask
+                    State.IsCollectingBerries = true
+                    State.IsDoingPriorityTask = true
+                    
+                    PauseFarms() 
+                    
+                    for _, targetData in ipairs(availableBerries) do
+                        if not State.AutoBerries then break end 
+                        local targetModel = targetData.Model
+                        local targetPrompt = targetData.Prompt
+                        
+                        if targetModel and targetModel.Parent then
+                            local targetCFrame = targetModel:GetPivot()
+                            if targetCFrame then
+                                CustomTweenToBerry(targetCFrame)
+                                task.wait(0.3)
+                                pcall(function()
+                                    if type(fireproximityprompt) == "function" then
+                                        fireproximityprompt(targetPrompt)
+                                    elseif type(fireclickdetector) == "function" then
+                                        fireclickdetector(targetPrompt)
+                                    end
+                                end)
+                                task.wait(1)
+                            end
+                        end
+                    end
+
+                    State.IsCollectingBerries = false
+                    State.IsDoingPriorityTask = wasDoingPriority
+                    ResumeFarms() 
+                end
+            end
+        end
+    end)
+
+    -- ================== سیستم راه رفتن روی آب (ارتفاع ثابت) ==================
+    local WaterWalkPart = nil
+    local WaterWalkConnection = nil
+
+    local function UpdateWalkOnWater(enabled)
+        if enabled then
+            if not WaterWalkPart then
+                WaterWalkPart = Instance.new("Part")
+                WaterWalkPart.Size = Vector3.new(20, 0.5, 20)
+                WaterWalkPart.Anchored = true
+                WaterWalkPart.CanCollide = true
+                WaterWalkPart.Transparency = 1 
+                WaterWalkPart.Material = Enum.Material.SmoothPlastic
+                WaterWalkPart.Parent = Workspace
+            end
+            
+            if not WaterWalkConnection then
+                WaterWalkConnection = RunService.Stepped:Connect(function()
+                    if Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart") then
+                        local hrp = Plr.Character.HumanoidRootPart
+                        WaterWalkPart.Position = Vector3.new(hrp.Position.X, -3.149, hrp.Position.Z)
+                    end
+                end)
+            end
+        else
+            if WaterWalkConnection then WaterWalkConnection:Disconnect(); WaterWalkConnection = nil end
+            if WaterWalkPart then WaterWalkPart:Destroy(); WaterWalkPart = nil end
+        end
+    end
+
+    UpdateWalkOnWater(State.WalkOnWaterEnabled)
+    -- ===========================================================
+    local TushitaLocations = {
+        Door = CFrame.new(5712, 24, 257),
+        GhostSpawn = CFrame.new(5265, 16, 457),
+        Torches = {
+            CFrame.new(-10753, 412, -9367),
+            CFrame.new(-11673, 331, -9474),
+            CFrame.new(-12134, 524, -10655),
+            CFrame.new(-13337, 485, -6985),
+            CFrame.new(-13487, 332, -7926)
+        },
+        LongmaSpawn = CFrame.new(-10166, 332, -9447)
+    }
+
+    local FishingRequest = ReplicatedStorage:WaitForChild("FishReplicated", 5) and ReplicatedStorage.FishReplicated:FindFirstChild("FishingRequest")
+    
+    local BoatsMap = {["Dinghy"]="Dinghy",["Pirate Sloop"]="PirateSloop",["Pirate Brigade"]="PirateBrigade",["Pirate Grand Brigade (پیشنهادی)"]="PirateGrandBrigade",["Miracle (نیاز به گیم پس)"]="Miracle",["The Sentinel (نیاز به گیم پس)"]="The Sentinel",["Guardian (نیاز به کوئست)"]="Guardian",["Lantern (نیاز به کوئست)"]="Lantern"}
+    local BoatNames = {"Dinghy","Pirate Sloop","Pirate Brigade","Pirate Grand Brigade (پیشنهادی)","Miracle (نیاز به گیم پس)","The Sentinel (نیاز به گیم پس)","Guardian (نیاز به کوئست)","Lantern (نیاز به کوئست)"}
+
+    local IslandData, IslandNames = {}, {}
+    if Sea == 1 then IslandData = { ["Starter Island"] = CFrame.new(1060, 17, 1549), ["Jungle"] = CFrame.new(-1602, 37, 154), ["Pirate Village"] = CFrame.new(-1140, 5, 3830), ["Desert"] = CFrame.new(897, 7, 4390), ["Snow Island"] = CFrame.new(1386, 87, -1299), ["Marine Fortress"] = CFrame.new(-5036, 28, 4325), ["Skylands"] = CFrame.new(-4840, 717, -2620), ["Prison"] = CFrame.new(5308, 2, 475), ["Colosseum"] = CFrame.new(-1576, 8, -2985), ["Magma Village"] = CFrame.new(-5315, 12, 8516), ["Underwater City"] = CFrame.new(61122, 19, 1568), ["Fountain City"] = CFrame.new(5259, 39, 4050) }
+    elseif Sea == 2 then IslandData = { ["Kingdom of Rose"] = CFrame.new(-425, 73, 1835), ["Cafe"] = CFrame.new(-380, 73, 255), ["Usopp Island"] = CFrame.new(4816, 8, 2863), ["Green Zone"] = CFrame.new(-2442, 75, -3219), ["Graveyard"] = CFrame.new(-5492, 49, -794), ["Snow Mountain"] = CFrame.new(606, 402, -5369), ["Hot and Cold"] = CFrame.new(-5430, 16, -5295), ["Cursed Ship"] = "Special_CursedShip", ["Ice Castle"] = CFrame.new(6115, 29, -6222), ["Forgotten Island"] = CFrame.new(-3053, 237, -10146), ["Dark Arena"] = CFrame.new(3800, 20, -3500) }
+    elseif Sea == 3 then IslandData = { ["Port Town"] = CFrame.new(-288, 43, 5433), ["Hydra Island"] = CFrame.new(5228, 18, 345), ["Great Tree"] = CFrame.new(2300, 50, -6800), ["Floating Turtle (Mansion)"] = CFrame.new(-12488, 332, -7553), ["Castle on the Sea"] = CFrame.new(-5000, 315, -3000), ["Haunted Castle"] = CFrame.new(-9515, 142, 5537), ["Peanut Island"] = CFrame.new(-2022, 37, -12025), ["Ice Cream Island"] = CFrame.new(-818, 65, -10965), ["Cake Island"] = CFrame.new(-1926, 37, -12850), ["Chocolate Island"] = CFrame.new(-1149, 13, -12836), ["Tiki Outpost"] = CFrame.new(-16234, 9, 331), ["Submerged Island"] = "Special_Submerged" } end
+    for name, _ in pairs(IslandData) do table.insert(IslandNames, name) end; table.sort(IslandNames)
+
+    local function TapClick() local x=workspace.CurrentCamera.ViewportSize.X/2; local y=workspace.CurrentCamera.ViewportSize.Y/2; VirtualInputManager:SendMouseButtonEvent(x,y,0,true,game,1); task.wait(); VirtualInputManager:SendMouseButtonEvent(x,y,0,false,game,1) end
+    local function PerfectCast() local c=Plr.Character local cp=c and c:FindFirstChild("HumanoidRootPart") and c.HumanoidRootPart.Position+(c.HumanoidRootPart.CFrame.LookVector*50)-Vector3.new(0,12,0) or Vector3.new(0,0,0); local x=workspace.CurrentCamera.ViewportSize.X/2; local y=workspace.CurrentCamera.ViewportSize.Y/2; VirtualInputManager:SendMouseButtonEvent(x,y,0,true,game,1); task.wait(0.65); pcall(function() if FishingRequest then FishingRequest:InvokeServer("CastLineAtLocation", cp, 100, true) end end); VirtualInputManager:SendMouseButtonEvent(x,y,0,false,game,1) end
+
+    local function AutoFishSystem()
+        local Character = Plr.Character or Plr.CharacterAdded:Wait(); local Backpack = Plr.Backpack; local Humanoid = Character:WaitForChild("Humanoid"); local Head = Character:WaitForChild("Head")
+        local tool = Character:FindFirstChild("Fishing Rod") or Backpack:FindFirstChild("Fishing Rod")
+        if not tool then return end
+        if tool.Parent == Backpack then Humanoid:EquipTool(tool); pcall(function() if FishingRequest then FishingRequest:InvokeServer("RodEquipped") end end); task.wait(0.4) end
+        PerfectCast()
+        local FishDetected = false; local StartTime = tick(); local oldAttachments = {}
+        for _, v in pairs(Head:GetChildren()) do if v:IsA("Attachment") then oldAttachments[v] = true end end
+        repeat task.wait() for _, v in pairs(Head:GetChildren()) do if v:IsA("Attachment") and not oldAttachments[v] then FishDetected = true; break end end; if not Character:FindFirstChild("Fishing Rod") then break end until FishDetected or (tick() - StartTime > 40)
+        if FishDetected then TapClick(); task.wait(2); pcall(function() if FishingRequest and FishingRequest:InvokeServer("Catch", 1, 0, 1) then State.TotalFishCaught = State.TotalFishCaught + 1 end end); task.wait(1) else TapClick() end
+    end
+
+    local function getCloseButtonDynamic() local spinnerWindow = Plr.PlayerGui:FindFirstChild("SpinnerWindow") if spinnerWindow then local aboveSpinner = spinnerWindow:FindFirstChild("AboveSpinner") if aboveSpinner then local navigation = aboveSpinner:FindFirstChild("Navigation") if navigation then return navigation:FindFirstChild("CloseButton"), spinnerWindow, aboveSpinner end end end return nil, nil, nil end
+    local function isCloseButtonVisible() local closeBtn, spinnerWindow, aboveSpinner = getCloseButtonDynamic() if closeBtn and spinnerWindow and aboveSpinner then return spinnerWindow.Enabled and aboveSpinner.Visible and closeBtn.Visible and closeBtn.AbsoluteSize.X > 0, closeBtn end return false, nil end
+    local function simulateClick(btn) pcall(function() local x = btn.AbsolutePosition.X + (btn.AbsoluteSize.X / 2); local y = btn.AbsolutePosition.Y + (btn.AbsoluteSize.Y / 2); local inset = GuiService:GetGuiInset(); VirtualInputManager:SendMouseButtonEvent(x, y + inset.Y, 0, true, game, 1); task.wait(0.05); VirtualInputManager:SendMouseButtonEvent(x, y + inset.Y, 0, false, game, 1) end) end
+
+    local ValidFruitsForStore = {"Rocket", "Spin", "Chop", "Spring", "Bomb", "Spike", "Flame", "Falcon", "Ice", "Sand", "Dark", "Diamond", "Light", "Rubber", "Barrier", "Ghost", "Magma", "Quake", "Buddha", "Love", "Spider", "Sound", "Phoenix", "Portal", "Rumble", "Pain", "Blizzard", "Gravity", "Mammoth", "T-Rex", "Dough", "Shadow", "Venom", "Control", "Spirit", "Dragon", "Leopard", "Kitsune"}
+    local function getStoreNameForAuto(toolName) local tName = toolName:lower() for _, fruit in ipairs(ValidFruitsForStore) do if tName:find(fruit:lower()) then return fruit .. "-" .. fruit end end local baseName = toolName:gsub(" Fruit", ""):match("^%s*(.-)%s*$") if baseName then return baseName .. "-" .. baseName end return toolName end
+
+    local function tryStoreFruit(item)
+        if not State.AutoStore then return end
+        if not item:IsA("Tool") or not item.Name:lower():find("fruit") then return end
+        if State.attemptedFruits[item] then return end
+        State.attemptedFruits[item] = true
+        local wasPaused = State.IsStoring
+        if not wasPaused then State.IsStoring = true; PauseFarms() end
+        task.spawn(function()
+            task.wait(0.3)
+            local char = Plr.Character; local hum = char and char:FindFirstChildOfClass("Humanoid")
+            if not hum then if not wasPaused then ResumeFarms(); State.IsStoring=false end; return end
+            if item.Parent ~= char then hum:EquipTool(item); task.wait(0.5) end
+            if item.Parent == char then ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("CommF_"):InvokeServer("StoreFruit", getStoreNameForAuto(item.Name), item); task.wait(0.5); if item.Parent == char or item.Parent == Plr.Backpack then hum:UnequipTools() end end
+            if not wasPaused then task.wait(0.5); ResumeFarms(); State.IsStoring=false end
+        end)
+    end
+
+    local function GetCurrentDangerLevel() local level = 0; pcall(function() local text = Plr.PlayerGui.Main.Compass.Frame.DangerLevel.TextLabel.Text; if string.find(text, "?") then level = 6 else local num = string.match(text, "%d+"); if num then level = tonumber(num) end end end); return level end
+    local function GetClosestOwnedBoat() local closest, dist = nil, 1000; local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart"); if not root then return nil end; for _, b in pairs(Workspace.Boats:GetChildren()) do local seat = b:FindFirstChild("VehicleSeat"); if seat and not seat.Occupant then local d = (root.Position - seat.Position).Magnitude; if d < dist then dist = d; closest = b end end end; return closest end
+    local function IsPlayerDead() return not Plr.Character or not Plr.Character:FindFirstChild("Humanoid") or Plr.Character.Humanoid.Health<=0 end
+
+    local function IsValidEnemy(enemy) return enemy and enemy.Parent and enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 and enemy:FindFirstChild("HumanoidRootPart") end
+    local function FindMob(namePart) local enemies = Workspace:FindFirstChild("Enemies"); if not enemies then return nil end; for _, v in pairs(enemies:GetChildren()) do if string.find(v.Name, namePart) and IsValidEnemy(v) then return v end end; return nil end
+
+    local function PrepareEnemyForTushita(E)
+        pcall(function()
+            if not E or not E.Parent or not E:FindFirstChild("HumanoidRootPart") then return end
+            local H = E:FindFirstChild("Head")
+            if H and not E:FindFirstChild("FakeHead") then
+                local FH = H:Clone(); FH.Name = "FakeHead"; FH.CanCollide = false; FH.Massless = true; FH.Size = H.Size; FH.Transparency = H.Transparency; FH.Parent = E
+                local W = Instance.new("WeldConstraint"); W.Part0 = H; W.Part1 = FH; W.Parent = FH
+                H.Size = Vector3.new(Settings.HeadSize, Settings.HeadSize, Settings.HeadSize); H.Transparency = 1; H.CanCollide = false
+                for _, c in pairs(H:GetChildren()) do if c:IsA("SpecialMesh") or c:IsA("Decal") then c:Destroy() end end
+            end
+            local hum = E:FindFirstChild("Humanoid")
+            if hum then hum.WalkSpeed = 0; hum.JumpPower = 0; if hum:FindFirstChild("Animator") then hum.Animator:Destroy() end end
+            for _, p in pairs(E:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end
+        end)
+    end
+
+    local function EquipWeaponGeneral()
+        pcall(function()
+            local h = Plr.Character:FindFirstChild("Humanoid")
+            local current = Plr.Character:FindFirstChildOfClass("Tool")
+            if current and (current.ToolTip == "Melee" or current.ToolTip == "Sword" or current.ToolTip == "Blox Fruit") then return end
+            for _, t in pairs(Plr.Backpack:GetChildren()) do if t:IsA("Tool") and (t.ToolTip == "Sword" or t.ToolTip == "Blox Fruit" or t.ToolTip == "Melee") then h:EquipTool(t); break end end
+        end)
+    end
+
+    if Sea == 2 then
+        local CoreLocation = CFrame.new(424.1, 198.4, -408.1)
+        
+        task.spawn(function()
+            while task.wait(0.5) do
+                local foundTime = false
+                pcall(function()
+                    local worldOrigin = Workspace:FindFirstChild("_WorldOrigin")
+                    if worldOrigin then
+                        local marker = worldOrigin:FindFirstChild("CORE Respawn Marker")
+                        if marker then
+                            local timerUI = marker:FindFirstChild("RespawnTimer")
+                            if timerUI and timerUI:FindFirstChild("Frame") and timerUI.Frame:FindFirstChild("Timer") then
+                                local timerLbl = timerUI.Frame.Timer
+                                local cleanText = timerLbl.ContentText
+                                if cleanText == nil or cleanText == "" then cleanText = timerLbl.Text end
+                                local minutes, seconds = string.match(cleanText, "(%d+):(%d+)")
+                                if minutes and seconds then
+                                    State.CoreTimer = (tonumber(minutes) * 60) + tonumber(seconds)
+                                    foundTime = true
+                                end
+                            end
+                            if not foundTime then State.CoreTimer = -2 end
+                        else
+                            State.CoreTimer = -1
+                        end
+                    end
+                end)
+            end
+        end)
+
+        task.spawn(function()
+            while task.wait(0.1) do
+                if not State.AutoCoreEnabled then
+                    if State.CoreState ~= "Idle" then
+                        State.CoreState = "Idle"
+                        if State.IsDoingPriorityTask then
+                            State.IsDoingPriorityTask = false
+                            if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
+                            pcall(function()
+                                local hum = Plr.Character and Plr.Character:FindFirstChild("Humanoid")
+                                if hum then
+                                    hum.WalkSpeed = 16
+                                    hum.JumpPower = 50
+                                end
+                            end)
+                            ResumeFarms()
+                        end
+                    end
+                    continue
+                end
+                
+                local isCoreAlive = (State.CoreTimer ~= -1 and State.CoreTimer >= 0)
+                
+                if State.CoreState ~= "Idle" then
+                    if not isCoreAlive or State.CoreTimer > 20 then
+                        State.CoreState = "Idle"
+                        if State.IsDoingPriorityTask then
+                            State.IsDoingPriorityTask = false
+                            if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
+                            pcall(function()
+                                local hum = Plr.Character and Plr.Character:FindFirstChild("Humanoid")
+                                if hum then
+                                    hum.WalkSpeed = 16
+                                    hum.JumpPower = 50
+                                end
+                            end)
+                            ResumeFarms()
+                            WindUI:Notify({Title="اتو فارم کور", Content="کور زده شد یا تایمر ریست شد! بازگشت به فارم...", Duration=5})
+                        end
+                    end
+                end
+
+                if State.CoreState == "Idle" then
+                    if isCoreAlive and State.CoreTimer <= 10 then
+                        State.CoreState = "Teleporting"
+                        if not State.IsDoingPriorityTask then 
+                            State.IsDoingPriorityTask = true
+                            PauseFarms()
+                            if Deps.SetFarmMode then Deps.SetFarmMode("AutoCore") end
+                            WindUI:Notify({Title="اتو فارم کور", Content="زمان حمله به کور فرا رسید!", Duration=3})
+                        end
+                    end
+
+                elseif State.CoreState == "Teleporting" then
+                    local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart")
+                    if root then
+                        if (root.Position - CoreLocation.Position).Magnitude > 10 then
+                            State.ActiveTween = SmartTween(root, CoreLocation, State.ActiveTween)
+                        else
+                            if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
+                            root.CFrame = CoreLocation
+                            State.CoreState = "Attacking"
+                        end
+                    end
+
+                elseif State.CoreState == "Attacking" then
+                    local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart")
+                    if root then
+                        if (root.Position - CoreLocation.Position).Magnitude > 15 then
+                            State.CoreState = "Teleporting"
+                        else
+                            root.CFrame = CoreLocation
+                            Workspace.CurrentCamera.CFrame = CFrame.lookAt(Workspace.CurrentCamera.CFrame.Position, CoreLocation.Position)
+                            EquipWeaponGeneral()
+                        end
+                    end
+                end
+            end
+        end)
+
+        task.spawn(function()
+            while task.wait() do
+                if State.AutoCoreEnabled and State.CoreState == "Attacking" then
+                    pcall(function()
+                        local CX, CY = Workspace.CurrentCamera.ViewportSize.X/2, Workspace.CurrentCamera.ViewportSize.Y/2
+                        VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, true, game, 1)
+                        VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, false, game, 1)
+                        
+                        if RegisterHit then
+                            local dummyPart = Instance.new("Part")
+                            local args = { dummyPart, {}, nil, "00071c7e" }
+                            for i = 1, 3 do
+                                RegisterHit:FireServer(unpack(args, 1, 4))
+                            end
+                            dummyPart:Destroy()
+                        end
+                    end)
+                end
+            end
+        end)
+
+        -- ===============================================================
+        -- سیستم اتو دارک بیرد (Darkbeard) اختصاصی دریای دوم
+        -- ===============================================================
+        local DarkbeardSpawnPos = CFrame.new(3778.288, 11.682, -3499.631)
+            
+        local function PrepareDarkbeard(E)
+            pcall(function()
+                if not E or not E.Parent or not E:FindFirstChild("HumanoidRootPart") then return end
+                local H = E:FindFirstChild("Head")
+                if H and not E:FindFirstChild("FakeHead") then
+                    local FH = H:Clone(); FH.Name = "FakeHead"; FH.CanCollide = false; FH.Massless = true; FH.Size = H.Size; FH.Transparency = H.Transparency; FH.Parent = E
+                    local W = Instance.new("WeldConstraint"); W.Part0 = H; W.Part1 = FH; W.Parent = FH
+                    H.Size = Vector3.new(Settings.HeadSize, Settings.HeadSize, Settings.HeadSize); H.Transparency = 1; H.CanCollide = false
+                    for _, c in pairs(H:GetChildren()) do if c:IsA("SpecialMesh") or c:IsA("Decal") then c:Destroy() end end
+                end
+                local hum = E:FindFirstChild("Humanoid")
+                if hum then hum.WalkSpeed = 0; hum.JumpPower = 0; if hum:FindFirstChild("Animator") then hum.Animator:Destroy() end end
+                for _, p in pairs(E:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end
+            end)
+        end
+
+        -- ردیاب نوتیفیکیشن دارک بیرد
+        task.spawn(function()
+            local Notifications = Plr:WaitForChild("PlayerGui"):WaitForChild("Notifications", 10)
+            if Notifications then
+                Notifications.ChildAdded:Connect(function(child)
+                    if not State.AutoKillDarkbeardEventEnabled then return end
+                    task.wait(0.1)
+                    local txt = ""
+                    if child:IsA("TextLabel") then txt = child.Text else for _, desc in pairs(child:GetDescendants()) do if desc:IsA("TextLabel") then txt = desc.Text; break end end end
+                    
+                    if string.find(txt, "The power of darkness has been unleashed") then
+                        if not State.IsDoingPriorityTask then
+                            State.IsDoingPriorityTask = true
+                            PauseFarms()
+                            if Deps.SetFarmMode then Deps.SetFarmMode("Darkbeard") end
+                            State.DarkbeardState = "Attacking"
+                            WindUI:Notify({Title="Darkbeard Event", Content="دارک بیرد اسپان شد! توقف کارهای قبلی و شروع حمله...", Duration=5})
+                        end
+                    end
+                end)
+            end
+        end)
+
+        -- لوپ اصلی اسپان و کشتن دارک بیرد
+        task.spawn(function()
+            while task.wait(0.1) do
+                if not State.AutoDarkbeardEnabled and not State.AutoKillDarkbeardEventEnabled then
+                    if State.DarkbeardState ~= "Idle" then
+                        State.DarkbeardState = "Idle"
+                        if State.IsDoingPriorityTask then
+                            State.IsDoingPriorityTask = false
+                            ResumeFarms()
+                        end
+                    end
+                    continue
+                end
+
+                local hasFist = Plr.Backpack:FindFirstChild("Fist of Darkness") or (Plr.Character and Plr.Character:FindFirstChild("Fist of Darkness"))
+
+                if State.AutoDarkbeardEnabled and State.DarkbeardState == "Idle" and hasFist then
+                    if not State.IsDoingPriorityTask then
+                        State.IsDoingPriorityTask = true
+                        PauseFarms()
+                        if Deps.SetFarmMode then Deps.SetFarmMode("Darkbeard") end
+                        State.DarkbeardState = "Spawning"
+                        WindUI:Notify({Title="Darkbeard", Content="Fist of Darkness در کیف شما یافت شد! رفتن برای اسپان باس...", Duration=5})
+                    end
+                end
+
+                if State.DarkbeardState == "Spawning" then
+                    local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart")
+                    if root then
+                        if (root.Position - DarkbeardSpawnPos.Position).Magnitude > 15 then
+                            State.ActiveTween = SmartTween(root, DarkbeardSpawnPos, State.ActiveTween)
+                        else
+                            if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
+                            root.CFrame = DarkbeardSpawnPos
+                            
+                            -- گرفتن Fist در دست کاراکتر
+                            local fistTool = Plr.Backpack:FindFirstChild("Fist of Darkness")
+                            if fistTool and Plr.Character:FindFirstChild("Humanoid") then
+                                Plr.Character.Humanoid:EquipTool(fistTool)
+                            end
+                            
+                            task.wait(3) -- 3 ثانیه مکث برای اسپان شدن طبق درخواست شما
+                            State.DarkbeardState = "Attacking"
+                        end
+                    end
+                    
+                elseif State.DarkbeardState == "Attacking" then
+                    local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart")
+                    if not root then continue end
+
+                    local darkbeard = FindMob("Darkbeard")
+                    
+                    if darkbeard then
+                        State.DarkbeardWaitTimer = nil -- ریست کردن تایمر انتظار
+                        PrepareDarkbeard(darkbeard)
+                        
+                        local ep = darkbeard.HumanoidRootPart.Position
+                        local d = (root.Position - ep); d = Vector3.new(d.X, 0, d.Z)
+                        if d.Magnitude < 0.1 then d = Vector3.new(1,0,0) end; d = d.Unit
+                        local dest = CFrame.lookAt(ep + d * Settings.AttackDistance + Vector3.new(0, Settings.AttackHeight, 0), ep)
+                        
+                        if (root.Position - dest.Position).Magnitude > 10 then 
+                            State.ActiveTween = SmartTween(root, dest, State.ActiveTween) 
+                        else
+                            if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
+                            root.CFrame = dest
+                            EquipWeaponGeneral()
+                            if darkbeard:FindFirstChild("Head") then Workspace.CurrentCamera.CFrame = CFrame.lookAt(Workspace.CurrentCamera.CFrame.Position, darkbeard.Head.Position) end
+                            
+                            -- اتک دادن به دارک بیرد
+                            task.spawn(function()
+                                local CX, CY = Workspace.CurrentCamera.ViewportSize.X/2, Workspace.CurrentCamera.ViewportSize.Y/2
+                                for i=1,3 do
+                                    VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, true, game, 1); task.wait(0.05); VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, false, game, 1)
+                                    if RegisterAttack then RegisterAttack:FireServer(math.floor((0.5 + math.random() * 0.5) * 10000) / 10000) end
+                                end
+                            end)
+                        end
+                    else
+                        -- اگر دارک بیرد پیدا نشد (احتمالاً هنوز لود نشده یا مرده)
+                        if not State.DarkbeardWaitTimer then State.DarkbeardWaitTimer = tick() end
+                        
+                        -- برگشتن به محل اسپان تا زمان انتظار تموم شه
+                        if (root.Position - DarkbeardSpawnPos.Position).Magnitude > 15 then
+                            State.ActiveTween = SmartTween(root, DarkbeardSpawnPos, State.ActiveTween)
+                        else
+                            if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
+                        end
+
+                        -- اگر 15 ثانیه گذشت و خبری از باس نبود یعنی کشته شده
+                        if tick() - State.DarkbeardWaitTimer > 15 then
+                            State.DarkbeardState = "Idle"
+                            State.DarkbeardWaitTimer = nil
+                            if State.IsDoingPriorityTask then
+                                State.IsDoingPriorityTask = false
+                                ResumeFarms()
+                                WindUI:Notify({Title="Darkbeard", Content="عملیات پایان یافت! بازگشت به کارهای قبلی...", Duration=5})
+                            end
+                        end
+                    end
+                end
+            end
+        end)
+    end
+
+    if Sea == 3 then
+        local function PrepareEnemyForPirates(E)
+            pcall(function()
+                if not E or not E.Parent or not E:FindFirstChild("HumanoidRootPart") then return end
+                local H = E:FindFirstChild("Head")
+                if H and not E:FindFirstChild("FakeHead") then
+                    if State.PirateExpandedEnemy and State.PirateExpandedEnemy ~= E then
+                        pcall(function()
+                            local oldH = State.PirateExpandedEnemy:FindFirstChild("Head")
+                            local oldFH = State.PirateExpandedEnemy:FindFirstChild("FakeHead")
+                            if oldFH and oldH then oldH.Size = oldFH.Size; oldH.Transparency = oldFH.Transparency; oldFH:Destroy() end
+                        end)
+                    end
+                    local FH = H:Clone(); FH.Name = "FakeHead"; FH.CanCollide = false; FH.Massless = true; FH.Size = H.Size; FH.Transparency = H.Transparency; FH.Parent = E
+                    local W = Instance.new("WeldConstraint"); W.Part0 = H; W.Part1 = FH; W.Parent = FH
+                    H.Size = Vector3.new(Settings.HeadSize, Settings.HeadSize, Settings.HeadSize); H.Transparency = 1; H.CanCollide = false
+                    State.PirateExpandedEnemy = E
+                end
+                local hum = E:FindFirstChild("Humanoid")
+                if hum then hum.WalkSpeed = 0; hum.JumpPower = 0; if hum:FindFirstChild("Animator") then hum.Animator:Destroy() end end
+                for _, p in pairs(E:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end
+            end)
+        end
+
+        task.spawn(function()
+            local Notifications = Plr:WaitForChild("PlayerGui"):WaitForChild("Notifications", 10)
+            if Notifications then
+                Notifications.ChildAdded:Connect(function(child)
+                    if not State.AutoPirateEnabled then return end
+                    local textLabel = child:WaitForChild("TextLabel", 2) or child:FindFirstChildOfClass("TextLabel")
+                    if not textLabel then
+                        for _, desc in pairs(child:GetDescendants()) do
+                            if desc:IsA("TextLabel") then textLabel = desc; break end
+                        end
+                    end
+
+                    if textLabel then
+                        local timeout = tick() + 3
+                        while tick() < timeout do
+                            local txt = textLabel.Text
+                            if txt ~= "" and txt ~= "Label" then
+                                if string.find(txt, "The pirates are raiding") then
+                                    if not State.IsPirateRaidActive then
+                                        State.IsPirateRaidActive = true
+                                        if not State.IsDoingPriorityTask then
+                                            State.IsDoingPriorityTask = true
+                                            PauseFarms()
+                                            if Deps.SetFarmMode then Deps.SetFarmMode("PirateRaid") end
+                                            WindUI:Notify({Title="Pirate Raid", Content="حمله شروع شد! توقف سایر فارم‌ها و حرکت...", Duration=5})
+                                        end
+                                    end
+                                elseif string.find(txt, "Good job!") then
+                                    if State.IsPirateRaidActive then
+                                        State.IsPirateRaidActive = false
+                                        State.PirateTarget = nil
+                                        if State.PirateExpandedEnemy then pcall(function() local h = State.PirateExpandedEnemy:FindFirstChild("Head"); local fh = State.PirateExpandedEnemy:FindFirstChild("FakeHead"); if fh and h then h.Size = fh.Size; h.Transparency = fh.Transparency; fh:Destroy() end end); State.PirateExpandedEnemy = nil end
+                                        if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
+                                        if State.IsDoingPriorityTask then
+                                            State.IsDoingPriorityTask = false
+                                            ResumeFarms()
+                                            WindUI:Notify({Title="Pirate Raid", Content="رید تمام شد! بازگشت به فارم عادی.", Duration=5})
+                                        end
+                                    end
+                                end
+                                break
+                            end
+                            task.wait(0.05)
+                        end
+                    end
+                end)
+            end
+        end)
+
+        task.spawn(function()
+            while task.wait(0.1) do
+                if State.AutoPirateEnabled and State.IsPirateRaidActive and Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart") then
+                    local Root = Plr.Character.HumanoidRootPart
+                    local nearestMob = nil
+                    local minDist = 800
+                    
+                    local enemies = Workspace:FindFirstChild("Enemies")
+                    if enemies then
+                        for _, v in pairs(enemies:GetChildren()) do
+                            if IsValidEnemy(v) then
+                                local dist = (v.HumanoidRootPart.Position - State.SafeUndergroundPos).Magnitude
+                                if dist < minDist then
+                                    minDist = dist
+                                    nearestMob = v
+                                end
+                            end
+                        end
+                    end
+
+                    local Dest = nil
+                    if nearestMob then
+                        PrepareEnemyForPirates(nearestMob)
+                        State.PirateTarget = nearestMob
+                        local EP = nearestMob.HumanoidRootPart.Position
+                        local d = (Root.Position - EP)
+                        d = Vector3.new(d.X, 0, d.Z)
+                        if d.Magnitude < 0.1 then d = Vector3.new(1,0,0) end
+                        d = d.Unit
+                        Dest = CFrame.lookAt(EP + d * Settings.AttackDistance + Vector3.new(0, Settings.AttackHeight, 0), EP)
+                    else
+                        State.PirateTarget = nil
+                        Dest = CFrame.new(State.SafeUndergroundPos)
+                    end
+
+                    if Dest then
+                        local rootDist = (Root.Position - Dest.Position).Magnitude
+                        if rootDist < 10 then
+                            Root.CFrame = Dest
+                            if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
+                            
+                            if State.PirateTarget and tick() - State.PirateLastTargetTime > Settings.AttackWaitTime then
+                                State.PirateLastTargetTime = tick()
+                                pcall(function()
+                                    EquipWeaponGeneral()
+                                    if State.PirateTarget:FindFirstChild("Head") then 
+                                        Workspace.CurrentCamera.CFrame = CFrame.lookAt(Workspace.CurrentCamera.CFrame.Position, State.PirateTarget.Head.Position) 
+                                    end
+                                    local CX, CY = Workspace.CurrentCamera.ViewportSize.X/2, Workspace.CurrentCamera.ViewportSize.Y/2
+                                    VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, true, game, 1)
+                                    task.wait(Settings.HoldTime)
+                                    VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, false, game, 1)
+                                    if RegisterAttack then RegisterAttack:FireServer(math.floor((0.5 + math.random() * 0.5) * 10000) / 10000) end
+                                end)
+                            end
+                        else
+                            if State.ActiveTween then State.ActiveTween:Cancel() end
+                            State.ActiveTween = SmartTween(Root, Dest, State.ActiveTween)
+                        end
+                    end
+                else
+                    if not State.AutoPirateEnabled and State.IsPirateRaidActive then
+                        State.IsPirateRaidActive = false
+                        State.PirateTarget = nil
+                        if State.PirateExpandedEnemy then pcall(function() local h = State.PirateExpandedEnemy:FindFirstChild("Head"); local fh = State.PirateExpandedEnemy:FindFirstChild("FakeHead"); if fh and h then h.Size = fh.Size; h.Transparency = fh.Transparency; fh:Destroy() end end); State.PirateExpandedEnemy = nil end
+                        if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
+                        if State.IsDoingPriorityTask then
+                            State.IsDoingPriorityTask = false
+                            ResumeFarms()
+                            WindUI:Notify({Title="Pirate Raid", Content="سیستم رید به صورت دستی خاموش شد. بازگشت...", Duration=5})
+                        end
+                    end
+                end
+            end
+        end)
+
+        task.spawn(function()
+            local Notifications = Plr:WaitForChild("PlayerGui"):WaitForChild("Notifications", 5)
+            if Notifications then
+                Notifications.ChildAdded:Connect(function(child)
+                    task.wait(0.1)
+                    local txt = ""
+                    if child:IsA("TextLabel") then txt = child.Text else for _, desc in pairs(child:GetDescendants()) do if desc:IsA("TextLabel") then txt = desc.Text; break end end end
+                    if string.find(txt, "A barrier has been broken") and State.AutoTushita and State.TushitaPhase == "Idle" then
+                        State.TushitaPhase = "KillingGhosts"
+                        PauseFarms()
+                        WindUI:Notify({Title="Tushita Puzzle", Content="نوتیفیکیشن دریافت شد! توقف فارم‌ها و شروع پازل...", Duration=5})
+                    end
+                end)
+            end
+        end)
+
+        task.spawn(function()
+            while task.wait(0.1) do
+                if not State.AutoTushita then continue end
+                local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart")
+                if not root or IsPlayerDead() then continue end
+
+                if State.TushitaPhase == "KillingGhosts" then
+                    local ghost = FindMob("Ghost")
+                    if ghost then
+                        PrepareEnemyForTushita(ghost)
+                        local ep = ghost.HumanoidRootPart.Position
+                        local d = (root.Position - ep); d = Vector3.new(d.X, 0, d.Z)
+                        if d.Magnitude < 0.1 then d = Vector3.new(1, 0, 0) end; d = d.Unit
+                        local dest = CFrame.lookAt(ep + d * Settings.AttackDistance + Vector3.new(0, Settings.AttackHeight, 0), ep)
+                        
+                        if (root.Position - dest.Position).Magnitude > 10 then State.ActiveTween = SmartTween(root, dest, State.ActiveTween) else
+                            if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
+                            root.CFrame = dest; EquipWeaponGeneral()
+                            if ghost:FindFirstChild("Head") then Workspace.CurrentCamera.CFrame = CFrame.lookAt(Workspace.CurrentCamera.CFrame.Position, ghost.Head.Position) end
+                            
+                            task.spawn(function()
+                                local CX, CY = Workspace.CurrentCamera.ViewportSize.X/2, Workspace.CurrentCamera.ViewportSize.Y/2
+                                for i=1,3 do
+                                    VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, true, game, 1); task.wait(0.05); VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, false, game, 1)
+                                    if RegisterAttack then RegisterAttack:FireServer(math.floor((0.5 + math.random() * 0.5) * 10000) / 10000) end
+                                end
+                            end)
+                        end
+                    else
+                        if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
+                        State.ActiveTween = SmartTween(root, TushitaLocations.Door, State.ActiveTween)
+                        if (root.Position - TushitaLocations.Door.Position).Magnitude < 15 then
+                            task.wait(4)
+                            State.TushitaPhase = "CheckingTorch"
+                        end
+                    end
+
+                elseif State.TushitaPhase == "CheckingTorch" then
+                    local torchTool = Plr.Backpack:FindFirstChild("Holy Torch") or Plr.Character:FindFirstChild("Holy Torch")
+                    if torchTool then
+                        Plr.Character.Humanoid:EquipTool(torchTool); task.wait(0.5)
+                        State.TushitaPhase = "LightingTorches"
+                        State.CurrentTorchIndex = 1
+                    else
+                        State.TushitaPhase = "Idle"
+                        ResumeFarms()
+                        WindUI:Notify({Title="Tushita Puzzle", Content="تورچ در اینونتوری یافت نشد! بازگشت به فارم...", Duration=5})
+                    end
+
+                elseif State.TushitaPhase == "LightingTorches" then
+                    local targetTorch = TushitaLocations.Torches[State.CurrentTorchIndex]
+                    if targetTorch then
+                        State.ActiveTween = SmartTween(root, targetTorch, State.ActiveTween)
+                        if (root.Position - targetTorch.Position).Magnitude < 15 then
+                            task.wait(1.5)
+                            State.CurrentTorchIndex = State.CurrentTorchIndex + 1
+                        end
+                    else
+                        State.TushitaPhase = "KillingLongma"
+                    end
+
+                elseif State.TushitaPhase == "KillingLongma" then
+                    local longma = FindMob("Longma")
+                    if longma then
+                        PrepareEnemyForTushita(longma)
+                        local ep = longma.HumanoidRootPart.Position
+                        local d = (root.Position - ep); d = Vector3.new(d.X, 0, d.Z)
+                        if d.Magnitude < 0.1 then d = Vector3.new(1, 0, 0) end; d = d.Unit
+                        local dest = CFrame.lookAt(ep + d * Settings.AttackDistance + Vector3.new(0, Settings.AttackHeight, 0), ep)
+                        
+                        if (root.Position - dest.Position).Magnitude > 10 then State.ActiveTween = SmartTween(root, dest, State.ActiveTween) else
+                            if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
+                            root.CFrame = dest; EquipWeaponGeneral()
+                            if longma:FindFirstChild("Head") then Workspace.CurrentCamera.CFrame = CFrame.lookAt(Workspace.CurrentCamera.CFrame.Position, longma.Head.Position) end
+                            
+                            task.spawn(function()
+                                local CX, CY = Workspace.CurrentCamera.ViewportSize.X/2, Workspace.CurrentCamera.ViewportSize.Y/2
+                                for i=1,3 do
+                                    VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, true, game, 1); task.wait(0.05); VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, false, game, 1)
+                                    if RegisterAttack then RegisterAttack:FireServer(math.floor((0.5 + math.random() * 0.5) * 10000) / 10000) end
+                                end
+                            end)
+                        end
+                    else
+                        State.TushitaPhase = "WaitingLongma"
+                        ResumeFarms()
+                        WindUI:Notify({Title="Tushita Puzzle", Content="باس Longma هنوز اسپان نیست! بازگشت به فارم تا اسپان شود...", Duration=5})
+                    end
+
+                elseif State.TushitaPhase == "WaitingLongma" then
+                    local longma = FindMob("Longma")
+                    if longma then
+                        PauseFarms()
+                        State.TushitaPhase = "KillingLongma"
+                        WindUI:Notify({Title="Tushita Puzzle", Content="باس Longma اسپان شد! رفتن برای کشتن...", Duration=5})
+                    else
+                        local inv = ReplicatedStorage.Remotes.CommF_:InvokeServer("getInventory")
+                        local hasTushita = false
+                        if type(inv) == "table" then for _, item in pairs(inv) do if item.Name == "Tushita" then hasTushita = true; break end end end
+                        if hasTushita then
+                            State.TushitaPhase = "Idle"
+                            State.AutoTushita = false
+                            WindUI:Notify({Title="Tushita", Content="تبریک! شمشیر Tushita را گرفتید. سیستم خاموش شد.", Duration=5})
+                        end
+                    end
+                end
+            end
+        end)
+    end
+
+    if Sea == 3 then
+        task.spawn(function()
+            local EliteSpawns = { ["Hydra Island"] = { CFrame.new(4509, 1209, -2), CFrame.new(6218, 76, 2120), CFrame.new(7076, 246, -444), CFrame.new(6126, 184, -2208) }, ["Floating Turtle"] = { CFrame.new(-10964, 707, -7108), CFrame.new(-11512, 639, -8910), CFrame.new(-12411, 334, -9654), CFrame.new(-13797, 331, -9126), CFrame.new(-13746, 401, -10072), CFrame.new(-11797, 457, -10306), CFrame.new(-10827, 453, -9786) }, ["Port Town"] = { CFrame.new(-1362, 151, 7334) }, ["Great Tree"] = { CFrame.new(2532, 567, -8343), CFrame.new(4341, 565, -6169) } }
+            local function EliteCleanupExpandedHead(E) pcall(function() if not E or not E.Parent then return end local H = E:FindFirstChild("Head") local FH = E:FindFirstChild("FakeHead") if FH then if H then H.Size = FH.Size; H.Transparency = FH.Transparency end; FH:Destroy() end end) end
+
+            while task.wait(0.5) do
+                if not State.AutoEliteHunter and not State.AutoYama and not State.TryLuckYama then if State.IsDoingPriorityTask and not State.AutoCoreEnabled and not State.AutoPirateEnabled then State.IsDoingPriorityTask = false ResumeFarms() end continue end
+                pcall(function()
+                    local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart")
+                    if not root or IsPlayerDead() then return end
+                    local progressRaw = CommF:InvokeServer("EliteHunter", "Progress")
+                    local kills = tonumber(tostring(progressRaw):match("%d+")) or 0
+                    local shouldDoYama = false
+                    if State.AutoYama and kills >= 30 then shouldDoYama = true end
+                    if State.TryLuckYama and kills >= 20 and kills < 30 then shouldDoYama = true end
+
+                    if shouldDoYama then
+                        if not State.IsDoingPriorityTask then State.IsDoingPriorityTask = true; PauseFarms(); if Deps.SetFarmMode then Deps.SetFarmMode("YamaQuest") end end
+                        local hitbox = Workspace.Map:FindFirstChild("Waterfall") and Workspace.Map.Waterfall:FindFirstChild("SealedKatana") and Workspace.Map.Waterfall.SealedKatana:FindFirstChild("Hitbox")
+                        if hitbox then
+                            if (root.Position - hitbox.Position).Magnitude > 15 then State.ActiveTween = SmartTween(root, hitbox.CFrame * CFrame.new(0, 5, 5), State.ActiveTween) else
+                                if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
+                                Workspace.CurrentCamera.CFrame = CFrame.lookAt(Workspace.CurrentCamera.CFrame.Position, hitbox.Position)
+                                local x = Workspace.CurrentCamera.ViewportSize.X/2; local y = Workspace.CurrentCamera.ViewportSize.Y/2; VirtualInputManager:SendMouseButtonEvent(x, y, 0, true, game, 1); task.wait(0.1); VirtualInputManager:SendMouseButtonEvent(x, y, 0, false, game, 1)
+                                local notifs = Plr.PlayerGui:FindFirstChild("Notifications")
+                                if notifs then
+                                    for _, child in pairs(notifs:GetChildren()) do
+                                        if child.Name == "NotificationTemplate" and child:IsA("Frame") then
+                                            local textLabel = child:FindFirstChild("TextLabel") or child:FindFirstChildOfClass("TextLabel")
+                                            if textLabel and textLabel.Text ~= "" then
+                                                if string.find(textLabel.Text:lower(), "not worthy") then WindUI:Notify({Title="یاما سورد", Content="شانس ناموفق بود! ادامه شکار...", Duration=5}); child:Destroy(); State.IsDoingPriorityTask = false; ResumeFarms(); task.wait(2); return
+                                                elseif string.find(textLabel.Text:lower(), "accepted you") then WindUI:Notify({Title="تبریک!", Content="شمشیر یاما رو گرفتی!", Duration=10}); State.AutoYama = false; State.TryLuckYama = false; child:Destroy(); State.IsDoingPriorityTask = false; ResumeFarms(); return end
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end return 
+                    end
+
+                    if State.AutoEliteHunter then
+                        local npcText = CommF:InvokeServer("EliteHunter")
+                        if type(npcText) == "string" and not string.find(npcText, "doesn't have anything") and not string.find(npcText, "Come back later") then
+                            local islandName = nil
+                            if string.find(npcText, "Port Town") then islandName = "Port Town" elseif string.find(npcText, "Hydra Island") then islandName = "Hydra Island" elseif string.find(npcText, "Great Tree") then islandName = "Great Tree" elseif string.find(npcText, "Floating Turtle") then islandName = "Floating Turtle" end
+                            if islandName then
+                                if not State.IsDoingPriorityTask then State.IsDoingPriorityTask = true; PauseFarms(); if Deps.SetFarmMode then Deps.SetFarmMode("EliteHunter") end end
+                                local bossFound = nil
+                                local enemies = Workspace:FindFirstChild("Enemies")
+                                if enemies then for _, enemy in pairs(enemies:GetChildren()) do if enemy.Name == "Deandre" or enemy.Name == "Diablo" or enemy.Name == "Urban" then local hum = enemy:FindFirstChild("Humanoid") if hum and hum.Health > 0 and enemy:FindFirstChild("HumanoidRootPart") then bossFound = enemy break end end end end
+                                if bossFound then
+                                    local H = bossFound:FindFirstChild("Head")
+                                    if H and not bossFound:FindFirstChild("FakeHead") then
+                                        if State.EliteExpandedEnemy and State.EliteExpandedEnemy ~= bossFound then EliteCleanupExpandedHead(State.EliteExpandedEnemy) end
+                                        local FH = H:Clone(); FH.Name = "FakeHead"; FH.CanCollide = false; FH.Massless = true; FH.Size = H.Size; FH.Transparency = H.Transparency; FH.Parent = bossFound
+                                        local W = Instance.new("WeldConstraint"); W.Part0 = H; W.Part1 = FH; W.Parent = FH
+                                        H.Size = Vector3.new(Settings.HeadSize, Settings.HeadSize, Settings.HeadSize); H.Transparency = 1; H.CanCollide = false; for _, c in pairs(H:GetChildren()) do if c:IsA("SpecialMesh") or c:IsA("Decal") then c:Destroy() end end
+                                        State.EliteExpandedEnemy = bossFound
+                                    end
+                                    local hum = bossFound:FindFirstChild("Humanoid"); if hum then hum.WalkSpeed = 0; hum.JumpPower = 0 end
+                                    for _, p in pairs(bossFound:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end
+
+                                    local ep = bossFound.HumanoidRootPart.Position; local d = (root.Position - ep); d = Vector3.new(d.X, 0, d.Z); if d.Magnitude < 0.1 then d = Vector3.new(1,0,0) end; d = d.Unit
+                                    local dest = CFrame.lookAt(ep + d * Settings.AttackDistance + Vector3.new(0, Settings.AttackHeight, 0), ep)
+
+                                    if (root.Position - dest.Position).Magnitude > 10 then State.ActiveTween = SmartTween(root, dest, State.ActiveTween) else
+                                        if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
+                                        root.CFrame = dest
+                                        if bossFound:FindFirstChild("Head") then Workspace.CurrentCamera.CFrame = CFrame.lookAt(Workspace.CurrentCamera.CFrame.Position, bossFound.Head.Position) end
+                                        local h = Plr.Character:FindFirstChild("Humanoid"); local t = Plr.Character:FindFirstChildOfClass("Tool")
+                                        if not (t and (t.ToolTip == "Melee" or t.ToolTip == "Sword" or t.ToolTip == "Blox Fruit")) then for _, t2 in pairs(Plr.Backpack:GetChildren()) do if t2:IsA("Tool") and (t2.ToolTip == "Sword" or t2.ToolTip == "Blox Fruit" or t2.ToolTip == "Melee") then h:EquipTool(t2); break end end end
+                                        task.spawn(function() local CX, CY = Workspace.CurrentCamera.ViewportSize.X/2, Workspace.CurrentCamera.ViewportSize.Y/2 for i = 1, 4 do VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, true, game, 1); task.wait(Settings.HoldTime or 0.05); VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, false, game, 1); if RegisterAttack then RegisterAttack:FireServer(math.floor((0.5 + math.random() * 0.5) * 10000) / 10000) end; task.wait(0.1) end end)
+                                    end
+                                else
+                                    local spawns = EliteSpawns[islandName]
+                                    if spawns then
+                                        if State.CurrentEliteSpawnIndex > #spawns then State.CurrentEliteSpawnIndex = 1 end
+                                        local targetDest = spawns[State.CurrentEliteSpawnIndex] * CFrame.new(0, 40, 0)
+                                        if (root.Position - targetDest.Position).Magnitude > 20 then State.ActiveTween = SmartTween(root, targetDest, State.ActiveTween) else
+                                            if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end; task.wait(0.5); State.CurrentEliteSpawnIndex = State.CurrentEliteSpawnIndex + 1
+                                        end
+                                    end
+                                end
+                            end
+                        else
+                            if State.IsDoingPriorityTask then if State.EliteExpandedEnemy then EliteCleanupExpandedHead(State.EliteExpandedEnemy); State.EliteExpandedEnemy = nil end; State.IsDoingPriorityTask = false; WindUI:Notify({Title="الایت هانتر", Content="الایت کشته شد. بازگشت...", Duration=5}); ResumeFarms() end
+                        end
+                    end
+                end)
+            end
+        end)
+    end
+
+    task.spawn(function() while task.wait(0.5) do if State.AutoFish then pcall(AutoFishSystem) end end end)
+    task.spawn(function() while task.wait(5) do if State.AutoBuyBait and not State.IsBuyingBait then pcall(function() local inv = ReplicatedStorage.Remotes.CommF_:InvokeServer("getInventory"); local baitCount = 0; if type(inv) == "table" then for _, item in pairs(inv) do if type(item) == "table" and item.Name and string.find(item.Name, "Bait") then baitCount = item.Count or 0; break end end end; if baitCount < 15 then State.IsBuyingBait = true; while State.AutoBuyBait and baitCount < 85 do if Plr.Data.Beli.Value < 10000 then break end; ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Net"):WaitForChild("RF/Craft"):InvokeServer("Craft", "Basic Bait", 1, {}); baitCount = baitCount + 10; task.wait(0.8) end; State.IsBuyingBait = false end end) end end end)
+    task.spawn(function() local lastSell = tick() while task.wait(1) do if State.AutoSellFish and (tick() - lastSell >= State.SellInterval) then pcall(function() ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Net"):WaitForChild("RF/JobsRemoteFunction"):InvokeServer("FishingNPC", "SellFish") end) lastSell = tick() end end end)
+    task.spawn(function() while task.wait(0.1) do if State.AutoRoll then local isVis, btn = isCloseButtonVisible() if isVis and btn then simulateClick(btn); task.wait(0.5) end end end end)
+    task.spawn(function() while task.wait(1) do if State.AutoRoll then local isVis, _ = isCloseButtonVisible() if isVis then if not State.IsRolling then State.IsRolling = true; PauseFarms() end else if State.IsRolling then State.IsRolling = false; task.wait(1); ResumeFarms() end local succ, checkTime = pcall(function() return ReplicatedStorage.Remotes.CommF_:InvokeServer("Cousin", "CheckTime", "DLCBoxData") end); if succ and (checkTime == true or tostring(checkTime):lower():find("ready") or checkTime == 0) then local mSucc, canBuy = pcall(function() return ReplicatedStorage.Remotes.CommF_:InvokeServer("Cousin", "CheckCanBuyType", "DLCBoxData") end); if mSucc and (canBuy == 1 or canBuy == true) then if not State.IsRolling then State.IsRolling = true; PauseFarms() end if pcall(function() return ReplicatedStorage.Remotes.CommF_:InvokeServer("Cousin", "Buy", "DLCBoxData") end) then task.wait(5) else if State.IsRolling then State.IsRolling = false; ResumeFarms() end; task.wait(2) end end end end else if State.IsRolling then State.IsRolling = false; ResumeFarms() end end end end)
+    task.spawn(function() local idx = 1 while true do if State.AutoStats then local toUp = {} for _, stat in ipairs({"Melee", "Defense", "Sword", "Gun", "Demon Fruit"}) do if State.SelectedStats[stat] then table.insert(toUp, stat) end end if #toUp > 0 then if idx > #toUp then idx = 1 end pcall(function() ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("CommF_"):InvokeServer("AddPoint", toUp[idx], State.StatsPoint) end) idx = idx + 1 end task.wait(5) else task.wait(1) end end end)
+    task.spawn(function() while task.wait(1) do if State.AutoBuyDealer and State.TargetFruit then local cUTC = os.time(); local cCycle = math.floor(cUTC / 14400) if State.LastCheckedRestockTime ~= cCycle then if (14400 - (cUTC % 14400)) > 14390 then task.wait(8) end State.LastCheckedRestockTime = math.floor(os.time() / 14400) pcall(function() local stock = ReplicatedStorage.Remotes.CommF_:InvokeServer("GetFruits", false) if type(stock) == "table" then for _, f in pairs(stock) do if f.Name == State.TargetFruit and f.OnSale then if Plr.Data.Beli.Value >= f.Price then ReplicatedStorage.Remotes.CommF_:InvokeServer("PurchaseRawFruit", State.TargetFruit, false); State.AutoBuyDealer = false end break end end end end) end end end end)
+    
+    Plr.Backpack.ChildAdded:Connect(function(i) if State.AutoStore and not State.attemptedFruits[i] then tryStoreFruit(i) end end)
+    local function listenChar(c) c.ChildAdded:Connect(function(i) if State.AutoStore and i:IsA("Tool") and i.Name:lower():find("fruit") and not State.attemptedFruits[i] then tryStoreFruit(i) end end) end
+    if Plr.Character then listenChar(Plr.Character) end; Plr.CharacterAdded:Connect(listenChar)
+
+    task.spawn(function()
+        while task.wait(0.05) do
+            pcall(function()
+                if not State.AutoSeaEnabled then return end
+                if IsPlayerDead() then if Deps.SetFarmMode then Deps.SetFarmMode("Respawning") end; task.wait(5); return end
+                local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart"); local hum = Plr.Character and Plr.Character:FindFirstChild("Humanoid")
+                if not root or not hum then return end
+                local ActiveBoat = nil; if hum.SeatPart and hum.SeatPart:IsA("VehicleSeat") and hum.SeatPart.Parent.Parent == Workspace.Boats then ActiveBoat = hum.SeatPart.Parent end
+                
+                if not ActiveBoat then
+                    if Deps.SetFarmMode then Deps.SetFarmMode("GettingBoat") end
+                    local existingBoat = GetClosestOwnedBoat()
+                    if existingBoat then local seat = existingBoat:FindFirstChild("VehicleSeat"); if seat then root.CFrame = seat.CFrame * CFrame.new(0, 3, 0); task.wait(0.5); seat:Sit(hum); task.wait(1) end else
+                        local npcPos = CFrame.new(-16929, 8, 464)
+                        if (root.Position - npcPos.Position).Magnitude > 20 then State.ActiveTween = SmartTween(root, npcPos * CFrame.new(0, 50, 0), State.ActiveTween) else if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end; ReplicatedStorage.Remotes.CommF_:InvokeServer("BuyBoat", State.SelectedBoatArg); task.wait(1.5) end
+                    end return
+                end
+                if Deps.SetFarmMode then Deps.SetFarmMode("AutoSea") end
+                local seat = ActiveBoat:FindFirstChild("VehicleSeat"); if not seat then return end
+                for _, v in pairs(ActiveBoat:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = false end end; for _, p in pairs(Plr.Character:GetChildren()) do if p:IsA("BasePart") then p.CanCollide = false end end
+                local currentLevel = GetCurrentDangerLevel(); local moveSpeed = Settings.BoatSpeed / 20
+                if State.TargetSeaLevel == 7 or currentLevel < State.TargetSeaLevel then seat.CFrame = seat.CFrame * CFrame.new(0, 0, -moveSpeed); State.BoatPatrolDist = 0 else
+                    if State.BoatPatrolDir == 1 then seat.CFrame = seat.CFrame * CFrame.new(moveSpeed, 0, 0); State.BoatPatrolDist = State.BoatPatrolDist + moveSpeed; if State.BoatPatrolDist >= 200 then State.BoatPatrolDir = -1 end else seat.CFrame = seat.CFrame * CFrame.new(-moveSpeed, 0, 0); State.BoatPatrolDist = State.BoatPatrolDist - moveSpeed; if State.BoatPatrolDist <= -200 then State.BoatPatrolDir = 1 end end
+                end
+            end)
+        end
+    end)
+
+    task.spawn(function()
+        while task.wait(0.2) do
+            pcall(function()
+                if not State.IslandTeleportEnabled or not State.SelectedIslandTarget then return end
+                if IsPlayerDead() then task.wait(2); return end
+                local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart"); if not root then return end
+                local targetData = IslandData[State.SelectedIslandTarget]
+                local inCursedShip = (root.Position - Vector3.new(923, 126, 32852)).Magnitude < 3000
+                local inSubmerged = (root.Position - Vector3.new(10779, -2088, 9262)).Magnitude < 3000
+                local inFishman = (root.Position - Vector3.new(61583, 18, 987)).Magnitude < 2000
+
+                if inCursedShip and targetData ~= "Special_CursedShip" then if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end; ReplicatedStorage.Remotes.CommF_:InvokeServer("requestEntrance", Vector3.new(-6508.558, 89.035, -132.84)); task.wait(2.5); return end
+                if inSubmerged and targetData ~= "Special_Submerged" then if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end; ReplicatedStorage.Net:WaitForChild("RF/SubmarineTransportation"):InvokeServer("InitiateTeleport", "Tiki Outpost"); task.wait(2.5); return end
+                if inFishman and targetData ~= "Underwater City" then if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end; ReplicatedStorage.Remotes.CommF_:InvokeServer("requestEntrance", Vector3.new(3864.69, 6.74, -1926.21)); task.wait(2.5); return end
+
+                if type(targetData) == "string" then
+                    if targetData == "Special_CursedShip" then if not inCursedShip then if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end; ReplicatedStorage.Remotes.CommF_:InvokeServer("requestEntrance", Vector3.new(923.213, 126.976, 32852.832)); task.wait(2.5) else State.IslandTeleportEnabled = false; WindUI:Notify({Title="تلپورت انجام شد", Content="به Cursed Ship رسیدید!", Duration=3}) end
+                    elseif targetData == "Special_Submerged" then if not inSubmerged then local npcPos = CFrame.new(-16271, 25, 1372); if (root.Position - npcPos.Position).Magnitude > 20 then State.ActiveTween = SmartTween(root, npcPos, State.ActiveTween) else if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end; ReplicatedStorage.Net:WaitForChild("RF/SubmarineWorkerSpeak"):InvokeServer("TravelToSubmergedIsland"); task.wait(2.5) end else State.IslandTeleportEnabled = false; WindUI:Notify({Title="تلپورت انجام شد", Content="به Submerged Island رسیدید!", Duration=3}) end end
+                else
+                    if Sea == 1 and targetData == IslandData["Underwater City"] and not inFishman then if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end; ReplicatedStorage.Remotes.CommF_:InvokeServer("requestEntrance", Vector3.new(61163.85, 11.68, 1819.78)); task.wait(2.5); return end
+                    if (root.Position - targetData.Position).Magnitude > 20 then State.ActiveTween = SmartTween(root, targetData * CFrame.new(0, 40, 0), State.ActiveTween) else if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end; State.IslandTeleportEnabled = false; WindUI:Notify({Title="تلپورت انجام شد", Content="به " .. State.SelectedIslandTarget .. " رسیدید!", Duration=3}) end
+                end
+            end)
+        end
+    end)
+
+    return { 
+        Set = function(k, v) 
+            State[k] = v 
+            if k == "WalkOnWaterEnabled" then
+                UpdateWalkOnWater(v)
+            end
+        end, 
+        Get = function(k) return State[k] end,
+        GetBoats = function() return BoatNames, BoatsMap end,
+        GetIslands = function() return IslandNames end,
+        CancelTweens = function() if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end end
+    }
+end
+
+return ExtraModule
