@@ -1,12 +1,12 @@
 local ExtraModule1 = {}
 
 function ExtraModule1.Init(Deps)
-    -- گرفتن وابستگی‌ها از اسکریپت اصلی
     local Plr = Deps.Plr
     local Workspace = Deps.Workspace
     local ReplicatedStorage = Deps.ReplicatedStorage
     local VirtualInputManager = Deps.VirtualInputManager
     local TweenService = game:GetService("TweenService")
+    local RunService = game:GetService("RunService")
     
     local Sea = Deps.Sea
     local WindUI = Deps.WindUI
@@ -20,7 +20,6 @@ function ExtraModule1.Init(Deps)
     local Settings = Deps.Settings
     local RegisterAttack = Deps.RegisterAttack
 
-    -- استیت اختصاصی همین ماژول
     local State = {
         StopChestOnSpecialItem = false,
         AutoDarkbeardEnabled = false,
@@ -28,27 +27,34 @@ function ExtraModule1.Init(Deps)
         DarkbeardState = "Idle",
         DarkbeardWaitTimer = nil,
         ActiveTween = nil,
-        IsDoingPriorityTask = false
+        IsDoingPriorityTask = false,
+        DarkbeardTarget = nil -- برای قفل کردن روی باس
     }
 
     local DarkbeardSpawnPos = CFrame.new(3778.288, 11.682, -3499.631)
 
     -- ========================================================
-    -- توابع کمکی برای دارک بیرد
+    -- توابع کمکی (دقیقاً کپی شده از سیستم اصلی شما)
     -- ========================================================
-    local function EquipWeaponGeneral()
+    
+    -- 1. گرفتن فقط و فقط میلی (Melee)
+    local function EquipMeleeOnly()
         pcall(function()
+            if not Plr.Character then return end
             local h = Plr.Character:FindFirstChild("Humanoid")
-            local current = Plr.Character:FindFirstChildOfClass("Tool")
-            if current and (current.ToolTip == "Melee" or current.ToolTip == "Sword" or current.ToolTip == "Blox Fruit") then return end
-            for _, t in pairs(Plr.Backpack:GetChildren()) do 
-                if t:IsA("Tool") and (t.ToolTip == "Sword" or t.ToolTip == "Blox Fruit" or t.ToolTip == "Melee") then 
-                    h:EquipTool(t); break 
+            if not h then return end
+            local t = Plr.Character:FindFirstChildOfClass("Tool")
+            if t and t.ToolTip == "Melee" then return end
+            for _, t2 in pairs(Plr.Backpack:GetChildren()) do 
+                if t2:IsA("Tool") and t2.ToolTip == "Melee" then 
+                    h:EquipTool(t2)
+                    return 
                 end 
             end
         end)
     end
 
+    -- 2. آماده سازی باس (گنده کردن سر و فریز کردن)
     local function PrepareEnemyForDarkbeard(E)
         pcall(function()
             if not E or not E.Parent or not E:FindFirstChild("HumanoidRootPart") then return end
@@ -64,6 +70,56 @@ function ExtraModule1.Init(Deps)
             for _, p in pairs(E:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end
         end)
     end
+
+    -- 3. جلوگیری از پرش و باگ خوردن کاراکتر در هنگام اتک
+    RunService.Stepped:Connect(function()
+        if State.DarkbeardState == "Attacking" and Plr.Character then
+            pcall(function()
+                for _,p in pairs(Plr.Character:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide=false end end
+                local hrp = Plr.Character:FindFirstChild("HumanoidRootPart")
+                if hrp then hrp.Velocity = Vector3.zero end
+                local hum = Plr.Character:FindFirstChild("Humanoid")
+                if hum and hum.Sit then hum.Sit = false; hum:ChangeState(Enum.HumanoidStateType.Jumping) end
+            end)
+        end
+    end)
+
+    -- 4. حلقه اتک (دقیقاً مثل کد اصلی: کلیک مداوم و سریع)
+    task.spawn(function()
+        while true do
+            local Clicked = false
+            pcall(function()
+                if State.DarkbeardState == "Attacking" and State.DarkbeardTarget then
+                    local E = State.DarkbeardTarget
+                    if E and E.Parent and E:FindFirstChild("HumanoidRootPart") and E:FindFirstChild("Humanoid") and E.Humanoid.Health > 0 then
+                        local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart")
+                        if root then
+                            local dist = (root.Position - E.HumanoidRootPart.Position).Magnitude
+                            -- فقط اگه به باس نزدیک بود دمیج بده
+                            if dist < Settings.AttackDistance + 15 then
+                                EquipMeleeOnly()
+                                if E:FindFirstChild("Head") then 
+                                    Workspace.CurrentCamera.CFrame = CFrame.lookAt(Workspace.CurrentCamera.CFrame.Position, E.Head.Position) 
+                                end
+                                
+                                Clicked = true
+                                local CX, CY = Workspace.CurrentCamera.ViewportSize.X/2, Workspace.CurrentCamera.ViewportSize.Y/2
+                                VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, true, game, 1)
+                                task.wait(Settings.HoldTime or 0.01)
+                                VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, false, game, 1)
+                                
+                                if RegisterAttack then 
+                                    RegisterAttack:FireServer(math.floor((0.5 + math.random() * 0.5) * 10000) / 10000) 
+                                end
+                            end
+                        end
+                    end
+                end
+            end)
+            local delay = Settings.MinClickDelay + (math.random() * (Settings.MaxClickDelay - Settings.MinClickDelay))
+            task.wait(Clicked and delay or 0.15)
+        end
+    end)
 
     -- ========================================================
     -- منطق: سیستم توقف اتو چست (دریای 2 و 3)
@@ -84,7 +140,7 @@ function ExtraModule1.Init(Deps)
                     end
                     
                     if shouldStop then
-                        State.StopChestOnSpecialItem = false -- خاموش میکنیم که اسپم نشه
+                        State.StopChestOnSpecialItem = false 
                         PauseFarms()
                         if SetFarmMode then SetFarmMode("None") end
                         WindUI:Notify({Title="توقف خودکار چست", Content="آیتم " .. itemName .. " دریافت شد! اسکریپت متوقف شد.", Duration=5})
@@ -95,38 +151,53 @@ function ExtraModule1.Init(Deps)
     end
 
     -- ========================================================
-    -- منطق: سیستم دارک بیرد (فقط دریای 2)
+    -- منطق حرکت و تصمیم‌گیری: سیستم دارک بیرد (فقط دریای 2)
     -- ========================================================
     if Sea == 2 then
-        -- سیستم نوتیفیکیشن
+        -- سیستم نوتیفیکیشن با پایداری بسیار بالا (مثل اتو پایرت شما)
         task.spawn(function()
             local Notifications = Plr:WaitForChild("PlayerGui"):WaitForChild("Notifications", 10)
             if Notifications then
                 Notifications.ChildAdded:Connect(function(child)
                     if not State.AutoKillDarkbeardEventEnabled then return end
-                    task.wait(0.1)
-                    local txt = ""
-                    if child:IsA("TextLabel") then txt = child.Text else for _, desc in pairs(child:GetDescendants()) do if desc:IsA("TextLabel") then txt = desc.Text; break end end end
                     
-                    if string.find(txt, "The power of darkness has been unleashed") then
-                        if not State.IsDoingPriorityTask then
-                            State.IsDoingPriorityTask = true
-                            PauseFarms()
-                            if SetFarmMode then SetFarmMode("Darkbeard") end
-                            State.DarkbeardState = "Attacking"
-                            WindUI:Notify({Title="Darkbeard Event", Content="دارک بیرد اسپان شد! توقف کارهای قبلی و شروع حمله...", Duration=5})
+                    local textLabel = child:WaitForChild("TextLabel", 2) or child:FindFirstChildOfClass("TextLabel")
+                    if not textLabel then
+                        for _, desc in pairs(child:GetDescendants()) do
+                            if desc:IsA("TextLabel") then textLabel = desc; break end
+                        end
+                    end
+
+                    if textLabel then
+                        local timeout = tick() + 3
+                        while tick() < timeout do
+                            local txt = textLabel.Text
+                            if txt ~= "" and txt ~= "Label" then
+                                if string.find(txt, "The power of darkness has been unleashed") then
+                                    if not State.IsDoingPriorityTask then
+                                        State.IsDoingPriorityTask = true
+                                        PauseFarms()
+                                        if SetFarmMode then SetFarmMode("Darkbeard") end
+                                        State.DarkbeardState = "Attacking"
+                                        WindUI:Notify({Title="Darkbeard Event", Content="دارک بیرد اسپان شد! شروع حمله...", Duration=5})
+                                    end
+                                end
+                                break
+                            end
+                            task.wait(0.05)
                         end
                     end
                 end)
             end
         end)
 
-        -- لوپ اتک و اسپان
+        -- لوپ حرکت و مدیریت استیت
         task.spawn(function()
             while task.wait(0.1) do
                 if not State.AutoDarkbeardEnabled and not State.AutoKillDarkbeardEventEnabled then
                     if State.DarkbeardState ~= "Idle" then
                         State.DarkbeardState = "Idle"
+                        State.DarkbeardTarget = nil
                         if State.IsDoingPriorityTask then
                             State.IsDoingPriorityTask = false
                             ResumeFarms()
@@ -161,7 +232,7 @@ function ExtraModule1.Init(Deps)
                                 Plr.Character.Humanoid:EquipTool(fistTool)
                             end
                             
-                            task.wait(3) -- 3 ثانیه مکث برای اسپان شدن باس
+                            task.wait(3)
                             State.DarkbeardState = "Attacking"
                         end
                     end
@@ -170,6 +241,7 @@ function ExtraModule1.Init(Deps)
                     local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart")
                     if not root then continue end
 
+                    -- پیدا کردن باس
                     local darkbeard = nil
                     if Workspace:FindFirstChild("Enemies") then
                         for _, v in pairs(Workspace.Enemies:GetChildren()) do
@@ -182,8 +254,10 @@ function ExtraModule1.Init(Deps)
                     
                     if darkbeard then
                         State.DarkbeardWaitTimer = nil
+                        State.DarkbeardTarget = darkbeard
                         PrepareEnemyForDarkbeard(darkbeard)
                         
+                        -- قرارگیری دقیق روی سر باس (مثل کد اصلی)
                         local ep = darkbeard.HumanoidRootPart.Position
                         local d = (root.Position - ep); d = Vector3.new(d.X, 0, d.Z)
                         if d.Magnitude < 0.1 then d = Vector3.new(1,0,0) end; d = d.Unit
@@ -194,18 +268,10 @@ function ExtraModule1.Init(Deps)
                         else
                             if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
                             root.CFrame = dest
-                            EquipWeaponGeneral()
-                            if darkbeard:FindFirstChild("Head") then Workspace.CurrentCamera.CFrame = CFrame.lookAt(Workspace.CurrentCamera.CFrame.Position, darkbeard.Head.Position) end
-                            
-                            task.spawn(function()
-                                local CX, CY = Workspace.CurrentCamera.ViewportSize.X/2, Workspace.CurrentCamera.ViewportSize.Y/2
-                                for i=1,3 do
-                                    VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, true, game, 1); task.wait(0.05); VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, false, game, 1)
-                                    if RegisterAttack then RegisterAttack:FireServer(math.floor((0.5 + math.random() * 0.5) * 10000) / 10000) end
-                                end
-                            end)
+                            -- اتک دادن توی اون Task.spawn بالای فایل هندل میشه!
                         end
                     else
+                        State.DarkbeardTarget = nil
                         if not State.DarkbeardWaitTimer then State.DarkbeardWaitTimer = tick() end
                         
                         if (root.Position - DarkbeardSpawnPos.Position).Magnitude > 15 then
@@ -214,7 +280,7 @@ function ExtraModule1.Init(Deps)
                             if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
                         end
 
-                        -- اگر 15 ثانیه گذشت و باس نبود (مرد یا لود نشد)
+                        -- پایان انتظار
                         if tick() - State.DarkbeardWaitTimer > 15 then
                             State.DarkbeardState = "Idle"
                             State.DarkbeardWaitTimer = nil
