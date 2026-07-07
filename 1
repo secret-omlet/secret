@@ -1,1 +1,277 @@
+local ExtraModule1 = {}
 
+function ExtraModule1.Init(Deps)
+    -- گرفتن وابستگی‌ها از اسکریپت اصلی
+    local Plr = Deps.Plr
+    local Workspace = Deps.Workspace
+    local ReplicatedStorage = Deps.ReplicatedStorage
+    local VirtualInputManager = Deps.VirtualInputManager
+    local TweenService = game:GetService("TweenService")
+    
+    local Sea = Deps.Sea
+    local WindUI = Deps.WindUI
+    local BossTab = Deps.BossTab
+    local ChestSection = Deps.ChestSection
+    
+    local PauseFarms = Deps.PauseFarms
+    local ResumeFarms = Deps.ResumeFarms
+    local SetFarmMode = Deps.SetFarmMode
+    local SmartTween = Deps.SmartTween
+    local Settings = Deps.Settings
+    local RegisterAttack = Deps.RegisterAttack
+
+    -- استیت اختصاصی همین ماژول
+    local State = {
+        StopChestOnSpecialItem = false,
+        AutoDarkbeardEnabled = false,
+        AutoKillDarkbeardEventEnabled = false,
+        DarkbeardState = "Idle",
+        DarkbeardWaitTimer = nil,
+        ActiveTween = nil,
+        IsDoingPriorityTask = false
+    }
+
+    local DarkbeardSpawnPos = CFrame.new(3778.288, 11.682, -3499.631)
+
+    -- ========================================================
+    -- توابع کمکی برای دارک بیرد
+    -- ========================================================
+    local function EquipWeaponGeneral()
+        pcall(function()
+            local h = Plr.Character:FindFirstChild("Humanoid")
+            local current = Plr.Character:FindFirstChildOfClass("Tool")
+            if current and (current.ToolTip == "Melee" or current.ToolTip == "Sword" or current.ToolTip == "Blox Fruit") then return end
+            for _, t in pairs(Plr.Backpack:GetChildren()) do 
+                if t:IsA("Tool") and (t.ToolTip == "Sword" or t.ToolTip == "Blox Fruit" or t.ToolTip == "Melee") then 
+                    h:EquipTool(t); break 
+                end 
+            end
+        end)
+    end
+
+    local function PrepareEnemyForDarkbeard(E)
+        pcall(function()
+            if not E or not E.Parent or not E:FindFirstChild("HumanoidRootPart") then return end
+            local H = E:FindFirstChild("Head")
+            if H and not E:FindFirstChild("FakeHead") then
+                local FH = H:Clone(); FH.Name = "FakeHead"; FH.CanCollide = false; FH.Massless = true; FH.Size = H.Size; FH.Transparency = H.Transparency; FH.Parent = E
+                local W = Instance.new("WeldConstraint"); W.Part0 = H; W.Part1 = FH; W.Parent = FH
+                H.Size = Vector3.new(Settings.HeadSize, Settings.HeadSize, Settings.HeadSize); H.Transparency = 1; H.CanCollide = false
+                for _, c in pairs(H:GetChildren()) do if c:IsA("SpecialMesh") or c:IsA("Decal") then c:Destroy() end end
+            end
+            local hum = E:FindFirstChild("Humanoid")
+            if hum then hum.WalkSpeed = 0; hum.JumpPower = 0; if hum:FindFirstChild("Animator") then hum.Animator:Destroy() end end
+            for _, p in pairs(E:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end
+        end)
+    end
+
+    -- ========================================================
+    -- منطق: سیستم توقف اتو چست (دریای 2 و 3)
+    -- ========================================================
+    if Sea == 2 or Sea == 3 then
+        task.spawn(function()
+            while task.wait(1) do
+                if State.StopChestOnSpecialItem then
+                    local shouldStop = false
+                    local itemName = ""
+                    
+                    if Sea == 2 then
+                        itemName = "Fist of Darkness"
+                        if Plr.Backpack:FindFirstChild(itemName) or (Plr.Character and Plr.Character:FindFirstChild(itemName)) then shouldStop = true end
+                    elseif Sea == 3 then
+                        itemName = "God's Chalice"
+                        if Plr.Backpack:FindFirstChild(itemName) or (Plr.Character and Plr.Character:FindFirstChild(itemName)) then shouldStop = true end
+                    end
+                    
+                    if shouldStop then
+                        State.StopChestOnSpecialItem = false -- خاموش میکنیم که اسپم نشه
+                        PauseFarms()
+                        if SetFarmMode then SetFarmMode("None") end
+                        WindUI:Notify({Title="توقف خودکار چست", Content="آیتم " .. itemName .. " دریافت شد! اسکریپت متوقف شد.", Duration=5})
+                    end
+                end
+            end
+        end)
+    end
+
+    -- ========================================================
+    -- منطق: سیستم دارک بیرد (فقط دریای 2)
+    -- ========================================================
+    if Sea == 2 then
+        -- سیستم نوتیفیکیشن
+        task.spawn(function()
+            local Notifications = Plr:WaitForChild("PlayerGui"):WaitForChild("Notifications", 10)
+            if Notifications then
+                Notifications.ChildAdded:Connect(function(child)
+                    if not State.AutoKillDarkbeardEventEnabled then return end
+                    task.wait(0.1)
+                    local txt = ""
+                    if child:IsA("TextLabel") then txt = child.Text else for _, desc in pairs(child:GetDescendants()) do if desc:IsA("TextLabel") then txt = desc.Text; break end end end
+                    
+                    if string.find(txt, "The power of darkness has been unleashed") then
+                        if not State.IsDoingPriorityTask then
+                            State.IsDoingPriorityTask = true
+                            PauseFarms()
+                            if SetFarmMode then SetFarmMode("Darkbeard") end
+                            State.DarkbeardState = "Attacking"
+                            WindUI:Notify({Title="Darkbeard Event", Content="دارک بیرد اسپان شد! توقف کارهای قبلی و شروع حمله...", Duration=5})
+                        end
+                    end
+                end)
+            end
+        end)
+
+        -- لوپ اتک و اسپان
+        task.spawn(function()
+            while task.wait(0.1) do
+                if not State.AutoDarkbeardEnabled and not State.AutoKillDarkbeardEventEnabled then
+                    if State.DarkbeardState ~= "Idle" then
+                        State.DarkbeardState = "Idle"
+                        if State.IsDoingPriorityTask then
+                            State.IsDoingPriorityTask = false
+                            ResumeFarms()
+                        end
+                    end
+                    continue
+                end
+
+                local hasFist = Plr.Backpack:FindFirstChild("Fist of Darkness") or (Plr.Character and Plr.Character:FindFirstChild("Fist of Darkness"))
+
+                if State.AutoDarkbeardEnabled and State.DarkbeardState == "Idle" and hasFist then
+                    if not State.IsDoingPriorityTask then
+                        State.IsDoingPriorityTask = true
+                        PauseFarms()
+                        if SetFarmMode then SetFarmMode("Darkbeard") end
+                        State.DarkbeardState = "Spawning"
+                        WindUI:Notify({Title="Darkbeard", Content="Fist of Darkness یافت شد! حرکت به سمت محل اسپان...", Duration=5})
+                    end
+                end
+
+                if State.DarkbeardState == "Spawning" then
+                    local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart")
+                    if root then
+                        if (root.Position - DarkbeardSpawnPos.Position).Magnitude > 15 then
+                            State.ActiveTween = SmartTween(root, DarkbeardSpawnPos, State.ActiveTween)
+                        else
+                            if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
+                            root.CFrame = DarkbeardSpawnPos
+                            
+                            local fistTool = Plr.Backpack:FindFirstChild("Fist of Darkness")
+                            if fistTool and Plr.Character:FindFirstChild("Humanoid") then
+                                Plr.Character.Humanoid:EquipTool(fistTool)
+                            end
+                            
+                            task.wait(3) -- 3 ثانیه مکث برای اسپان شدن باس
+                            State.DarkbeardState = "Attacking"
+                        end
+                    end
+                    
+                elseif State.DarkbeardState == "Attacking" then
+                    local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart")
+                    if not root then continue end
+
+                    local darkbeard = nil
+                    if Workspace:FindFirstChild("Enemies") then
+                        for _, v in pairs(Workspace.Enemies:GetChildren()) do
+                            if string.find(v.Name, "Darkbeard") and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
+                                darkbeard = v
+                                break
+                            end
+                        end
+                    end
+                    
+                    if darkbeard then
+                        State.DarkbeardWaitTimer = nil
+                        PrepareEnemyForDarkbeard(darkbeard)
+                        
+                        local ep = darkbeard.HumanoidRootPart.Position
+                        local d = (root.Position - ep); d = Vector3.new(d.X, 0, d.Z)
+                        if d.Magnitude < 0.1 then d = Vector3.new(1,0,0) end; d = d.Unit
+                        local dest = CFrame.lookAt(ep + d * Settings.AttackDistance + Vector3.new(0, Settings.AttackHeight, 0), ep)
+                        
+                        if (root.Position - dest.Position).Magnitude > 10 then 
+                            State.ActiveTween = SmartTween(root, dest, State.ActiveTween) 
+                        else
+                            if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
+                            root.CFrame = dest
+                            EquipWeaponGeneral()
+                            if darkbeard:FindFirstChild("Head") then Workspace.CurrentCamera.CFrame = CFrame.lookAt(Workspace.CurrentCamera.CFrame.Position, darkbeard.Head.Position) end
+                            
+                            task.spawn(function()
+                                local CX, CY = Workspace.CurrentCamera.ViewportSize.X/2, Workspace.CurrentCamera.ViewportSize.Y/2
+                                for i=1,3 do
+                                    VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, true, game, 1); task.wait(0.05); VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, false, game, 1)
+                                    if RegisterAttack then RegisterAttack:FireServer(math.floor((0.5 + math.random() * 0.5) * 10000) / 10000) end
+                                end
+                            end)
+                        end
+                    else
+                        if not State.DarkbeardWaitTimer then State.DarkbeardWaitTimer = tick() end
+                        
+                        if (root.Position - DarkbeardSpawnPos.Position).Magnitude > 15 then
+                            State.ActiveTween = SmartTween(root, DarkbeardSpawnPos, State.ActiveTween)
+                        else
+                            if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
+                        end
+
+                        -- اگر 15 ثانیه گذشت و باس نبود (مرد یا لود نشد)
+                        if tick() - State.DarkbeardWaitTimer > 15 then
+                            State.DarkbeardState = "Idle"
+                            State.DarkbeardWaitTimer = nil
+                            if State.IsDoingPriorityTask then
+                                State.IsDoingPriorityTask = false
+                                ResumeFarms()
+                                WindUI:Notify({Title="Darkbeard", Content="عملیات پایان یافت! بازگشت به کارهای قبلی...", Duration=5})
+                            end
+                        end
+                    end
+                end
+            end
+        end)
+    end
+
+    -- ========================================================
+    -- ساخت رابط کاربری (UI)
+    -- ========================================================
+    if Sea == 2 or Sea == 3 then
+        local specialItemName = (Sea == 2) and "Fist of Darkness" or "God's Chalice"
+        
+        ChestSection:Toggle({
+            Title = "توقف اتو چست با گرفتن " .. specialItemName,
+            Desc = "اگه موقع چست زدن آیتم " .. specialItemName .. " رو گرفتی، اسکریپت متوقف میشه تا آیتمت از بین نره.",
+            Value = false,
+            Callback = function(s)
+                State.StopChestOnSpecialItem = s
+            end
+        })
+    end
+
+    if Sea == 2 then
+        local DarkbeardSec = BossTab:Section({
+            Title = "☠️ اتو دارک بیرد (Darkbeard)",
+            Box = true,
+            BoxBorder = true,
+            Opened = true
+        })
+
+        DarkbeardSec:Toggle({
+            Title = "اتو اسپان و کشتن Darkbeard",
+            Desc = "اگه Fist of Darkness تو کیفت بیاد، بقیه کارها موقتاً متوقف میشه، میره باس رو اسپان میکنه و میکشه.",
+            Value = false,
+            Callback = function(s)
+                State.AutoDarkbeardEnabled = s
+            end
+        })
+
+        DarkbeardSec:Toggle({
+            Title = "کشتن با نوتیفیکیشن (Darkbeard Event)",
+            Desc = "اگه کس دیگه‌ای باس رو اسپان کرد (نوتیفکیشنش اومد)، کارهای فعلی متوقف میشه و میره باس رو میکشه.",
+            Value = false,
+            Callback = function(s)
+                State.AutoKillDarkbeardEventEnabled = s
+            end
+        })
+    end
+end
+
+return ExtraModule1
