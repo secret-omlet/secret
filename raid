@@ -38,6 +38,9 @@ function RaidModule(Settings, WindUI, RaidConfig)
     local CurrentExpandedEnemy = nil
     local ActiveTween = nil
     local WeaponMode = RaidConfig.WeaponMode or "Melee"
+    
+    -- متغیر مخصوص چرخش دور ماب
+    local OrbitAngle = 0 
 
     local ScientistLocation = CFrame.new(-6561, 310, -4747)
 
@@ -300,6 +303,7 @@ function RaidModule(Settings, WindUI, RaidConfig)
         RaidRetreatPosition = nil
         RaidLastTrackedPosition = nil
         RaidRetreatAnchorY = 0
+        OrbitAngle = 0
         if CurrentExpandedEnemy then
             CleanupExpandedHead(CurrentExpandedEnemy)
             CurrentExpandedEnemy = nil
@@ -381,7 +385,10 @@ function RaidModule(Settings, WindUI, RaidConfig)
         local Root = Plr.Character.HumanoidRootPart
         if ActiveTween then ActiveTween:Cancel(); ActiveTween = nil end
         local dist = (Root.Position - targetCF.Position).Magnitude
+        
+        -- وقتی خیلی نزدیکیم (در حال چرخش) نیازی به تویین کند نیست، سریع جابجا میشیم
         if dist < 8 then Root.CFrame = targetCF; return end
+        
         local spd = Settings.FlightSpeed
         if RaidPhase == "Retreating" then spd = spd * 1.5
         elseif dist < 50 then spd = 100 end
@@ -440,7 +447,7 @@ function RaidModule(Settings, WindUI, RaidConfig)
     end)
 
     -- ═══════════════════════════════════════
-    -- سیستم ریستارت هیت باکس و اتک هر 2 ثانیه (جدید)
+    -- سیستم ریستارت هیت باکس و اتک هر 2 ثانیه 
     -- ═══════════════════════════════════════
     task.spawn(function()
         while task.wait(2) do
@@ -469,10 +476,10 @@ function RaidModule(Settings, WindUI, RaidConfig)
     end)
 
     -- ═══════════════════════════════════════
-    -- لوپ حمله رید (سریع و بدون توقف - حذف مکث)
+    -- لوپ حمله رید (سریع و بدون توقف)
     -- ═══════════════════════════════════════
     task.spawn(function()
-        while task.wait(0.05) do -- سرعت اتک بالاتر
+        while task.wait(0.05) do
             pcall(function()
                 if not RaidEnabled or not RaidAttackEnabled or RaidPhase ~= "Fighting" or RaidIsRetreating then return end
                 if not RaidTarget or not IsValidRaidNPC(RaidTarget) then return end
@@ -537,7 +544,7 @@ function RaidModule(Settings, WindUI, RaidConfig)
     end)
 
     -- ═══════════════════════════════════════
-    -- لوپ حرکت کاراکتر
+    -- لوپ حرکت کاراکتر (ویرایش شده برای چرخش دایره ای)
     -- ═══════════════════════════════════════
     task.spawn(function()
         while true do
@@ -566,11 +573,8 @@ function RaidModule(Settings, WindUI, RaidConfig)
                 elseif RaidPhase == "Fighting" and RaidAttackEnabled and not RaidIsRetreating then
                     if RaidTarget and RaidTarget.Parent and RaidTarget:FindFirstChild("HumanoidRootPart") and IsValidRaidNPC(RaidTarget) then
                         local EP = RaidTarget.HumanoidRootPart.Position
-                        local d = (Root.Position - EP)
-                        d = Vector3.new(d.X, 0, d.Z)
-                        if d.Magnitude < 0.1 then d = Vector3.new(1, 0, 0) end
-                        d = d.Unit
                         
+                        -- فاصله از ماب (شعاع چرخش)
                         local ad = (Settings.AttackDistance or 40) - 3
                         local ah = Settings.AttackHeight or 40
                         
@@ -582,7 +586,22 @@ function RaidModule(Settings, WindUI, RaidConfig)
                             ad = (Settings.GunAttackDistance or 60) - 3
                             ah = Settings.GunAttackHeight or 40
                         end
-                        Dest = CFrame.lookAt(EP + d * ad + Vector3.new(0, ah, 0), EP)
+
+                        -- محاسبات چرخش (دایره ای دور تارگت)
+                        -- اضافه کردن زاویه (حدود 20 درجه در هر تیک - نه خیلی تند، نه کند)
+                        OrbitAngle = OrbitAngle + math.rad(20)
+                        if OrbitAngle >= math.pi * 2 then 
+                            OrbitAngle = OrbitAngle - (math.pi * 2) 
+                        end
+
+                        -- فرمول ریاضی برای قرارگیری روی دایره
+                        local OffsetX = math.cos(OrbitAngle) * ad
+                        local OffsetZ = math.sin(OrbitAngle) * ad
+                        
+                        local TargetPosition = EP + Vector3.new(OffsetX, ah, OffsetZ)
+                        
+                        -- رفتن به موقعیت روی دایره و نگاه کردن به خودِ ماب
+                        Dest = CFrame.lookAt(TargetPosition, EP)
                     end
 
                 elseif RaidPhase == "WaitForSpawn" and RaidLastKnownSpawn then
@@ -591,7 +610,7 @@ function RaidModule(Settings, WindUI, RaidConfig)
 
                 if Dest then MoveToPosition(Dest) end
             end)
-            task.wait(0.12)
+            task.wait(0.12) -- سرعت آپدیت حرکت
         end
     end)
 
@@ -854,6 +873,7 @@ function RaidModule(Settings, WindUI, RaidConfig)
         RaidIsRetreating = false
         RaidLastTrackedPosition = nil
         RaidDiscoveredIslands = {}
+        OrbitAngle = 0
         Log("اتو رید شروع شد!")
     end
 
