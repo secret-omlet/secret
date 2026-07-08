@@ -24,11 +24,9 @@ function RaidModule(Settings, WindUI, RaidConfig)
     }
 
     -- ═══════════════════════════════════════
-    -- توابع داخلی (کپی شده از سیستم Kill Aura لول آپ)
+    -- توابع کمکی (دقیقاً کپی شده از LevelUp)
     -- ═══════════════════════════════════════
-    local function Log(msg)
-        print("[Raid Module] " .. msg)
-    end
+    local function Log(msg) print("[Raid Module] " .. msg) end
 
     local function EquipWeapon()
         pcall(function()
@@ -90,7 +88,7 @@ function RaidModule(Settings, WindUI, RaidConfig)
     end
 
     -- ═══════════════════════════════════════
-    -- سیستم ضد پرش و گیر کردن
+    -- سیستم ضد پرش و گیر کردن (کپی از LevelUp)
     -- ═══════════════════════════════════════
     RunService.Heartbeat:Connect(function()
         if RaidConfig.RaidEnabled and Plr.Character then
@@ -106,7 +104,7 @@ function RaidModule(Settings, WindUI, RaidConfig)
     end)
 
     -- ═══════════════════════════════════════
-    -- سیستم اتک دادن (دقیقاً کپی اتو لول آپ)
+    -- لوپ اتک دادن (کلیک سریع - کپی از LevelUp)
     -- ═══════════════════════════════════════
     task.spawn(function()
         while task.wait(0.1) do
@@ -141,7 +139,7 @@ function RaidModule(Settings, WindUI, RaidConfig)
     end)
 
     -- ═══════════════════════════════════════
-    -- لوپ اصلی حرکت و مدیریت رید
+    -- لوپ اصلی (خرید چیپ، صبر کردن و حرکت سمت ماب)
     -- ═══════════════════════════════════════
     task.spawn(function()
         while task.wait(0.1) do
@@ -153,25 +151,32 @@ function RaidModule(Settings, WindUI, RaidConfig)
                 local InRaid = Workspace:FindFirstChild("Raids") ~= nil
                 
                 if not InRaid then
-                    -- ================== بیرون از رید (بدون تغییر) ==================
+                    -- ================== 1. بیرون از رید (خرید و استارت) ==================
                     State.CurrentTarget = nil
                     local Map = Workspace:FindFirstChild("Map")
                     if not Map then return end
                     
                     local button = Map:FindFirstChild("MicroTransactions") and Map.MicroTransactions:FindFirstChild("TeleportButton")
                     if button then
+                        -- خرید چیپ رید
                         CommF:InvokeServer("RaidsNpc", "Select", RaidConfig.RaidSelectedType)
                         task.wait(0.5)
                         
+                        -- رفتن روی دکمه استارت (کپسول آبی)
                         if (Root.Position - button.Position).Magnitude > 5 then
                             Root.CFrame = button.CFrame
                         else
                             firetouchinterest(Root, button, 0)
                             task.wait(0.1)
                             firetouchinterest(Root, button, 1)
+                            
+                            -- *** 5 ثانیه صبر کردن برای شروع رید ***
+                            Log("چیپ خریداری شد، 5 ثانیه صبر تا شروع رید...")
+                            task.wait(5)
                         end
                     end
                     
+                    -- ================== اتاق بیداری (Awakening) ==================
                     local Awakener = Workspace:FindFirstChild("AwakeningRoom")
                     if Awakener or (Root.Position.Y > 5000 and not InRaid) then
                         CommF:InvokeServer("Awakener", "Check")
@@ -182,11 +187,11 @@ function RaidModule(Settings, WindUI, RaidConfig)
                             RaidConfig.RaidEnabled = false
                             WindUI:Notify({Title="اتو رید", Content="رید با موفقیت تمام شد!", Duration=5})
                         else
-                            Plr.Character.Head:Destroy()
+                            Plr.Character.Head:Destroy() -- ریست شدن برای رید بعدی
                         end
                     end
                 else
-                    -- ================== داخل رید (سیستم جدید حرکت سمت ماب) ==================
+                    -- ================== 2. داخل رید (مبارزه) ==================
                     if State.CurrentTarget and IsEnemyValid(State.CurrentTarget) then
                         PrepareEnemy(State.CurrentTarget)
                     else
@@ -200,6 +205,8 @@ function RaidModule(Settings, WindUI, RaidConfig)
                     local nearest = nil
                     local minDist = math.huge
                     local enemies = Workspace:FindFirstChild("Enemies")
+                    
+                    -- پیدا کردن نزدیک ترین ماب رید
                     if enemies then
                         for _, v in pairs(enemies:GetChildren()) do
                             if IsEnemyValid(v) then
@@ -219,12 +226,13 @@ function RaidModule(Settings, WindUI, RaidConfig)
                         if d.Magnitude < 0.1 then d = Vector3.new(1,0,0) end
                         d = d.Unit
                         
-                        -- اینجا فاصله رو خیلی خیلی کم بردم جلوتر (AttackDistance - 3)
+                        -- *** فاصله تنظیم شده: خیلی کوچولو نزدیک تر (AttackDistance - 3) ***
                         local ad = (Settings.AttackDistance or 40) - 3
                         local ah = Settings.AttackHeight or 40
                         
                         local Dest = CFrame.lookAt(EP + d * ad + Vector3.new(0, ah, 0), EP)
                         
+                        -- حرکت به سمت ماب
                         if (Root.Position - Dest.Position).Magnitude > 10 then
                             Root.CFrame = Dest
                             if RaidConfig.ActiveTween then RaidConfig.ActiveTween:Cancel(); RaidConfig.ActiveTween = nil end
@@ -232,7 +240,7 @@ function RaidModule(Settings, WindUI, RaidConfig)
                     else
                         State.CurrentTarget = nil
                         
-                        -- ================== رفتن به جزیره بعدی (بدون تغییر) ==================
+                        -- ================== 3. رفتن به جزیره بعدی (وقتی مابی نمونده) ==================
                         local Locations = Workspace:FindFirstChild("_WorldOrigin") and Workspace._WorldOrigin:FindFirstChild("Locations")
                         if Locations then
                             local NextIsland = nil
