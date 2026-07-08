@@ -113,6 +113,7 @@ function RaidModule(Settings, WindUI, RaidConfig)
             W.Part0 = H; W.Part1 = FH; W.Parent = FH
             H.Size = Vector3.new(hs, hs, hs)
             H.Transparency = 1; H.CanCollide = false
+            -- پاک کردن مش‌ها برای جلوگیری از باگ گرافیکی
             for _, c in pairs(H:GetChildren()) do
                 if c:IsA("SpecialMesh") or c:IsA("Decal") or c:IsA("FaceInstance") or c:IsA("Texture") then
                     c:Destroy()
@@ -122,19 +123,10 @@ function RaidModule(Settings, WindUI, RaidConfig)
     end
 
     local function PrepareRaidEnemy(E)
+        -- ماب‌ها کاملا عادی میمونن و فقط سرشون بزرگ میشه برای هیت باکس
         pcall(function()
             if not E or not E.Parent or not E:FindFirstChild("HumanoidRootPart") then return end
             ExpandHead(E, Settings.HeadSize)
-            if E:FindFirstChild("Humanoid") then
-                E.Humanoid.WalkSpeed = 0
-                E.Humanoid.JumpPower = 0
-                if E.Humanoid:FindFirstChild("Animator") then
-                    E.Humanoid.Animator:Destroy()
-                end
-            end
-            for _, p in pairs(E:GetDescendants()) do
-                if p:IsA("BasePart") then p.CanCollide = false end
-            end
         end)
     end
 
@@ -386,7 +378,7 @@ function RaidModule(Settings, WindUI, RaidConfig)
         if ActiveTween then ActiveTween:Cancel(); ActiveTween = nil end
         local dist = (Root.Position - targetCF.Position).Magnitude
         
-        -- وقتی خیلی نزدیکیم (در حال چرخش) نیازی به تویین کند نیست، سریع جابجا میشیم
+        -- وقتی به موقعیت نزدیکیم نیازی به تویین نیست
         if dist < 8 then Root.CFrame = targetCF; return end
         
         local spd = Settings.FlightSpeed
@@ -402,45 +394,20 @@ function RaidModule(Settings, WindUI, RaidConfig)
     end
 
     -- ═══════════════════════════════════════
-    -- سیستم ضد پرش و جمع کردن ماب‌ها (بدون تغییر)
+    -- سیستم ضد پرش بازیکن
+    -- (دستکاری ماب‌ها به طور کامل حذف شد)
     -- ═══════════════════════════════════════
     RunService.Stepped:Connect(function()
         pcall(function()
             if not RaidEnabled then return end
             
-            -- بی حرکت کردن پلیر روی هوا
+            -- فقط بی حرکت کردن و جلوگیری از افتادن خود پلیر
             if Plr.Character then
                 for _, p in pairs(Plr.Character:GetDescendants()) do 
                     if p:IsA("BasePart") then p.CanCollide = false end 
                 end
                 if Plr.Character:FindFirstChild("HumanoidRootPart") then 
                     Plr.Character.HumanoidRootPart.Velocity = Vector3.zero 
-                end
-            end
-
-            -- خاموش کردن برخورد ماب‌ها
-            local enemies = Workspace:FindFirstChild("Enemies")
-            if enemies then
-                for _, enemy in pairs(enemies:GetChildren()) do
-                    for _, p in pairs(enemy:GetDescendants()) do
-                        if p:IsA("BasePart") then p.CanCollide = false end
-                    end
-                end
-            end
-
-            -- جمع کردن ماب‌ها داخل تارگت فعلی (Group AoE)
-            if RaidPhase == "Fighting" and RaidTarget and RaidTarget:FindFirstChild("HumanoidRootPart") then
-                local targetHRP = RaidTarget.HumanoidRootPart
-                if enemies then
-                    for _, v in pairs(enemies:GetChildren()) do
-                        if v ~= RaidTarget and IsValidRaidNPC(v) then
-                            local vHRP = v:FindFirstChild("HumanoidRootPart")
-                            if vHRP then
-                                vHRP.CFrame = targetHRP.CFrame
-                                vHRP.Velocity = Vector3.zero
-                            end
-                        end
-                    end
                 end
             end
         end)
@@ -453,21 +420,21 @@ function RaidModule(Settings, WindUI, RaidConfig)
         while task.wait(2) do
             pcall(function()
                 if RaidEnabled and RaidPhase == "Fighting" and RaidAttackEnabled and RaidTarget then
-                    -- 1. ریستارت کردن سلاح (درآوردن و دست گرفتن مجدد برای رفع باگ استیت)
+                    -- 1. ریستارت کردن سلاح
                     if Plr.Character and Plr.Character:FindFirstChild("Humanoid") then
                         Plr.Character.Humanoid:UnequipTools()
                         task.wait(0.05)
                         EquipWeaponRaid()
                     end
 
-                    -- 2. ریستارت کردن هیت‌باکس تارگت و همگام‌سازی مجدد
+                    -- 2. ریستارت کردن هیت‌باکس تارگت
                     if CurrentExpandedEnemy then
                         CleanupExpandedHead(CurrentExpandedEnemy)
                         CurrentExpandedEnemy = nil
                     end
                     PrepareRaidEnemy(RaidTarget)
 
-                    -- 3. آزاد کردن کلیک‌های موس در صورتی که گیر کرده باشند
+                    -- 3. آزاد کردن کلیک‌های موس
                     local CX, CY = Workspace.CurrentCamera.ViewportSize.X/2, Workspace.CurrentCamera.ViewportSize.Y/2
                     VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, false, game, 1)
                 end
@@ -476,7 +443,7 @@ function RaidModule(Settings, WindUI, RaidConfig)
     end)
 
     -- ═══════════════════════════════════════
-    -- لوپ حمله رید (سریع و بدون توقف)
+    -- لوپ حمله رید 
     -- ═══════════════════════════════════════
     task.spawn(function()
         while task.wait(0.05) do
@@ -526,7 +493,7 @@ function RaidModule(Settings, WindUI, RaidConfig)
     end)
 
     -- ═══════════════════════════════════════
-    -- لوپ حرکت دوربین در حین مبارزه
+    -- لوپ حرکت دوربین 
     -- ═══════════════════════════════════════
     task.spawn(function()
         while task.wait(0.08) do
@@ -544,7 +511,7 @@ function RaidModule(Settings, WindUI, RaidConfig)
     end)
 
     -- ═══════════════════════════════════════
-    -- لوپ حرکت کاراکتر (ویرایش شده برای چرخش دایره ای)
+    -- لوپ حرکت کاراکتر (ویرایش شده: فاصله و ارتفاع بسیار کمتر)
     -- ═══════════════════════════════════════
     task.spawn(function()
         while true do
@@ -574,33 +541,35 @@ function RaidModule(Settings, WindUI, RaidConfig)
                     if RaidTarget and RaidTarget.Parent and RaidTarget:FindFirstChild("HumanoidRootPart") and IsValidRaidNPC(RaidTarget) then
                         local EP = RaidTarget.HumanoidRootPart.Position
                         
-                        -- فاصله از ماب (شعاع چرخش)
-                        local ad = (Settings.AttackDistance or 40) - 3
-                        local ah = Settings.AttackHeight or 40
+                        -- *** تغییر اساسی: فاصله و ارتفاع بسیار نزدیک‌تر شد ***
+                        -- 15 اِستاد فاصله دایره و 15 اِستاد ارتفاع، تا پلیر کاملا به ماب بچسبه و دمیج رد بشه
+                        local ad = 15 
+                        local ah = 15 
                         
+                        -- اگر بودا بودیم یه کوچولو دور تر
                         if (WeaponMode == "Fruit" or WeaponMode == "MeleeAbility") and IsBuddhaFruit() then
-                            ad = (Settings.BuddhaDistance or 50) - 3
+                            ad = 25
+                            ah = 20
                         end
+                        -- اگر تفنگ دستمون بود
                         local T = Plr.Character:FindFirstChildOfClass("Tool")
                         if T and (T.ToolTip == "Gun" or T.ToolTip == "Guns") then
-                            ad = (Settings.GunAttackDistance or 60) - 3
-                            ah = Settings.GunAttackHeight or 40
+                            ad = 30
+                            ah = 30
                         end
 
-                        -- محاسبات چرخش (دایره ای دور تارگت)
-                        -- اضافه کردن زاویه (حدود 20 درجه در هر تیک - نه خیلی تند، نه کند)
+                        -- چرخش دایره ای دور تارگت (با سرعت ملایم)
                         OrbitAngle = OrbitAngle + math.rad(20)
                         if OrbitAngle >= math.pi * 2 then 
                             OrbitAngle = OrbitAngle - (math.pi * 2) 
                         end
 
-                        -- فرمول ریاضی برای قرارگیری روی دایره
                         local OffsetX = math.cos(OrbitAngle) * ad
                         local OffsetZ = math.sin(OrbitAngle) * ad
                         
                         local TargetPosition = EP + Vector3.new(OffsetX, ah, OffsetZ)
                         
-                        -- رفتن به موقعیت روی دایره و نگاه کردن به خودِ ماب
+                        -- رفتن به موقعیت روی دایره و نگاه کردن به ماب (که الان داره عادی راه میره)
                         Dest = CFrame.lookAt(TargetPosition, EP)
                     end
 
