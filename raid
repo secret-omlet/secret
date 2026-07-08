@@ -14,19 +14,20 @@ function RaidModule(Settings, WindUI, RaidConfig)
     
     local Remotes = ReplicatedStorage:WaitForChild("Remotes")
     local CommF = Remotes:WaitForChild("CommF_")
-    local Net = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Net")
     
-    local State = {
-        CurrentExpandedEnemy = nil,
-        CurrentTarget = nil,
-        LastTargetEnemy = nil,
-        LastTargetTime = 0
-    }
+    -- ═══════════════════════════════════════
+    -- توابع داخلی رید
+    -- ═══════════════════════════════════════
+    local function Log(msg)
+        print("[Raid Module] " .. msg)
+    end
 
-    -- ═══════════════════════════════════════
-    -- توابع کمکی (دقیقاً کپی شده از LevelUp)
-    -- ═══════════════════════════════════════
-    local function Log(msg) print("[Raid Module] " .. msg) end
+    local function FireClick()
+        local CX, CY = Workspace.CurrentCamera.ViewportSize.X/2, Workspace.CurrentCamera.ViewportSize.Y/2
+        VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, true, game, 1)
+        task.wait(0.05)
+        VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, false, game, 1)
+    end
 
     local function EquipWeapon()
         pcall(function()
@@ -48,49 +49,8 @@ function RaidModule(Settings, WindUI, RaidConfig)
         end)
     end
 
-    local function IsEnemyValid(E)
-        if not E or not E.Parent then return false end
-        local hum = E:FindFirstChild("Humanoid")
-        if not hum or hum.Health <= 0 then return false end
-        return E:FindFirstChild("HumanoidRootPart") ~= nil
-    end
-
-    local function CleanupExpandedHead(E)
-        pcall(function()
-            if not E or not E.Parent then return end
-            local H = E:FindFirstChild("Head")
-            local FH = E:FindFirstChild("FakeHead")
-            if FH then if H then H.Size = FH.Size; H.Transparency = FH.Transparency end; FH:Destroy() end
-        end)
-    end
-
-    local function ExpandHead(E, hs)
-        pcall(function()
-            if not E or not E.Parent then return end
-            local H = E:FindFirstChild("Head"); if not H then return end
-            if State.CurrentExpandedEnemy and State.CurrentExpandedEnemy ~= E then CleanupExpandedHead(State.CurrentExpandedEnemy); State.CurrentExpandedEnemy = nil end
-            if E:FindFirstChild("FakeHead") then H.Size = Vector3.new(hs, hs, hs); H.Transparency = 1; H.CanCollide = false; State.CurrentExpandedEnemy = E; return end
-            State.CurrentExpandedEnemy = E
-            local FH = H:Clone(); FH.Name = "FakeHead"; FH.CanCollide = false; FH.Anchored = false; FH.Massless = true; FH.Size = H.Size; FH.Transparency = H.Transparency; FH.Parent = E
-            local W = Instance.new("WeldConstraint"); W.Part0 = H; W.Part1 = FH; W.Parent = FH
-            H.Size = Vector3.new(hs, hs, hs); H.Transparency = 1; H.CanCollide = false
-            for _, c in pairs(H:GetChildren()) do if c:IsA("SpecialMesh") or c:IsA("Decal") or c:IsA("FaceInstance") or c:IsA("Texture") then c:Destroy() end; if c:IsA("BillboardGui") then c.Adornee = FH end end
-        end)
-    end
-
-    local function PrepareEnemy(E)
-        pcall(function()
-            if not E or not E.Parent or not E:FindFirstChild("HumanoidRootPart") then return end
-            ExpandHead(E, Settings.HeadSize)
-            if Settings.FreezeEnemy and E:FindFirstChild("Humanoid") then E.Humanoid.WalkSpeed = 0; E.Humanoid.JumpPower = 0; if Settings.RemoveAnimator and E.Humanoid:FindFirstChild("Animator") then E.Humanoid.Animator:Destroy() end end
-            for _, p in pairs(E:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end
-        end)
-    end
-
-    -- ═══════════════════════════════════════
-    -- سیستم ضد پرش و گیر کردن (کپی از LevelUp)
-    -- ═══════════════════════════════════════
-    RunService.Heartbeat:Connect(function()
+    -- نوکلیپ (رد شدن از دیوار) مخصوص رید
+    RunService.Stepped:Connect(function()
         if RaidConfig.RaidEnabled and Plr.Character then
             pcall(function()
                 for _, p in pairs(Plr.Character:GetDescendants()) do
@@ -104,42 +64,7 @@ function RaidModule(Settings, WindUI, RaidConfig)
     end)
 
     -- ═══════════════════════════════════════
-    -- لوپ اتک دادن (کلیک سریع - کپی از LevelUp)
-    -- ═══════════════════════════════════════
-    task.spawn(function()
-        while task.wait(0.1) do
-            pcall(function()
-                if not RaidConfig.RaidEnabled or not State.CurrentTarget then return end
-
-                local E = State.CurrentTarget
-                if E ~= State.LastTargetEnemy then State.LastTargetEnemy = E; State.LastTargetTime = tick() end
-                if tick() - State.LastTargetTime < (Settings.AttackWaitTime or 2) then return end
-                
-                if not IsEnemyValid(E) then return end
-                if not Plr.Character or not Plr.Character:FindFirstChild("Humanoid") then return end
-
-                pcall(function() if E:FindFirstChild("Head") then Workspace.CurrentCamera.CFrame = CFrame.lookAt(Workspace.CurrentCamera.CFrame.Position, E.Head.Position) end end)
-
-                EquipWeapon()
-                
-                -- روشن کردن هاکی
-                pcall(function() if not Plr.Character:FindFirstChild("HasBuso") then CommF:InvokeServer("Buso") end end)
-                
-                local CX, CY = Workspace.CurrentCamera.ViewportSize.X/2, Workspace.CurrentCamera.ViewportSize.Y/2
-                VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, true, game, 1)
-                task.wait(Settings.HoldTime or 0.01)
-                VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, false, game, 1)
-                
-                local registerAttack = Net:FindFirstChild("RE/RegisterAttack")
-                if registerAttack then 
-                    registerAttack:FireServer(math.floor((0.5 + math.random() * 0.5) * 10000) / 10000)
-                end
-            end)
-        end
-    end)
-
-    -- ═══════════════════════════════════════
-    -- لوپ اصلی (خرید چیپ، صبر کردن و حرکت سمت ماب)
+    -- لوپ اصلی رید
     -- ═══════════════════════════════════════
     task.spawn(function()
         while task.wait(0.1) do
@@ -151,34 +76,30 @@ function RaidModule(Settings, WindUI, RaidConfig)
                 local InRaid = Workspace:FindFirstChild("Raids") ~= nil
                 
                 if not InRaid then
-                    -- ================== 1. بیرون از رید (خرید و استارت) ==================
-                    State.CurrentTarget = nil
+                    -- 1. بیرون از رید (خرید چیپ و تلپورت به داخل)
                     local Map = Workspace:FindFirstChild("Map")
                     if not Map then return end
                     
+                    -- رفتن به آزمایشگاه / مکان رید
                     local button = Map:FindFirstChild("MicroTransactions") and Map.MicroTransactions:FindFirstChild("TeleportButton")
                     if button then
-                        -- خرید چیپ رید
+                        -- خرید چیپ
                         CommF:InvokeServer("RaidsNpc", "Select", RaidConfig.RaidSelectedType)
                         task.wait(0.5)
                         
-                        -- رفتن روی دکمه استارت (کپسول آبی)
+                        -- فشار دادن دکمه
                         if (Root.Position - button.Position).Magnitude > 5 then
                             Root.CFrame = button.CFrame
                         else
                             firetouchinterest(Root, button, 0)
                             task.wait(0.1)
                             firetouchinterest(Root, button, 1)
-                            
-                            -- *** 5 ثانیه صبر کردن برای شروع رید ***
-                            Log("چیپ خریداری شد، 5 ثانیه صبر تا شروع رید...")
-                            task.wait(5)
                         end
                     end
                     
-                    -- ================== اتاق بیداری (Awakening) ==================
-                    local Awakener = Workspace:FindFirstChild("AwakeningRoom")
-                    if Awakener or (Root.Position.Y > 5000 and not InRaid) then
+                    -- بیداری فروت (Awakening Room)
+                    local Awakener = Workspace:FindFirstChild("AwakeningRoom") -- اسم حدودی بر اساس مپ
+                    if Awakener or (Root.Position.Y > 5000 and not InRaid) then -- مکان‌های بیداری معمولا خیلی بالا هستند
                         CommF:InvokeServer("Awakener", "Check")
                         task.wait(0.5)
                         CommF:InvokeServer("Awakener", "Awaken")
@@ -187,60 +108,46 @@ function RaidModule(Settings, WindUI, RaidConfig)
                             RaidConfig.RaidEnabled = false
                             WindUI:Notify({Title="اتو رید", Content="رید با موفقیت تمام شد!", Duration=5})
                         else
-                            Plr.Character.Head:Destroy() -- ریست شدن برای رید بعدی
+                            -- تلپورت به بیرون تا دوباره شروع کنه
+                            Plr.Character.Head:Destroy() -- ریست شدن سریع
                         end
                     end
                 else
-                    -- ================== 2. داخل رید (مبارزه) ==================
-                    if State.CurrentTarget and IsEnemyValid(State.CurrentTarget) then
-                        PrepareEnemy(State.CurrentTarget)
-                    else
-                        if State.CurrentTarget then
-                            CleanupExpandedHead(State.CurrentTarget)
-                            if State.CurrentExpandedEnemy == State.CurrentTarget then State.CurrentExpandedEnemy = nil end
-                            State.CurrentTarget = nil
-                        end
-                    end
-
-                    local nearest = nil
-                    local minDist = math.huge
-                    local enemies = Workspace:FindFirstChild("Enemies")
+                    -- 2. داخل رید
+                    local Enemies = Workspace.Enemies:GetChildren()
+                    local RaidEnemy = nil
+                    local NearestDist = math.huge
                     
-                    -- پیدا کردن نزدیک ترین ماب رید
-                    if enemies then
-                        for _, v in pairs(enemies:GetChildren()) do
-                            if IsEnemyValid(v) then
-                                local d = (Root.Position - v.HumanoidRootPart.Position).Magnitude
-                                if d < minDist then minDist = d; nearest = v end
+                    -- پیدا کردن ماب‌های رید
+                    for _, v in pairs(Enemies) do
+                        if v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 and v:FindFirstChild("HumanoidRootPart") then
+                            local dist = (Root.Position - v.HumanoidRootPart.Position).Magnitude
+                            if dist < NearestDist then
+                                NearestDist = dist
+                                RaidEnemy = v
                             end
                         end
                     end
-
-                    if nearest then
-                        PrepareEnemy(nearest)
-                        State.CurrentTarget = nearest
+                    
+                    if RaidEnemy then
+                        -- زدن ماب
+                        local E_Root = RaidEnemy.HumanoidRootPart
+                        local Dest = E_Root.CFrame * CFrame.new(0, Settings.AttackHeight, Settings.AttackDistance)
                         
-                        local EP = nearest.HumanoidRootPart.Position
-                        local d = (Root.Position - EP)
-                        d = Vector3.new(d.X, 0, d.Z)
-                        if d.Magnitude < 0.1 then d = Vector3.new(1,0,0) end
-                        d = d.Unit
-                        
-                        -- *** فاصله تنظیم شده: خیلی کوچولو نزدیک تر (AttackDistance - 3) ***
-                        local ad = (Settings.AttackDistance or 40) - 3
-                        local ah = Settings.AttackHeight or 40
-                        
-                        local Dest = CFrame.lookAt(EP + d * ad + Vector3.new(0, ah, 0), EP)
-                        
-                        -- حرکت به سمت ماب
+                        -- تلپورت نرم (تویین)
                         if (Root.Position - Dest.Position).Magnitude > 10 then
                             Root.CFrame = Dest
-                            if RaidConfig.ActiveTween then RaidConfig.ActiveTween:Cancel(); RaidConfig.ActiveTween = nil end
                         end
-                    else
-                        State.CurrentTarget = nil
                         
-                        -- ================== 3. رفتن به جزیره بعدی (وقتی مابی نمونده) ==================
+                        -- نگاه کردن به ماب و اتک
+                        Workspace.CurrentCamera.CFrame = CFrame.lookAt(Workspace.CurrentCamera.CFrame.Position, E_Root.Position)
+                        EquipWeapon()
+                        
+                        CommF:InvokeServer("Buso") -- روشن کردن هاکی
+                        Net:WaitForChild("RE/RegisterAttack"):FireServer()
+                        FireClick()
+                    else
+                        -- 3. رفتن به جزیره بعدی (وقتی مابی نیست)
                         local Locations = Workspace:FindFirstChild("_WorldOrigin") and Workspace._WorldOrigin:FindFirstChild("Locations")
                         if Locations then
                             local NextIsland = nil
@@ -277,8 +184,6 @@ function RaidModule(Settings, WindUI, RaidConfig)
     function API.Stop()
         RaidConfig.RaidEnabled = false
         RaidConfig.RaidPhase = "Idle"
-        State.CurrentTarget = nil
-        if State.CurrentExpandedEnemy then CleanupExpandedHead(State.CurrentExpandedEnemy); State.CurrentExpandedEnemy = nil end
         if RaidConfig.ActiveTween then 
             RaidConfig.ActiveTween:Cancel() 
             RaidConfig.ActiveTween = nil 
@@ -286,10 +191,21 @@ function RaidModule(Settings, WindUI, RaidConfig)
         Log("خاموش شد.")
     end
     
-    function API.SetAutoRestart(state) RaidConfig.RaidAutoRestart = state end
-    function API.SetType(raidType) RaidConfig.RaidSelectedType = raidType end
-    function API.SetFruit(fruitName) RaidConfig.RaidSelectedFruit = fruitName end
-    function API.SetWeaponMode(mode) RaidConfig.WeaponMode = mode end
+    function API.SetAutoRestart(state)
+        RaidConfig.RaidAutoRestart = state
+    end
+    
+    function API.SetType(raidType)
+        RaidConfig.RaidSelectedType = raidType
+    end
+    
+    function API.SetFruit(fruitName)
+        RaidConfig.RaidSelectedFruit = fruitName
+    end
+    
+    function API.SetWeaponMode(mode)
+        RaidConfig.WeaponMode = mode
+    end
 
     return API
 end
