@@ -313,7 +313,7 @@ function RaidModule(Settings, WindUI, RaidConfig)
     end
 
     -- ═══════════════════════════════════════
-    -- سلاح (هماهنگ با متد اتو لول آپ)
+    -- سلاح
     -- ═══════════════════════════════════════
     local function IsBuddhaFruit()
         local f = nil
@@ -400,20 +400,53 @@ function RaidModule(Settings, WindUI, RaidConfig)
     end
 
     -- ═══════════════════════════════════════
-    -- رفع باگ پرش و گیر کردن (کپی از LevelUp)
+    -- سیستم ضد پرش، رفع باگ هیت‌باکس و جمع کردن ماب‌ها
     -- ═══════════════════════════════════════
-    RunService.Heartbeat:Connect(function()
+    RunService.Stepped:Connect(function()
         pcall(function()
             if not RaidEnabled then return end
+            
+            -- 1. بی حرکت کردن پلیر روی هوا
             if Plr.Character then
-                for _, p in pairs(Plr.Character:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end
-                if Plr.Character:FindFirstChild("HumanoidRootPart") then Plr.Character.HumanoidRootPart.Velocity = Vector3.zero end
+                for _, p in pairs(Plr.Character:GetDescendants()) do 
+                    if p:IsA("BasePart") then p.CanCollide = false end 
+                end
+                if Plr.Character:FindFirstChild("HumanoidRootPart") then 
+                    Plr.Character.HumanoidRootPart.Velocity = Vector3.zero 
+                end
+            end
+
+            -- 2. خاموش کردن برخورد (Collision) تمام ماب‌ها برای جلوگیری از باگ هیت باکس
+            local enemies = Workspace:FindFirstChild("Enemies")
+            if enemies then
+                for _, enemy in pairs(enemies:GetChildren()) do
+                    for _, p in pairs(enemy:GetDescendants()) do
+                        if p:IsA("BasePart") then p.CanCollide = false end
+                    end
+                end
+            end
+
+            -- 3. جمع کردن بقیه ماب‌ها داخل تارگت فعلی (Group AoE)
+            if RaidPhase == "Fighting" and RaidTarget and RaidTarget:FindFirstChild("HumanoidRootPart") then
+                local targetHRP = RaidTarget.HumanoidRootPart
+                if enemies then
+                    for _, v in pairs(enemies:GetChildren()) do
+                        if v ~= RaidTarget and IsValidRaidNPC(v) then
+                            local vHRP = v:FindFirstChild("HumanoidRootPart")
+                            if vHRP then
+                                -- آوردن بقیه ماب‌ها دقیقاً روی تارگت
+                                vHRP.CFrame = targetHRP.CFrame
+                                vHRP.Velocity = Vector3.zero
+                            end
+                        end
+                    end
+                end
             end
         end)
     end)
 
     -- ═══════════════════════════════════════
-    -- لوپ حمله رید (کپی از LevelUp - کلیک سریع)
+    -- لوپ حمله رید (سریع و بدون توقف)
     -- ═══════════════════════════════════════
     task.spawn(function()
         while task.wait(0.1) do
@@ -483,7 +516,7 @@ function RaidModule(Settings, WindUI, RaidConfig)
     end)
 
     -- ═══════════════════════════════════════
-    -- لوپ حرکت کاراکتر (اضافه شدن -3 استاد فاصله)
+    -- لوپ حرکت کاراکتر
     -- ═══════════════════════════════════════
     task.spawn(function()
         while true do
@@ -517,7 +550,7 @@ function RaidModule(Settings, WindUI, RaidConfig)
                         if d.Magnitude < 0.1 then d = Vector3.new(1, 0, 0) end
                         d = d.Unit
                         
-                        -- *** اینجا 3 اِستاد نزدیک تر میشه ***
+                        -- *** 3 اِستاد نزدیک‌تر از حالت عادی برای رفع باگ ***
                         local ad = (Settings.AttackDistance or 40) - 3
                         local ah = Settings.AttackHeight or 40
                         
@@ -543,7 +576,7 @@ function RaidModule(Settings, WindUI, RaidConfig)
     end)
 
     -- ═══════════════════════════════════════
-    -- لوپ اصلی منطق رید (بدون حذف شدن بخش‌های خرید شما)
+    -- لوپ اصلی منطق رید
     -- ═══════════════════════════════════════
     task.spawn(function()
         local lastRaidIsland = 0
@@ -555,7 +588,6 @@ function RaidModule(Settings, WindUI, RaidConfig)
                 local Root = Plr.Character.HumanoidRootPart
                 local now = tick()
 
-                -- چک تموم شدن رید (تلپورت برگشت)
                 if RaidConfirmed and RaidLastTrackedPosition then
                     if (Root.Position - RaidLastTrackedPosition).Magnitude > Settings.RaidEndTeleportDistance then
                         Log("رید تمام شد!")
@@ -567,7 +599,6 @@ function RaidModule(Settings, WindUI, RaidConfig)
                 end
                 if RaidConfirmed then RaidLastTrackedPosition = Root.Position end
 
-                -- عقب‌نشینی HP پایین
                 if RaidPhase == "Fighting" and not RaidIsRetreating and IsRaidHPLow() then
                     RaidIsRetreating = true
                     RaidRetreatAnchorY = Root.Position.Y
@@ -588,7 +619,6 @@ function RaidModule(Settings, WindUI, RaidConfig)
                     Log("HP برگشت، ادامه رید...")
                 end
 
-                -- چک جزیره جدید
                 if now - lastRaidIsland > Settings.RaidIslandCheckInterval and RaidConfirmed and not RaidIsRetreating then
                     lastRaidIsland = now
                     local ni = GetNewIsland()
@@ -600,7 +630,7 @@ function RaidModule(Settings, WindUI, RaidConfig)
 
                 -- ═══ فازهای رید ═══
                 if RaidPhase == "Retreating" then
-                    -- حرکت توسط لوپ حرکت هندل میشه
+                    -- هندل شده
 
                 elseif RaidPhase == "GoToScientist" then
                     if (Root.Position - ScientistLocation.Position).Magnitude < 15 then
@@ -717,7 +747,6 @@ function RaidModule(Settings, WindUI, RaidConfig)
                         end
                         RaidTarget = nil
 
-                        -- *** تغییر اساسی: گرفتن ماب بدون عوض شدن هر 5 ثانیه ***
                         local cl = FindClosestRaidNPC() 
                         if cl then
                             RaidTarget = cl
