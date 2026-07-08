@@ -27,8 +27,6 @@ function RaidModule(Settings, WindUI, RaidConfig)
     local RaidNoEnemyTimer = 0
     local RaidTeleportStartTime = 0
     local RaidPositionBeforeButton = nil
-    local RaidLastTargetEnemy = nil
-    local RaidLastAttackTime = 0
     local RaidTargetStartTime = 0
     local RaidDiscoveredIslands = {}
     local RaidCurrentIslandTarget = nil
@@ -273,7 +271,6 @@ function RaidModule(Settings, WindUI, RaidConfig)
     local function StopRaidAttack()
         RaidAttackEnabled = false
         RaidTarget = nil
-        RaidLastTargetEnemy = nil
         RaidTargetStartTime = 0
     end
 
@@ -295,8 +292,6 @@ function RaidModule(Settings, WindUI, RaidConfig)
         RaidNoEnemyTimer = 0
         RaidTeleportStartTime = 0
         RaidPositionBeforeButton = nil
-        RaidLastTargetEnemy = nil
-        RaidLastAttackTime = 0
         RaidTargetStartTime = 0
         RaidDiscoveredIslands = {}
         RaidCurrentIslandTarget = nil
@@ -367,7 +362,7 @@ function RaidModule(Settings, WindUI, RaidConfig)
         local sp, on = Workspace.CurrentCamera:WorldToViewportPoint(tp.Position)
         if on then
             VirtualInputManager:SendMouseButtonEvent(sp.X, sp.Y, 0, true, game, 1)
-            task.wait(0.05)
+            task.wait(0.02)
             VirtualInputManager:SendMouseButtonEvent(sp.X, sp.Y, 0, false, game, 1)
         end
     end
@@ -375,9 +370,9 @@ function RaidModule(Settings, WindUI, RaidConfig)
     local function UseAbilities()
         for _, k in ipairs({"Z","X","C","F"}) do
             VirtualInputManager:SendKeyEvent(true, Enum.KeyCode[k], false, game)
-            task.wait(0.05)
+            task.wait(0.02)
             VirtualInputManager:SendKeyEvent(false, Enum.KeyCode[k], false, game)
-            task.wait(0.1)
+            task.wait(0.05)
         end
     end
 
@@ -400,13 +395,13 @@ function RaidModule(Settings, WindUI, RaidConfig)
     end
 
     -- ═══════════════════════════════════════
-    -- سیستم ضد پرش، رفع باگ هیت‌باکس و جمع کردن ماب‌ها
+    -- سیستم ضد پرش و جمع کردن ماب‌ها (بدون تغییر)
     -- ═══════════════════════════════════════
     RunService.Stepped:Connect(function()
         pcall(function()
             if not RaidEnabled then return end
             
-            -- 1. بی حرکت کردن پلیر روی هوا
+            -- بی حرکت کردن پلیر روی هوا
             if Plr.Character then
                 for _, p in pairs(Plr.Character:GetDescendants()) do 
                     if p:IsA("BasePart") then p.CanCollide = false end 
@@ -416,7 +411,7 @@ function RaidModule(Settings, WindUI, RaidConfig)
                 end
             end
 
-            -- 2. خاموش کردن برخورد (Collision) تمام ماب‌ها برای جلوگیری از باگ هیت باکس
+            -- خاموش کردن برخورد ماب‌ها
             local enemies = Workspace:FindFirstChild("Enemies")
             if enemies then
                 for _, enemy in pairs(enemies:GetChildren()) do
@@ -426,7 +421,7 @@ function RaidModule(Settings, WindUI, RaidConfig)
                 end
             end
 
-            -- 3. جمع کردن بقیه ماب‌ها داخل تارگت فعلی (Group AoE)
+            -- جمع کردن ماب‌ها داخل تارگت فعلی (Group AoE)
             if RaidPhase == "Fighting" and RaidTarget and RaidTarget:FindFirstChild("HumanoidRootPart") then
                 local targetHRP = RaidTarget.HumanoidRootPart
                 if enemies then
@@ -434,7 +429,6 @@ function RaidModule(Settings, WindUI, RaidConfig)
                         if v ~= RaidTarget and IsValidRaidNPC(v) then
                             local vHRP = v:FindFirstChild("HumanoidRootPart")
                             if vHRP then
-                                -- آوردن بقیه ماب‌ها دقیقاً روی تارگت
                                 vHRP.CFrame = targetHRP.CFrame
                                 vHRP.Velocity = Vector3.zero
                             end
@@ -446,21 +440,44 @@ function RaidModule(Settings, WindUI, RaidConfig)
     end)
 
     -- ═══════════════════════════════════════
-    -- لوپ حمله رید (سریع و بدون توقف)
+    -- سیستم ریستارت هیت باکس و اتک هر 2 ثانیه (جدید)
     -- ═══════════════════════════════════════
     task.spawn(function()
-        while task.wait(0.1) do
+        while task.wait(2) do
+            pcall(function()
+                if RaidEnabled and RaidPhase == "Fighting" and RaidAttackEnabled and RaidTarget then
+                    -- 1. ریستارت کردن سلاح (درآوردن و دست گرفتن مجدد برای رفع باگ استیت)
+                    if Plr.Character and Plr.Character:FindFirstChild("Humanoid") then
+                        Plr.Character.Humanoid:UnequipTools()
+                        task.wait(0.05)
+                        EquipWeaponRaid()
+                    end
+
+                    -- 2. ریستارت کردن هیت‌باکس تارگت و همگام‌سازی مجدد
+                    if CurrentExpandedEnemy then
+                        CleanupExpandedHead(CurrentExpandedEnemy)
+                        CurrentExpandedEnemy = nil
+                    end
+                    PrepareRaidEnemy(RaidTarget)
+
+                    -- 3. آزاد کردن کلیک‌های موس در صورتی که گیر کرده باشند
+                    local CX, CY = Workspace.CurrentCamera.ViewportSize.X/2, Workspace.CurrentCamera.ViewportSize.Y/2
+                    VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, false, game, 1)
+                end
+            end)
+        end
+    end)
+
+    -- ═══════════════════════════════════════
+    -- لوپ حمله رید (سریع و بدون توقف - حذف مکث)
+    -- ═══════════════════════════════════════
+    task.spawn(function()
+        while task.wait(0.05) do -- سرعت اتک بالاتر
             pcall(function()
                 if not RaidEnabled or not RaidAttackEnabled or RaidPhase ~= "Fighting" or RaidIsRetreating then return end
                 if not RaidTarget or not IsValidRaidNPC(RaidTarget) then return end
 
                 local E = RaidTarget
-                if E ~= RaidLastTargetEnemy then 
-                    RaidLastTargetEnemy = E
-                    RaidLastAttackTime = tick() 
-                end
-                if tick() - RaidLastAttackTime < (Settings.AttackWaitTime or 2) then return end
-
                 if not Plr.Character or not Plr.Character:FindFirstChild("Humanoid") then return end
 
                 pcall(function()
@@ -486,7 +503,11 @@ function RaidModule(Settings, WindUI, RaidConfig)
                         VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, true, game, 1)
                         task.wait(Settings.HoldTime or 0.01)
                         VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, false, game, 1)
-                        if RegisterAttack then RegisterAttack:FireServer(math.floor((0.5 + math.random() * 0.5) * 10000) / 10000) end
+                        
+                        -- ارسال رجیستر اتک به سرور
+                        if RegisterAttack then 
+                            RegisterAttack:FireServer(math.floor((0.5 + math.random() * 0.5) * 10000) / 10000) 
+                        end
                     end
 
                     if WeaponMode == "MeleeAbility" and ShouldUseFinisherRaid() and Tool.ToolTip == "Blox Fruit" then
@@ -550,7 +571,6 @@ function RaidModule(Settings, WindUI, RaidConfig)
                         if d.Magnitude < 0.1 then d = Vector3.new(1, 0, 0) end
                         d = d.Unit
                         
-                        -- *** 3 اِستاد نزدیک‌تر از حالت عادی برای رفع باگ ***
                         local ad = (Settings.AttackDistance or 40) - 3
                         local ah = Settings.AttackHeight or 40
                         
@@ -628,7 +648,6 @@ function RaidModule(Settings, WindUI, RaidConfig)
                     end
                 end
 
-                -- ═══ فازهای رید ═══
                 if RaidPhase == "Retreating" then
                     -- هندل شده
 
