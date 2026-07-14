@@ -118,7 +118,7 @@ function ExtraModule1.Init(Deps)
         -- 1. قطع کردن کامل اسکریپت (اگه از Loader به ما داده شده باشه)
         if TurnOffAll then
             TurnOffAll()
-            WindUI:Notify({Title="اسنایپر میریج", Content="جزیره پیدا شد! تمام فارم ها و قایق سواری خاموش شدند.", Duration=5})
+            WindUI:Notify({Title="میریج", Content="میریج اسپان شد! درحال رفتن به سمت میریج ", Duration=5})
         end
         
         -- 2. پریدن از روی صندلی (قایق)
@@ -213,7 +213,7 @@ function ExtraModule1.Init(Deps)
             local mapF = Workspace:WaitForChild("Map")
             while task.wait(2) do
                 if mapF:FindFirstChild("MysticIsland") then
-                    MirageStatus:SetDesc("✅ جزیره میریج در حال حاضر اسپان است!")
+                    MirageStatus:SetDesc("✅ جزیره میریج  اسپان است!")
                 else
                     MirageStatus:SetDesc("❌ جزیره میریج اسپان نیست.")
                 end
@@ -223,15 +223,15 @@ function ExtraModule1.Init(Deps)
         local MirageSec = MirageTab:Section({Title="تنظیمات جزیره", Box=true, BoxBorder=true, Opened=true})
 
         MirageSec:Toggle({
-            Title = "اسنایپر میریج (رفتن خودکار)",
-            Desc = "به محض اسپان، از قایق می‌پرد، همه‌چیز را متوقف می‌کند و به جزیره می‌رود.",
+            Title = "اتو میریج",
+            Desc = "هر وقت میریج اسپان شد میره سمتش",
             Value = false,
             Callback = function(s) State.AutoMirageSniper = s end
         })
 
         MirageSec:Toggle({
             Title = "اتو چست میریج",
-            Desc = "چست‌های داخل جزیره را با سرعت ۳۴۰ جمع می‌کند. (چست‌های خالی را نادیده می‌گیرد)",
+            Desc = "تمام چست های داخل جزیره رو جمع میکنه",
             Value = false,
             Callback = function(s) 
                 State.AutoMirageChest = s 
@@ -242,10 +242,10 @@ function ExtraModule1.Init(Deps)
         })
 
         MirageSec:Button({
-            Title = "حذف تاریکی و مه (Anti Fog)",
+            Title = "حذف تاریکی و مه ",
             Callback = function()
                 pcall(RemoveFogAndBlindness)
-                WindUI:Notify({Title="Anti Fog", Content="تاریکی برطرف شد!", Duration=3})
+                WindUI:Notify({Title="تاریکی و مه", Content="لیمیت تاریکی و مه برداشته شد", Duration=3})
             end
         })
     end
@@ -303,7 +303,7 @@ function ExtraModule1.Init(Deps)
                         State.StopChestOnSpecialItem = false 
                         PauseFarms()
                         if SetFarmMode then SetFarmMode("None") end
-                        WindUI:Notify({Title="توقف خودکار چست", Content="آیتم " .. itemName .. " دریافت شد! اسکریپت متوقف شد.", Duration=5})
+                        WindUI:Notify({Title="توقف خودکار چست", Content="آیتم " .. itemName .. " گرفته شد! اسکریپت متوقف شد.", Duration=5})
                     end
                 end
             end
@@ -330,7 +330,7 @@ function ExtraModule1.Init(Deps)
                                         PauseFarms()
                                         if SetFarmMode then SetFarmMode("Darkbeard") end
                                         State.DarkbeardState = "Attacking"
-                                        WindUI:Notify({Title="Darkbeard Event", Content="دارک بیرد اسپان شد! شروع حمله...", Duration=5})
+                                        WindUI:Notify({Title="Darkbeard Event", Content="دارک بیرد اسپان شد! شروع اتک دادن...", Duration=5})
                                     end
                                 end
                                 break
@@ -360,7 +360,7 @@ function ExtraModule1.Init(Deps)
                         PauseFarms()
                         if SetFarmMode then SetFarmMode("Darkbeard") end
                         State.DarkbeardState = "Spawning"
-                        WindUI:Notify({Title="Darkbeard", Content="Fist of Darkness یافت شد! حرکت به سمت محل اسپان...", Duration=5})
+                        WindUI:Notify({Title="Darkbeard", Content="Fist of Darkness پیدا شد! حرکت به سمت محل اسپان...", Duration=5})
                     end
                 end
 
@@ -438,7 +438,7 @@ function ExtraModule1.Init(Deps)
         if ChestSection then
             ChestSection:Toggle({
                 Title = "توقف اتو چست با گرفتن " .. specialItemName,
-                Desc = "اگه موقع چست زدن آیتم رو گرفتی، متوقف میشه تا از بین نره.",
+                Desc = "اگه موقغ چست زدن گاد چالیس یا  فرست اف د دارک نس گرفتی اسکریپت قطع بشه",
                 Value = false,
                 Callback = function(s) State.StopChestOnSpecialItem = s end
             })
@@ -446,9 +446,9 @@ function ExtraModule1.Init(Deps)
     end
 
     if Sea == 2 and BossTab then
-        local DarkbeardSec = BossTab:Section({Title = "☠️ اتو دارک بیرد (Darkbeard)", Box = true, BoxBorder = true, Opened = true})
+        local DarkbeardSec = BossTab:Section({Title = " اتو دارک بیرد (Darkbeard)", Box = true, BoxBorder = true, Opened = true})
         DarkbeardSec:Toggle({Title = "اتو اسپان و کشتن Darkbeard", Value = false, Callback = function(s) State.AutoDarkbeardEnabled = s end})
-        DarkbeardSec:Toggle({Title = "کشتن با نوتیفیکیشن", Value = false, Callback = function(s) State.AutoKillDarkbeardEventEnabled = s end})
+        DarkbeardSec:Toggle({Title = "کشتن دارک برید وقتی اسپان شد", Value = false, Callback = function(s) State.AutoKillDarkbeardEventEnabled = s end})
     end
 end
 
