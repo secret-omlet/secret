@@ -14,7 +14,8 @@ function ExtraModule1.Init(Deps)
     local BossTab = Deps.BossTab
     local ChestSection = Deps.ChestSection
     local MainSection = Deps.MainSection 
-    local BoneSec = Deps.BoneSec -- دریافت سکشن Bones از Main
+    local BoneSec = Deps.BoneSec
+    local FSTab = Deps.FSTab -- دریافت تب فایتینگ استایل
     local TurnOffAll = Deps.TurnOffAll 
     
     local PauseFarms = Deps.PauseFarms
@@ -25,7 +26,6 @@ function ExtraModule1.Init(Deps)
     local RegisterAttack = Deps.RegisterAttack
 
     local State = {
-        -- متغیرهای دارک بیرد و چست
         StopChestOnSpecialItem = false,
         AutoDarkbeardEnabled = false,
         AutoKillDarkbeardEventEnabled = false,
@@ -37,28 +37,26 @@ function ExtraModule1.Init(Deps)
         LastTargetEnemy = nil,
         LastTargetTime = 0,
         
-        -- متغیرهای میریج
         AutoMirageSniper = false,
         AutoMirageChest = false,
         MirageChestFarming = false,
         MirageActiveTween = nil,
         MirageNoclip = nil,
         
-        -- متغیرهای استخوان و سول ریپر (جدید)
         AutoBuyBones = false,
         AutoSpawnSoulReaper = false,
         AutoKillReaperNotif = false,
         SoulReaperPhase = "Idle",
         SoulReaperWaitTimer = nil,
+        
+        -- دراگون تالون (جدید)
+        AutoDragonTalon = false,
     }
 
     local DarkbeardSpawnPos = CFrame.new(3778.288, 11.682, -3499.631)
     local ReaperAltarPos = CFrame.new(-8932.379, 140.073, 6061.035)
     local ReaperArenaPos = CFrame.new(-9512.133, 312.248, 6784.793)
 
-    -- ========================================================
-    -- توابع مشترک
-    -- ========================================================
     local function EquipMeleeOnly()
         pcall(function()
             if not Plr.Character then return end
@@ -103,7 +101,7 @@ function ExtraModule1.Init(Deps)
     end
 
     -- ========================================================
-    -- سیستم اختصاصی میریج 
+    -- سیستم میریج
     -- ========================================================
     local MIRAGE_SPEED = 340
 
@@ -123,9 +121,7 @@ function ExtraModule1.Init(Deps)
         State.MirageNoclip = RunService.Stepped:Connect(function()
             if character then
                 for _, part in pairs(character:GetDescendants()) do
-                    if part:IsA("BasePart") and part.CanCollide then
-                        part.CanCollide = false
-                    end
+                    if part:IsA("BasePart") and part.CanCollide then part.CanCollide = false end
                 end
             end
         end)
@@ -145,25 +141,15 @@ function ExtraModule1.Init(Deps)
         local char = Plr.Character
         local hum = char and char:FindFirstChild("Humanoid")
         if hum and hum.Sit then
-            hum.Sit = false
-            hum:ChangeState(Enum.HumanoidStateType.Jumping) 
-            task.wait(0.5) 
+            hum.Sit = false; hum:ChangeState(Enum.HumanoidStateType.Jumping); task.wait(0.5) 
         end
     end
 
     local function RemoveFogAndBlindness()
-        Lighting.FogEnd = 100000
-        Lighting.FogStart = 0
-        Lighting.GlobalShadows = false
-        Lighting.Brightness = 2
-        Lighting.ClockTime = 12
-
+        Lighting.FogEnd = 100000; Lighting.FogStart = 0; Lighting.GlobalShadows = false; Lighting.Brightness = 2; Lighting.ClockTime = 12
         for _, v in pairs(Lighting:GetDescendants()) do
             if v:IsA("Atmosphere") then v:Destroy() 
-            elseif v:IsA("ColorCorrectionEffect") or v:IsA("BloomEffect") or v:IsA("BlurEffect") then
-                v.Enabled = false
-                v:Destroy()
-            end
+            elseif v:IsA("ColorCorrectionEffect") or v:IsA("BloomEffect") or v:IsA("BlurEffect") then v.Enabled = false; v:Destroy() end
         end
     end
 
@@ -213,11 +199,8 @@ function ExtraModule1.Init(Deps)
         task.spawn(function()
             local mapF = Workspace:WaitForChild("Map")
             while task.wait(2) do
-                if mapF:FindFirstChild("MysticIsland") then
-                    MirageStatus:SetDesc("✅ جزیره میریج  اسپان است!")
-                else
-                    MirageStatus:SetDesc("❌ جزیره میریج اسپان نیست.")
-                end
+                if mapF:FindFirstChild("MysticIsland") then MirageStatus:SetDesc("✅ جزیره میریج  اسپان است!")
+                else MirageStatus:SetDesc("❌ جزیره میریج اسپان نیست.") end
             end
         end)
 
@@ -228,35 +211,123 @@ function ExtraModule1.Init(Deps)
     end
 
     -- ========================================================
-    -- سیستم استخوان و سول ریپر (جدید - دریای 3)
+    -- سیستم اتو دراگون تالون (جدید)
+    -- ========================================================
+    if Sea == 3 and FSTab then
+        FSTab:Toggle({
+            Title = "اتو خرید Dragon Talon",
+            Desc = "چک کردن پیش‌نیازها -> فارم استخوان -> خرید Fire Essence -> خرید Dragon Talon",
+            Value = false,
+            Callback = function(s)
+                if s then
+                    -- 1. بررسی دقیق پیش‌نیازها
+                    local beli = Plr.Data.Beli.Value
+                    local frags = Plr.Data.Fragments.Value
+                    
+                    if beli < 3000000 then 
+                        WindUI:Notify({Title="خطا", Content="پول شما کمتر از 3 میلیون است!", Duration=5})
+                        State.AutoDragonTalon = false; return 
+                    end
+                    if frags < 5000 then 
+                        WindUI:Notify({Title="خطا", Content="فرگمنت شما کمتر از 5000 است!", Duration=5})
+                        State.AutoDragonTalon = false; return 
+                    end
+                    
+                    local char = Plr.Character
+                    local meleeTool = nil
+                    if char then
+                        local t = char:FindFirstChildOfClass("Tool")
+                        if t and t.ToolTip == "Melee" then meleeTool = t end
+                    end
+                    if not meleeTool then
+                        for _, t in ipairs(Plr.Backpack:GetChildren()) do
+                            if t:IsA("Tool") and t.ToolTip == "Melee" then meleeTool = t; break end
+                        end
+                    end
+
+                    if not meleeTool then 
+                        WindUI:Notify({Title="خطا", Content="هیچ میلی در کیف یا دست شما نیست!", Duration=5})
+                        State.AutoDragonTalon = false; return 
+                    end
+
+                    local lowerName = string.lower(meleeTool.Name)
+                    if not (string.find(lowerName, "dragon breath") or string.find(lowerName, "dragonbreath")) then
+                        WindUI:Notify({Title="خطا", Content="میلی فعلی شما Dragon Breath نیست!", Duration=5})
+                        State.AutoDragonTalon = false; return 
+                    end
+
+                    local masteryVal = meleeTool:FindFirstChild("Level")
+                    local mastery = masteryVal and masteryVal.Value or 0
+                    if mastery < 400 then
+                        WindUI:Notify({Title="خطا", Content="مستری Dragon Breath شما " .. tostring(mastery) .. " است (باید بالای 400 باشد)!", Duration=5})
+                        State.AutoDragonTalon = false; return 
+                    end
+
+                    -- اگر تمام شروط رعایت شد:
+                    State.AutoDragonTalon = true
+                    WindUI:Notify({Title="دراگون تالون", Content="پیش‌نیازها تایید شد! شروع خودکار فارم استخوان...", Duration=5})
+                    
+                    -- روشن کردن اتوماتیک فارم اسکلتون (از فایل Main)
+                    if Deps.StartBoneFarm then Deps.StartBoneFarm() end
+                else
+                    State.AutoDragonTalon = false
+                end
+            end
+        })
+
+        -- لوپ پس‌زمینه برای دراگون تالون
+        task.spawn(function()
+            local CommF = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("CommF_")
+            while task.wait(1) do
+                if State.AutoDragonTalon then
+                    local hasFireEssence = Plr.Backpack:FindFirstChild("Fire Essence") or (Plr.Character and Plr.Character:FindFirstChild("Fire Essence"))
+
+                    if hasFireEssence then
+                        -- وقتی آیتم رو گرفت، متوقف میکنه
+                        State.AutoDragonTalon = false
+                        if TurnOffAll then TurnOffAll() end 
+                        
+                        WindUI:Notify({Title="دراگون تالون", Content="Fire Essence بدست آمد! حرکت به سمت NPC...", Duration=5})
+                        
+                        local targetPos = CFrame.new(5661.079, 1207.626, 866.298)
+                        local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart")
+                        if root then
+                            if State.ActiveTween then State.ActiveTween:Cancel() end
+                            State.ActiveTween = TweenService:Create(root, TweenInfo.new(math.max((root.Position - targetPos.Position).Magnitude/350, 0.1), Enum.EasingStyle.Linear), {CFrame = targetPos})
+                            State.ActiveTween:Play()
+                            State.ActiveTween.Completed:Wait()
+
+                            task.wait(1)
+                            CommF:InvokeServer("BuyDragonTalon")
+                            WindUI:Notify({Title="موفقیت", Content="شمشیر/میلی Dragon Talon با موفقیت خریداری شد!", Duration=10})
+                        end
+                    else
+                        -- خرید رندوم سورپرایز با استخوان ها
+                        pcall(function()
+                            local bonesData = CommF:InvokeServer("Bones", "Check")
+                            local currentBones = tonumber(bonesData) or 0
+                            if currentBones >= 50 then
+                                CommF:InvokeServer("Bones", "Buy", 1, 1)
+                            end
+                        end)
+                    end
+                end
+            end
+        end)
+    end
+
+    -- ========================================================
+    -- سیستم استخوان و سول ریپر
     -- ========================================================
     if Sea == 3 and BoneSec then
-        BoneSec:Toggle({
-            Title = "اتو خرید استخوان",
-            Desc = "چک میکند و اگر بالای ۱۰۰ استخوان داشتید اتوماتیک خرید میکند",
-            Value = false,
-            Callback = function(s) State.AutoBuyBones = s end
-        })
+        BoneSec:Toggle({Title = "اتو خرید استخوان", Desc = "چک میکند و اگر بالای ۱۰۰ استخوان داشتید اتوماتیک خرید میکند", Value = false, Callback = function(s) State.AutoBuyBones = s end})
+        BoneSec:Toggle({Title = "اتو اسپان و کشتن Soul Reaper (با آیتم)", Desc = "اگه Hallow Essence گرفتید، فارم را متوقف، باس را اسپان و میکشد", Value = false, Callback = function(s) State.AutoSpawnSoulReaper = s end})
+        BoneSec:Toggle({Title = "اتو کشتن Soul Reaper (با نوتیفیکیشن)", Desc = "اگه نوتیفیکیشن اسپان باس آمد، میره میکشتش و برمیگرده", Value = false, Callback = function(s) State.AutoKillReaperNotif = s end})
 
-        BoneSec:Toggle({
-            Title = "اتو اسپان و کشتن Soul Reaper (با آیتم)",
-            Desc = "اگه Hallow Essence گرفتید، فارم را متوقف، باس را اسپان و میکشد",
-            Value = false,
-            Callback = function(s) State.AutoSpawnSoulReaper = s end
-        })
-
-        BoneSec:Toggle({
-            Title = "اتو کشتن Soul Reaper (با نوتیفیکیشن)",
-            Desc = "اگه نوتیفیکیشن اسپان باس آمد، میره میکشتش و برمیگرده",
-            Value = false,
-            Callback = function(s) State.AutoKillReaperNotif = s end
-        })
-
-        -- لوپ اتو خرید بون
         task.spawn(function()
             local CommF = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("CommF_")
             while task.wait(2) do
-                if State.AutoBuyBones and State.SoulReaperPhase == "Idle" and not State.IsDoingPriorityTask then
+                if State.AutoBuyBones and State.SoulReaperPhase == "Idle" and not State.IsDoingPriorityTask and not State.AutoDragonTalon then
                     pcall(function()
                         local bonesData = CommF:InvokeServer("Bones", "Check")
                         local currentBones = tonumber(bonesData) or 0
@@ -273,7 +344,6 @@ function ExtraModule1.Init(Deps)
             end
         end)
 
-        -- چک کردن نوتیفیکیشن برای سول ریپر
         task.spawn(function()
             local Notifications = Plr:WaitForChild("PlayerGui"):WaitForChild("Notifications", 10)
             if Notifications then
@@ -296,7 +366,6 @@ function ExtraModule1.Init(Deps)
             end
         end)
 
-        -- لوپ اصلی سول ریپر (اسپان با آیتم و اتک زدن)
         task.spawn(function()
             while task.wait(0.1) do
                 if not State.AutoSpawnSoulReaper and not State.AutoKillReaperNotif then
@@ -309,7 +378,6 @@ function ExtraModule1.Init(Deps)
 
                 local hasEssence = Plr.Backpack:FindFirstChild("Hallow Essence") or (Plr.Character and Plr.Character:FindFirstChild("Hallow Essence"))
 
-                -- استارت اسپان با Hallow Essence
                 if State.AutoSpawnSoulReaper and State.SoulReaperPhase == "Idle" and hasEssence then
                     if not State.IsDoingPriorityTask then
                         State.IsDoingPriorityTask = true
@@ -326,18 +394,14 @@ function ExtraModule1.Init(Deps)
                         local dist = (root.Position - ReaperAltarPos.Position).Magnitude
                         if dist > 15 then
                             if State.ActiveTween then State.ActiveTween:Cancel() end
-                            State.ActiveTween = TweenService:Create(root, TweenInfo.new(math.max(dist/Settings.FlightSpeed, 0.05), Enum.EasingStyle.Linear), {CFrame = ReaperAltarPos})
+                            State.ActiveTween = TweenService:Create(root, TweenInfo.new(math.max(dist/(Settings.FlightSpeed or 350), 0.05), Enum.EasingStyle.Linear), {CFrame = ReaperAltarPos})
                             State.ActiveTween:Play()
                         else
                             if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
                             root.CFrame = ReaperAltarPos
-                            
                             local ess = Plr.Backpack:FindFirstChild("Hallow Essence")
-                            if ess and Plr.Character:FindFirstChild("Humanoid") then
-                                Plr.Character.Humanoid:EquipTool(ess)
-                            end
-                            
-                            task.wait(2) -- صبر برای اسپاون
+                            if ess and Plr.Character:FindFirstChild("Humanoid") then Plr.Character.Humanoid:EquipTool(ess) end
+                            task.wait(2) 
                             State.SoulReaperPhase = "Attacking"
                         end
                     end
@@ -364,7 +428,7 @@ function ExtraModule1.Init(Deps)
                         
                         if (root.Position - dest.Position).Magnitude > 10 then 
                             if State.ActiveTween then State.ActiveTween:Cancel() end
-                            State.ActiveTween = TweenService:Create(root, TweenInfo.new(math.max((root.Position - dest.Position).Magnitude/Settings.FlightSpeed, 0.05), Enum.EasingStyle.Linear), {CFrame = dest})
+                            State.ActiveTween = TweenService:Create(root, TweenInfo.new(math.max((root.Position - dest.Position).Magnitude/(Settings.FlightSpeed or 350), 0.05), Enum.EasingStyle.Linear), {CFrame = dest})
                             State.ActiveTween:Play()
                         else
                             if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
@@ -372,7 +436,6 @@ function ExtraModule1.Init(Deps)
                             EquipWeaponGeneral()
                             if reaper:FindFirstChild("Head") then Workspace.CurrentCamera.CFrame = CFrame.lookAt(Workspace.CurrentCamera.CFrame.Position, reaper.Head.Position) end
                             
-                            -- سیستم اتک دقیق
                             task.spawn(function()
                                 local CX, CY = Workspace.CurrentCamera.ViewportSize.X/2, Workspace.CurrentCamera.ViewportSize.Y/2
                                 for i=1,3 do
@@ -386,13 +449,12 @@ function ExtraModule1.Init(Deps)
                         
                         if (root.Position - ReaperArenaPos.Position).Magnitude > 15 then
                             if State.ActiveTween then State.ActiveTween:Cancel() end
-                            State.ActiveTween = TweenService:Create(root, TweenInfo.new(math.max((root.Position - ReaperArenaPos.Position).Magnitude/Settings.FlightSpeed, 0.05), Enum.EasingStyle.Linear), {CFrame = ReaperArenaPos})
+                            State.ActiveTween = TweenService:Create(root, TweenInfo.new(math.max((root.Position - ReaperArenaPos.Position).Magnitude/(Settings.FlightSpeed or 350), 0.05), Enum.EasingStyle.Linear), {CFrame = ReaperArenaPos})
                             State.ActiveTween:Play()
                         else
                             if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
                         end
 
-                        -- خروج پس از 15 ثانیه
                         if tick() - State.SoulReaperWaitTimer > 15 then
                             State.SoulReaperPhase = "Idle"
                             State.SoulReaperWaitTimer = nil
@@ -420,9 +482,7 @@ function ExtraModule1.Init(Deps)
         end)
     end)
 
-    -- ========================================================
-    -- دارک بیرد (ادامه)
-    -- ========================================================
+    -- بقیه کدهای دارک بیرد و چست ...
     if Sea == 2 or Sea == 3 then
         task.spawn(function()
             while task.wait(1) do
@@ -507,7 +567,7 @@ function ExtraModule1.Init(Deps)
                         local dist = (root.Position - DarkbeardSpawnPos.Position).Magnitude
                         if dist > 15 then
                             if State.ActiveTween then State.ActiveTween:Cancel() end
-                            State.ActiveTween = TweenService:Create(root, TweenInfo.new(math.max(dist/Settings.FlightSpeed, 0.05), Enum.EasingStyle.Linear), {CFrame=DarkbeardSpawnPos})
+                            State.ActiveTween = TweenService:Create(root, TweenInfo.new(math.max(dist/(Settings.FlightSpeed or 350), 0.05), Enum.EasingStyle.Linear), {CFrame=DarkbeardSpawnPos})
                             State.ActiveTween:Play()
                         else
                             if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
@@ -554,7 +614,7 @@ function ExtraModule1.Init(Deps)
                             end)
                         else
                             if State.ActiveTween then State.ActiveTween:Cancel() end
-                            State.ActiveTween = TweenService:Create(root, TweenInfo.new(math.max(dist/Settings.FlightSpeed, 0.05), Enum.EasingStyle.Linear), {CFrame=dest})
+                            State.ActiveTween = TweenService:Create(root, TweenInfo.new(math.max(dist/(Settings.FlightSpeed or 350), 0.05), Enum.EasingStyle.Linear), {CFrame=dest})
                             State.ActiveTween:Play()
                         end
                     else
@@ -564,7 +624,7 @@ function ExtraModule1.Init(Deps)
                         local dist = (root.Position - DarkbeardSpawnPos.Position).Magnitude
                         if dist > 15 then
                             if State.ActiveTween then State.ActiveTween:Cancel() end
-                            State.ActiveTween = TweenService:Create(root, TweenInfo.new(math.max(dist/Settings.FlightSpeed, 0.05), Enum.EasingStyle.Linear), {CFrame=DarkbeardSpawnPos})
+                            State.ActiveTween = TweenService:Create(root, TweenInfo.new(math.max(dist/(Settings.FlightSpeed or 350), 0.05), Enum.EasingStyle.Linear), {CFrame=DarkbeardSpawnPos})
                             State.ActiveTween:Play()
                         else
                             if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
@@ -578,18 +638,6 @@ function ExtraModule1.Init(Deps)
                 end
             end
         end)
-    end
-
-    if Sea == 2 or Sea == 3 then
-        local specialItemName = (Sea == 2) and "Fist of Darkness" or "God's Chalice"
-        if ChestSection then
-            ChestSection:Toggle({
-                Title = "توقف اتو چست با گرفتن " .. specialItemName,
-                Desc = "اگه موقغ چست زدن گاد چالیس یا  فرست اف د دارک نس گرفتی اسکریپت قطع بشه",
-                Value = false,
-                Callback = function(s) State.StopChestOnSpecialItem = s end
-            })
-        end
     end
 
     if Sea == 2 and BossTab then
