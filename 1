@@ -15,7 +15,6 @@ function ExtraModule1.Init(Deps)
     local ChestSection = Deps.ChestSection
     local MainSection = Deps.MainSection 
     local BoneSec = Deps.BoneSec
-    local FSTab = Deps.FSTab -- دریافت تب فایتینگ استایل
     local TurnOffAll = Deps.TurnOffAll 
     
     local PauseFarms = Deps.PauseFarms
@@ -49,7 +48,6 @@ function ExtraModule1.Init(Deps)
         SoulReaperPhase = "Idle",
         SoulReaperWaitTimer = nil,
         
-        -- دراگون تالون (جدید)
         AutoDragonTalon = false,
     }
 
@@ -57,19 +55,6 @@ function ExtraModule1.Init(Deps)
     local ReaperAltarPos = CFrame.new(-8932.379, 140.073, 6061.035)
     local ReaperArenaPos = CFrame.new(-9512.133, 312.248, 6784.793)
 
-    local function EquipMeleeOnly()
-        pcall(function()
-            if not Plr.Character then return end
-            local h = Plr.Character:FindFirstChild("Humanoid")
-            if not h then return end
-            local t = Plr.Character:FindFirstChildOfClass("Tool")
-            if t and t.ToolTip == "Melee" then return end
-            for _, t2 in pairs(Plr.Backpack:GetChildren()) do 
-                if t2:IsA("Tool") and t2.ToolTip == "Melee" then h:EquipTool(t2); return end 
-            end
-        end)
-    end
-    
     local function EquipWeaponGeneral()
         pcall(function()
             local h = Plr.Character:FindFirstChild("Humanoid")
@@ -101,181 +86,52 @@ function ExtraModule1.Init(Deps)
     end
 
     -- ========================================================
-    -- سیستم میریج
+    -- اتصال دراگون تالون به فایل Main
     -- ========================================================
-    local MIRAGE_SPEED = 340
-
-    local function MirageTweenTo(targetCFrame)
-        local character = Plr.Character or Plr.CharacterAdded:Wait()
-        local hrp = character:WaitForChild("HumanoidRootPart")
-        
-        local distance = (hrp.Position - targetCFrame.Position).Magnitude
-        local timeToReach = math.max(distance / MIRAGE_SPEED, 0.1)
-
-        local tweenInfo = TweenInfo.new(timeToReach, Enum.EasingStyle.Linear)
-        
-        if State.MirageActiveTween then State.MirageActiveTween:Cancel() end
-        State.MirageActiveTween = TweenService:Create(hrp, tweenInfo, {CFrame = targetCFrame})
-
-        if State.MirageNoclip then State.MirageNoclip:Disconnect() end
-        State.MirageNoclip = RunService.Stepped:Connect(function()
-            if character then
-                for _, part in pairs(character:GetDescendants()) do
-                    if part:IsA("BasePart") and part.CanCollide then part.CanCollide = false end
+    ExtraModule1.ToggleDragonTalon = function(s)
+        if s then
+            local beli = Plr.Data.Beli.Value
+            local frags = Plr.Data.Fragments.Value
+            
+            if beli < 3000000 then WindUI:Notify({Title="خطا", Content="پول شما کمتر از 3 میلیون است!", Duration=5}); return end
+            if frags < 5000 then WindUI:Notify({Title="خطا", Content="فرگمنت شما کمتر از 5000 است!", Duration=5}); return end
+            
+            local char = Plr.Character
+            local meleeTool = nil
+            if char then
+                local t = char:FindFirstChildOfClass("Tool")
+                if t and t.ToolTip == "Melee" then meleeTool = t end
+            end
+            if not meleeTool then
+                for _, t in ipairs(Plr.Backpack:GetChildren()) do
+                    if t:IsA("Tool") and t.ToolTip == "Melee" then meleeTool = t; break end
                 end
             end
-        end)
 
-        State.MirageActiveTween:Play()
-        State.MirageActiveTween.Completed:Wait()
+            if not meleeTool then WindUI:Notify({Title="خطا", Content="هیچ میلی در کیف یا دست شما نیست!", Duration=5}); return end
 
-        if State.MirageNoclip then State.MirageNoclip:Disconnect() end
-        hrp.Velocity = Vector3.zero
-    end
+            local lowerName = string.lower(meleeTool.Name)
+            if not (string.find(lowerName, "dragon breath") or string.find(lowerName, "dragonbreath")) then
+                WindUI:Notify({Title="خطا", Content="میلی فعلی شما Dragon Breath نیست!", Duration=5}); return 
+            end
 
-    local function EmergencyStopAndUnseat()
-        if TurnOffAll then
-            TurnOffAll()
-            WindUI:Notify({Title="میریج", Content="میریج اسپان شد! درحال رفتن به سمت میریج ", Duration=5})
-        end
-        local char = Plr.Character
-        local hum = char and char:FindFirstChild("Humanoid")
-        if hum and hum.Sit then
-            hum.Sit = false; hum:ChangeState(Enum.HumanoidStateType.Jumping); task.wait(0.5) 
-        end
-    end
+            local masteryVal = meleeTool:FindFirstChild("Level")
+            local mastery = masteryVal and masteryVal.Value or 0
+            if mastery < 400 then
+                WindUI:Notify({Title="خطا", Content="مستری Dragon Breath شما " .. tostring(mastery) .. " است (باید بالای 400 باشد)!", Duration=5}); return 
+            end
 
-    local function RemoveFogAndBlindness()
-        Lighting.FogEnd = 100000; Lighting.FogStart = 0; Lighting.GlobalShadows = false; Lighting.Brightness = 2; Lighting.ClockTime = 12
-        for _, v in pairs(Lighting:GetDescendants()) do
-            if v:IsA("Atmosphere") then v:Destroy() 
-            elseif v:IsA("ColorCorrectionEffect") or v:IsA("BloomEffect") or v:IsA("BlurEffect") then v.Enabled = false; v:Destroy() end
+            State.AutoDragonTalon = true
+            WindUI:Notify({Title="دراگون تالون", Content="تایید شد! استارت خودکار فارم استخوان...", Duration=5})
+            
+            -- روشن کردن فارم بون از فایل Main
+            if getgenv().Extra1_StartBones then getgenv().Extra1_StartBones() end
+        else
+            State.AutoDragonTalon = false
         end
     end
 
-    task.spawn(function()
-        local mapFolder = Workspace:WaitForChild("Map")
-        while task.wait(1) do
-            if State.AutoMirageSniper then
-                local island = mapFolder:FindFirstChild("MysticIsland")
-                if island then
-                    EmergencyStopAndUnseat()
-                    local targetCFrame = island:GetPivot() * CFrame.new(0, 50, 0)
-                    MirageTweenTo(targetCFrame)
-                    State.AutoMirageSniper = false 
-                end
-            end
-        end
-    end)
-
-    task.spawn(function()
-        while task.wait(0.5) do
-            if State.AutoMirageChest and not State.MirageChestFarming then
-                local mapFolder = Workspace:FindFirstChild("Map")
-                local island = mapFolder and mapFolder:FindFirstChild("MysticIsland")
-                if island then
-                    local chestsFolder = island:FindFirstChild("Chests")
-                    if chestsFolder then
-                        State.MirageChestFarming = true
-                        for _, chest in ipairs(chestsFolder:GetChildren()) do
-                            if not State.AutoMirageChest then break end 
-                            local touchPart = chest:IsA("BasePart") and chest or chest:FindFirstChildWhichIsA("BasePart", true)
-                            if touchPart and touchPart.Transparency < 1 then
-                                MirageTweenTo(touchPart.CFrame)
-                                task.wait(0.5)
-                            end
-                        end
-                        State.MirageChestFarming = false
-                    end
-                end
-            end
-        end
-    end)
-
-    if Sea == 3 and MainSection then
-        local MirageTab = MainSection:Tab({Title="اتو میریج", Icon="eye", IconColor=Color3.fromHex("#a020f0"), Border=true})
-        local MirageStatus = MirageTab:Paragraph({Title="وضعیت جزیره", Desc="در حال بررسی..."})
-        
-        task.spawn(function()
-            local mapF = Workspace:WaitForChild("Map")
-            while task.wait(2) do
-                if mapF:FindFirstChild("MysticIsland") then MirageStatus:SetDesc("✅ جزیره میریج  اسپان است!")
-                else MirageStatus:SetDesc("❌ جزیره میریج اسپان نیست.") end
-            end
-        end)
-
-        local MirageSec = MirageTab:Section({Title="تنظیمات جزیره", Box=true, BoxBorder=true, Opened=true})
-        MirageSec:Toggle({Title = "اتو میریج", Desc = "هر وقت میریج اسپان شد میره سمتش", Value = false, Callback = function(s) State.AutoMirageSniper = s end})
-        MirageSec:Toggle({Title = "اتو چست میریج", Desc = "تمام چست های داخل جزیره رو جمع میکنه", Value = false, Callback = function(s) State.AutoMirageChest = s if not s and State.MirageActiveTween then State.MirageActiveTween:Cancel() end end})
-        MirageSec:Button({Title = "حذف تاریکی و مه ", Callback = function() pcall(RemoveFogAndBlindness); WindUI:Notify({Title="تاریکی و مه", Content="لیمیت تاریکی و مه برداشته شد", Duration=3}) end})
-    end
-
-    -- ========================================================
-    -- سیستم اتو دراگون تالون (جدید)
-    -- ========================================================
-    if Sea == 3 and FSTab then
-        FSTab:Toggle({
-            Title = "اتو خرید Dragon Talon",
-            Desc = "چک کردن پیش‌نیازها -> فارم استخوان -> خرید Fire Essence -> خرید Dragon Talon",
-            Value = false,
-            Callback = function(s)
-                if s then
-                    -- 1. بررسی دقیق پیش‌نیازها
-                    local beli = Plr.Data.Beli.Value
-                    local frags = Plr.Data.Fragments.Value
-                    
-                    if beli < 3000000 then 
-                        WindUI:Notify({Title="خطا", Content="پول شما کمتر از 3 میلیون است!", Duration=5})
-                        State.AutoDragonTalon = false; return 
-                    end
-                    if frags < 5000 then 
-                        WindUI:Notify({Title="خطا", Content="فرگمنت شما کمتر از 5000 است!", Duration=5})
-                        State.AutoDragonTalon = false; return 
-                    end
-                    
-                    local char = Plr.Character
-                    local meleeTool = nil
-                    if char then
-                        local t = char:FindFirstChildOfClass("Tool")
-                        if t and t.ToolTip == "Melee" then meleeTool = t end
-                    end
-                    if not meleeTool then
-                        for _, t in ipairs(Plr.Backpack:GetChildren()) do
-                            if t:IsA("Tool") and t.ToolTip == "Melee" then meleeTool = t; break end
-                        end
-                    end
-
-                    if not meleeTool then 
-                        WindUI:Notify({Title="خطا", Content="هیچ میلی در کیف یا دست شما نیست!", Duration=5})
-                        State.AutoDragonTalon = false; return 
-                    end
-
-                    local lowerName = string.lower(meleeTool.Name)
-                    if not (string.find(lowerName, "dragon breath") or string.find(lowerName, "dragonbreath")) then
-                        WindUI:Notify({Title="خطا", Content="میلی فعلی شما Dragon Breath نیست!", Duration=5})
-                        State.AutoDragonTalon = false; return 
-                    end
-
-                    local masteryVal = meleeTool:FindFirstChild("Level")
-                    local mastery = masteryVal and masteryVal.Value or 0
-                    if mastery < 400 then
-                        WindUI:Notify({Title="خطا", Content="مستری Dragon Breath شما " .. tostring(mastery) .. " است (باید بالای 400 باشد)!", Duration=5})
-                        State.AutoDragonTalon = false; return 
-                    end
-
-                    -- اگر تمام شروط رعایت شد:
-                    State.AutoDragonTalon = true
-                    WindUI:Notify({Title="دراگون تالون", Content="پیش‌نیازها تایید شد! شروع خودکار فارم استخوان...", Duration=5})
-                    
-                    -- روشن کردن اتوماتیک فارم اسکلتون (از فایل Main)
-                    if Deps.StartBoneFarm then Deps.StartBoneFarm() end
-                else
-                    State.AutoDragonTalon = false
-                end
-            end
-        })
-
-        -- لوپ پس‌زمینه برای دراگون تالون
+    if Sea == 3 then
         task.spawn(function()
             local CommF = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("CommF_")
             while task.wait(1) do
@@ -283,7 +139,6 @@ function ExtraModule1.Init(Deps)
                     local hasFireEssence = Plr.Backpack:FindFirstChild("Fire Essence") or (Plr.Character and Plr.Character:FindFirstChild("Fire Essence"))
 
                     if hasFireEssence then
-                        -- وقتی آیتم رو گرفت، متوقف میکنه
                         State.AutoDragonTalon = false
                         if TurnOffAll then TurnOffAll() end 
                         
@@ -299,10 +154,10 @@ function ExtraModule1.Init(Deps)
 
                             task.wait(1)
                             CommF:InvokeServer("BuyDragonTalon")
-                            WindUI:Notify({Title="موفقیت", Content="شمشیر/میلی Dragon Talon با موفقیت خریداری شد!", Duration=10})
+                            WindUI:Notify({Title="موفقیت", Content="شمشیر/میلی Dragon Talon خریداری شد!", Duration=10})
                         end
                     else
-                        -- خرید رندوم سورپرایز با استخوان ها
+                        -- وقتی دراگون تالون روشنه، اگه استخوان بالای 50 تا بود رول میزنه برای فایر اسنس
                         pcall(function()
                             local bonesData = CommF:InvokeServer("Bones", "Check")
                             local currentBones = tonumber(bonesData) or 0
@@ -327,6 +182,7 @@ function ExtraModule1.Init(Deps)
         task.spawn(function()
             local CommF = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("CommF_")
             while task.wait(2) do
+                -- اگه دراگون تالون روشن نباشه، به صورت نرمال استخوان هارو روی 100 تا میخره
                 if State.AutoBuyBones and State.SoulReaperPhase == "Idle" and not State.IsDoingPriorityTask and not State.AutoDragonTalon then
                     pcall(function()
                         local bonesData = CommF:InvokeServer("Bones", "Check")
@@ -471,6 +327,131 @@ function ExtraModule1.Init(Deps)
     end
 
     -- ========================================================
+    -- سیستم میریج توابع 
+    -- ========================================================
+    local MIRAGE_SPEED = 340
+
+    local function MirageTweenTo(targetCFrame)
+        local character = Plr.Character or Plr.CharacterAdded:Wait()
+        local hrp = character:WaitForChild("HumanoidRootPart")
+        
+        local distance = (hrp.Position - targetCFrame.Position).Magnitude
+        local timeToReach = math.max(distance / MIRAGE_SPEED, 0.1)
+
+        local tweenInfo = TweenInfo.new(timeToReach, Enum.EasingStyle.Linear)
+        
+        if State.MirageActiveTween then State.MirageActiveTween:Cancel() end
+        State.MirageActiveTween = TweenService:Create(hrp, tweenInfo, {CFrame = targetCFrame})
+
+        if State.MirageNoclip then State.MirageNoclip:Disconnect() end
+        State.MirageNoclip = RunService.Stepped:Connect(function()
+            if character then
+                for _, part in pairs(character:GetDescendants()) do
+                    if part:IsA("BasePart") and part.CanCollide then
+                        part.CanCollide = false
+                    end
+                end
+            end
+        end)
+
+        State.MirageActiveTween:Play()
+        State.MirageActiveTween.Completed:Wait()
+
+        if State.MirageNoclip then State.MirageNoclip:Disconnect() end
+        hrp.Velocity = Vector3.zero
+    end
+
+    local function EmergencyStopAndUnseat()
+        if TurnOffAll then
+            TurnOffAll()
+            WindUI:Notify({Title="میریج", Content="میریج اسپان شد! درحال رفتن به سمت میریج ", Duration=5})
+        end
+        local char = Plr.Character
+        local hum = char and char:FindFirstChild("Humanoid")
+        if hum and hum.Sit then
+            hum.Sit = false
+            hum:ChangeState(Enum.HumanoidStateType.Jumping) 
+            task.wait(0.5) 
+        end
+    end
+
+    local function RemoveFogAndBlindness()
+        Lighting.FogEnd = 100000
+        Lighting.FogStart = 0
+        Lighting.GlobalShadows = false
+        Lighting.Brightness = 2
+        Lighting.ClockTime = 12
+
+        for _, v in pairs(Lighting:GetDescendants()) do
+            if v:IsA("Atmosphere") then v:Destroy() 
+            elseif v:IsA("ColorCorrectionEffect") or v:IsA("BloomEffect") or v:IsA("BlurEffect") then
+                v.Enabled = false
+                v:Destroy()
+            end
+        end
+    end
+
+    task.spawn(function()
+        local mapFolder = Workspace:WaitForChild("Map")
+        while task.wait(1) do
+            if State.AutoMirageSniper then
+                local island = mapFolder:FindFirstChild("MysticIsland")
+                if island then
+                    EmergencyStopAndUnseat()
+                    local targetCFrame = island:GetPivot() * CFrame.new(0, 50, 0)
+                    MirageTweenTo(targetCFrame)
+                    State.AutoMirageSniper = false 
+                end
+            end
+        end
+    end)
+
+    task.spawn(function()
+        while task.wait(0.5) do
+            if State.AutoMirageChest and not State.MirageChestFarming then
+                local mapFolder = Workspace:FindFirstChild("Map")
+                local island = mapFolder and mapFolder:FindFirstChild("MysticIsland")
+                if island then
+                    local chestsFolder = island:FindFirstChild("Chests")
+                    if chestsFolder then
+                        State.MirageChestFarming = true
+                        for _, chest in ipairs(chestsFolder:GetChildren()) do
+                            if not State.AutoMirageChest then break end 
+                            local touchPart = chest:IsA("BasePart") and chest or chest:FindFirstChildWhichIsA("BasePart", true)
+                            if touchPart and touchPart.Transparency < 1 then
+                                MirageTweenTo(touchPart.CFrame)
+                                task.wait(0.5)
+                            end
+                        end
+                        State.MirageChestFarming = false
+                    end
+                end
+            end
+        end
+    end)
+
+    if Sea == 3 and MainSection then
+        local MirageTab = MainSection:Tab({Title="اتو میریج", Icon="eye", IconColor=Color3.fromHex("#a020f0"), Border=true})
+        local MirageStatus = MirageTab:Paragraph({Title="وضعیت جزیره", Desc="در حال بررسی..."})
+        
+        task.spawn(function()
+            local mapF = Workspace:WaitForChild("Map")
+            while task.wait(2) do
+                if mapF:FindFirstChild("MysticIsland") then
+                    MirageStatus:SetDesc("✅ جزیره میریج  اسپان است!")
+                else
+                    MirageStatus:SetDesc("❌ جزیره میریج اسپان نیست.")
+                end
+            end
+        end)
+
+        local MirageSec = MirageTab:Section({Title="تنظیمات جزیره", Box=true, BoxBorder=true, Opened=true})
+        MirageSec:Toggle({Title = "اتو میریج", Desc = "هر وقت میریج اسپان شد میره سمتش", Value = false, Callback = function(s) State.AutoMirageSniper = s end})
+        MirageSec:Toggle({Title = "اتو چست میریج", Desc = "تمام چست های داخل جزیره رو جمع میکنه", Value = false, Callback = function(s) State.AutoMirageChest = s if not s and State.MirageActiveTween then State.MirageActiveTween:Cancel() end end})
+        MirageSec:Button({Title = "حذف تاریکی و مه ", Callback = function() pcall(RemoveFogAndBlindness); WindUI:Notify({Title="تاریکی و مه", Content="لیمیت تاریکی و مه برداشته شد", Duration=3}) end})
+    end
+
+    -- ========================================================
     -- هسته Noclip موقع اتک
     -- ========================================================
     RunService.Heartbeat:Connect(function()
@@ -482,7 +463,7 @@ function ExtraModule1.Init(Deps)
         end)
     end)
 
-    -- بقیه کدهای دارک بیرد و چست ...
+    -- بقیه کدهای دارک بیرد
     if Sea == 2 or Sea == 3 then
         task.spawn(function()
             while task.wait(1) do
