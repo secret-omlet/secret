@@ -111,7 +111,7 @@ function ExtraModule1.Init(Deps)
             if not meleeTool then WindUI:Notify({Title="خطا", Content="هیچ میلی در کیف یا دست شما نیست!", Duration=5}); return end
 
             local lowerName = string.lower(meleeTool.Name)
-            if not (string.find(lowerName, "dragon breath") or string.find(lowerName, "dragonbreath")) then
+            if not (string.find(lowerName, "dragon claw") or string.find(lowerName, "dragonbreath")) then
                 WindUI:Notify({Title="خطا", Content="میلی فعلی شما Dragon Breath نیست!", Duration=5}); return 
             end
 
