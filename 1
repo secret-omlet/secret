@@ -54,7 +54,7 @@ function ExtraModule1.Init(Deps)
         BartiloPhase = -1,
         BartiloIsChecking = false,
         BartiloPlateIndex = 1,
-        BartiloReachedStart = false, -- متغیر جدید برای چک کردن نقطه شروع پلت ها
+        BartiloReachedStart = false, 
         BartiloTarget = nil,
         BartiloLastEnemy = nil,
         BartiloLastEnemyTime = 0
@@ -64,10 +64,13 @@ function ExtraModule1.Init(Deps)
     local ReaperAltarPos = CFrame.new(-8932.379, 140.073, 6061.035)
     local ReaperArenaPos = CFrame.new(-9512.133, 312.248, 6784.793)
 
+    -- لوکیشن های اصلی کوئست
     local BartiloQuestPos = CFrame.new(-459.705, 69.368, 301.777)
     local SwanPirateArea = CFrame.new(875, 122, 1235)
     local JeremyQuestNPC = CFrame.new(637, 72, 917)
-    local BartiloStartPos = CFrame.new(-1850.569, 13.018, 1750.868) -- نقطه شروع قبل از رفتن روی پلت ها
+    
+    -- لوکیشنی که کاربر درخواست کرده قبل از شروع پلت ها بره اونجا
+    local BartiloStartPos = CFrame.new(-1837.044, 6.780, 1695.329) 
 
     local function EquipWeaponGeneral()
         pcall(function()
@@ -470,30 +473,37 @@ function ExtraModule1.Init(Deps)
                         State.BartiloTarget = {Mode = "Wait", CFrame = realJeremyPos * CFrame.new(0, Settings.WaitHeight or 40, 0)}
                     end
                 elseif State.BartiloPhase == 2 then
-                    -- سیستم جدید پلت ها: اول رفتن به نقطه اصلی، بعد خوندن پارت ها از مپ
+                    -- سیستم کاملاً جدید پلت ها: بدون CFrame، مستقیماً از روی پارت های مپ میخواند
                     if not State.BartiloReachedStart then
                         State.BartiloTarget = {Mode = "Move", CFrame = BartiloStartPos}
-                        if (root.Position - BartiloStartPos.Position).Magnitude < 20 then
-                            task.wait(1)
+                        if (root.Position - BartiloStartPos.Position).Magnitude < 15 then
+                            task.wait(0.5)
                             State.BartiloReachedStart = true
                         end
                     else
                         if State.BartiloPlateIndex <= 8 then
-                            local platePath = Workspace:FindFirstChild("Map")
-                            if platePath and platePath:FindFirstChild("Dressrosa") and platePath.Dressrosa:FindFirstChild("BartiloPlates") then
-                                local targetPlate = platePath.Dressrosa.BartiloPlates:FindFirstChild("Plate" .. State.BartiloPlateIndex)
-                                if targetPlate then
-                                    State.BartiloTarget = {Mode = "Move", CFrame = targetPlate.CFrame}
-                                    if (root.Position - targetPlate.Position).Magnitude < 20 then
+                            local plateFolder = Workspace:FindFirstChild("Map") 
+                                and Workspace.Map:FindFirstChild("Dressrosa") 
+                                and Workspace.Map.Dressrosa:FindFirstChild("BartiloPlates")
+                            
+                            if plateFolder then
+                                local targetPart = plateFolder:FindFirstChild("Plate" .. tostring(State.BartiloPlateIndex))
+                                if targetPart and targetPart:IsA("BasePart") then
+                                    State.BartiloTarget = {Mode = "Move", CFrame = targetPart.CFrame}
+                                    if (root.Position - targetPart.Position).Magnitude < 15 then
                                         task.wait(0.3)
                                         State.BartiloPlateIndex = State.BartiloPlateIndex + 1
                                     end
                                 else
-                                    -- اگر مپ کامل لود نشده بود درجا میزنه تا لود شه
-                                    State.BartiloTarget = {Mode = "Move", CFrame = root.CFrame}
+                                    -- پارت مورد نظر پیدا نشد (شاید مپ لود نشده باشه)
+                                    State.BartiloTarget = {Mode = "Wait", CFrame = root.CFrame}
                                 end
+                            else
+                                -- فولدر اصلی پلت ها پیدا نشد
+                                State.BartiloTarget = {Mode = "Wait", CFrame = root.CFrame}
                             end
                         else
+                            -- هر 8 پلت انجام شد
                             pcall(function() ReplicatedStorage.Remotes.CommF_:InvokeServer("BartiloQuestProgress", "DidPlates") end)
                             State.BartiloPhase = 3
                         end
