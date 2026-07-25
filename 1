@@ -71,6 +71,9 @@ function ExtraModule1.Init(Deps)
     
     -- لوکیشنی که کاربر درخواست کرده قبل از شروع پلت ها بره اونجا
     local BartiloStartPos = CFrame.new(-1837.044, 6.780, 1695.329) 
+    
+    -- لوکیشن پارت 5 که باگ داشت
+    local Plate5FixedCFrame = CFrame.new(-1869.461, 16.046, 1680.856)
 
     local function EquipWeaponGeneral()
         pcall(function()
@@ -473,7 +476,7 @@ function ExtraModule1.Init(Deps)
                         State.BartiloTarget = {Mode = "Wait", CFrame = realJeremyPos * CFrame.new(0, Settings.WaitHeight or 40, 0)}
                     end
                 elseif State.BartiloPhase == 2 then
-                    -- سیستم کاملاً جدید پلت ها: بدون CFrame، مستقیماً از روی پارت های مپ میخواند
+                    -- رفتن به نقطه اول قبل از شروع پلت ها
                     if not State.BartiloReachedStart then
                         State.BartiloTarget = {Mode = "Move", CFrame = BartiloStartPos}
                         if (root.Position - BartiloStartPos.Position).Magnitude < 15 then
@@ -481,25 +484,34 @@ function ExtraModule1.Init(Deps)
                             State.BartiloReachedStart = true
                         end
                     else
+                        -- گرفتن پلت ها از مپ، به جز پلت 5 که CFrame اختصاصی دارد
                         if State.BartiloPlateIndex <= 8 then
-                            local plateFolder = Workspace:FindFirstChild("Map") 
-                                and Workspace.Map:FindFirstChild("Dressrosa") 
-                                and Workspace.Map.Dressrosa:FindFirstChild("BartiloPlates")
+                            local targetCFrame = nil
                             
-                            if plateFolder then
-                                local targetPart = plateFolder:FindFirstChild("Plate" .. tostring(State.BartiloPlateIndex))
-                                if targetPart and targetPart:IsA("BasePart") then
-                                    State.BartiloTarget = {Mode = "Move", CFrame = targetPart.CFrame}
-                                    if (root.Position - targetPart.Position).Magnitude < 15 then
-                                        task.wait(0.3)
-                                        State.BartiloPlateIndex = State.BartiloPlateIndex + 1
+                            -- حل مشکل پارت 5 با CFrame اختصاصی
+                            if State.BartiloPlateIndex == 5 then
+                                targetCFrame = Plate5FixedCFrame
+                            else
+                                local plateFolder = Workspace:FindFirstChild("Map") 
+                                    and Workspace.Map:FindFirstChild("Dressrosa") 
+                                    and Workspace.Map.Dressrosa:FindFirstChild("BartiloPlates")
+                                
+                                if plateFolder then
+                                    local targetPart = plateFolder:FindFirstChild("Plate" .. tostring(State.BartiloPlateIndex))
+                                    if targetPart and targetPart:IsA("BasePart") then
+                                        targetCFrame = targetPart.CFrame
                                     end
-                                else
-                                    -- پارت مورد نظر پیدا نشد (شاید مپ لود نشده باشه)
-                                    State.BartiloTarget = {Mode = "Wait", CFrame = root.CFrame}
+                                end
+                            end
+                            
+                            if targetCFrame then
+                                State.BartiloTarget = {Mode = "Move", CFrame = targetCFrame}
+                                if (root.Position - targetCFrame.Position).Magnitude < 15 then
+                                    task.wait(0.3)
+                                    State.BartiloPlateIndex = State.BartiloPlateIndex + 1
                                 end
                             else
-                                -- فولدر اصلی پلت ها پیدا نشد
+                                -- اگر مپ کامل لود نشده بود
                                 State.BartiloTarget = {Mode = "Wait", CFrame = root.CFrame}
                             end
                         else
