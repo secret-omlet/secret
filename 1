@@ -15,6 +15,7 @@ function ExtraModule1.Init(Deps)
     local ChestSection = Deps.ChestSection
     local MainSection = Deps.MainSection 
     local BoneSec = Deps.BoneSec
+    local RaceTab = Deps.RaceTab -- تب جدید که اضافه خواهیم کرد
     local TurnOffAll = Deps.TurnOffAll 
     
     local PauseFarms = Deps.PauseFarms
@@ -33,8 +34,6 @@ function ExtraModule1.Init(Deps)
         ActiveTween = nil,
         IsDoingPriorityTask = false,
         DarkbeardTarget = nil,
-        LastTargetEnemy = nil,
-        LastTargetTime = 0,
         
         AutoMirageSniper = false,
         AutoMirageChest = false,
@@ -49,11 +48,30 @@ function ExtraModule1.Init(Deps)
         SoulReaperWaitTimer = nil,
         
         AutoDragonTalon = false,
+
+        -- متغیرهای بارتیلو کوئست
+        AutoBartilo = false,
+        BartiloPhase = -1,
+        BartiloIsChecking = false,
+        BartiloPlateIndex = 1,
+        BartiloTarget = nil,
+        BartiloLastAttackTime = 0
     }
 
     local DarkbeardSpawnPos = CFrame.new(3778.288, 11.682, -3499.631)
     local ReaperAltarPos = CFrame.new(-8932.379, 140.073, 6061.035)
     local ReaperArenaPos = CFrame.new(-9512.133, 312.248, 6784.793)
+
+    -- لوکیشن های بارتیلو
+    local BartiloQuestPos = CFrame.new(-459.705, 69.368, 301.777)
+    local SwanPirateArea = CFrame.new(875, 122, 1235)
+    local JeremyQuestNPC = CFrame.new(637, 72, 917)
+    local BartiloPlates = {
+        CFrame.new(-1850.569, 13.018, 1750.868), CFrame.new(-1858.781, 20.306, 1711.822),
+        CFrame.new(-1803.893, 16.733, 1750.592), CFrame.new(-1858.262, 17.163, 1724.816),
+        CFrame.new(-1869.486, 16.301, 1680.933), CFrame.new(-1800.137, 16.564, 1684.458),
+        CFrame.new(-1819.281, 15.084, 1717.748), CFrame.new(-1813.567, 14.934, 1724.816)
+    }
 
     local function EquipWeaponGeneral()
         pcall(function()
@@ -85,6 +103,46 @@ function ExtraModule1.Init(Deps)
         end)
     end
 
+    -- توابع کمکی برای بارتیلو
+    local function HasQuest() 
+        local g = Plr.PlayerGui:FindFirstChild("Main") 
+        return g and g:FindFirstChild("Quest") and g.Quest.Visible or false 
+    end
+    local function IsEnemyValid(E)
+        return E and E.Parent and E:FindFirstChild("Humanoid") and E.Humanoid.Health > 0 and E:FindFirstChild("HumanoidRootPart") ~= nil
+    end
+    local function IsBossAlive(n)
+        local E = Workspace:FindFirstChild("Enemies")
+        if E then for _, v in pairs(E:GetChildren()) do if string.find(v.Name, n) and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then return true end end end
+        return false
+    end
+    local function IsBossSpawned(n)
+        local W = Workspace:FindFirstChild("_WorldOrigin")
+        if W and W:FindFirstChild("EnemySpawns") then for _, v in pairs(W.EnemySpawns:GetChildren()) do if string.find(v.Name, n) then return true end end end
+        return IsBossAlive(n)
+    end
+    local function GetRealSpawn(name, fallbackCFrame)
+        local W = Workspace:FindFirstChild("_WorldOrigin")
+        if W and W:FindFirstChild("EnemySpawns") then for _, v in pairs(W.EnemySpawns:GetChildren()) do if string.find(v.Name, name) then return v.CFrame end end end
+        return fallbackCFrame
+    end
+
+    local function HandleDialogueQuick()
+        pcall(function()
+            local D = Plr.PlayerGui:FindFirstChild("Main") and Plr.PlayerGui.Main:FindFirstChild("Dialogue")
+            if D and D.Visible then
+                local cancelBtn = D:FindFirstChild("Cancel")
+                if cancelBtn and cancelBtn.Visible then
+                    local p = cancelBtn.AbsolutePosition; local s = cancelBtn.AbsoluteSize; local I = game:GetService("GuiService"):GetGuiInset()
+                    VirtualInputManager:SendMouseButtonEvent(p.X+s.X/2, p.Y+s.Y/2+I.Y, 0, true, game, 1); task.wait(0.05); VirtualInputManager:SendMouseButtonEvent(p.X+s.X/2, p.Y+s.Y/2+I.Y, 0, false, game, 1)
+                else
+                    local p = D.AbsolutePosition; local s = D.AbsoluteSize; local I = game:GetService("GuiService"):GetGuiInset()
+                    VirtualInputManager:SendMouseButtonEvent(p.X+s.X/2, p.Y+s.Y/2+I.Y, 0, true, game, 1); task.wait(0.05); VirtualInputManager:SendMouseButtonEvent(p.X+s.X/2, p.Y+s.Y/2+I.Y, 0, false, game, 1)
+                end
+            end
+        end)
+    end
+
     -- ========================================================
     -- اتصال دراگون تالون به فایل Main
     -- ========================================================
@@ -92,7 +150,6 @@ function ExtraModule1.Init(Deps)
         if s then
             local beli = Plr.Data.Beli.Value
             local frags = Plr.Data.Fragments.Value
-            
             if beli < 3000000 then WindUI:Notify({Title="خطا", Content="پول شما کمتر از 3 میلیون است!", Duration=5}); return end
             if frags < 5000 then WindUI:Notify({Title="خطا", Content="فرگمنت شما کمتر از 5000 است!", Duration=5}); return end
             
@@ -107,14 +164,11 @@ function ExtraModule1.Init(Deps)
                     if t:IsA("Tool") and t.ToolTip == "Melee" then meleeTool = t; break end
                 end
             end
-
             if not meleeTool then WindUI:Notify({Title="خطا", Content="هیچ میلی در کیف یا دست شما نیست!", Duration=5}); return end
-
             local lowerName = string.lower(meleeTool.Name)
             if not (string.find(lowerName, "dragon claw") or string.find(lowerName, "dragonbreath")) then
                 WindUI:Notify({Title="خطا", Content="میلی فعلی شما Dragon Breath نیست!", Duration=5}); return 
             end
-
             local masteryVal = meleeTool:FindFirstChild("Level")
             local mastery = masteryVal and masteryVal.Value or 0
             if mastery < 400 then
@@ -123,11 +177,31 @@ function ExtraModule1.Init(Deps)
 
             State.AutoDragonTalon = true
             WindUI:Notify({Title="دراگون تالون", Content="تایید شد! استارت خودکار فارم استخوان...", Duration=5})
-            
-            -- روشن کردن فارم بون از فایل Main
             if getgenv().Extra1_StartBones then getgenv().Extra1_StartBones() end
         else
             State.AutoDragonTalon = false
+        end
+    end
+
+    -- اتصال بارتیلو کوئست (برای فراخوانی در صورت نیاز به خاموش شدن سراسری)
+    ExtraModule1.ToggleBartilo = function(s)
+        State.AutoBartilo = s
+        if s then
+            State.BartiloPhase = -1
+            State.BartiloPlateIndex = 1
+            if not State.IsDoingPriorityTask then
+                State.IsDoingPriorityTask = true
+                PauseFarms()
+                if SetFarmMode then SetFarmMode("BartiloQuest") end
+            end
+            WindUI:Notify({Title="Bartilo Quest", Content="سیستم کوئست بارتیلو روشن شد!", Duration=3})
+        else
+            State.BartiloTarget = nil
+            if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
+            if State.IsDoingPriorityTask and (SetFarmMode and Core.FarmMode == "BartiloQuest") then 
+                State.IsDoingPriorityTask = false
+                ResumeFarms() 
+            end
         end
     end
 
@@ -137,13 +211,10 @@ function ExtraModule1.Init(Deps)
             while task.wait(1) do
                 if State.AutoDragonTalon then
                     local hasFireEssence = Plr.Backpack:FindFirstChild("Fire Essence") or (Plr.Character and Plr.Character:FindFirstChild("Fire Essence"))
-
                     if hasFireEssence then
                         State.AutoDragonTalon = false
                         if TurnOffAll then TurnOffAll() end 
-                        
                         WindUI:Notify({Title="دراگون تالون", Content="Fire Essence بدست آمد! حرکت به سمت NPC...", Duration=5})
-                        
                         local targetPos = CFrame.new(5661.079, 1207.626, 866.298)
                         local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart")
                         if root then
@@ -151,38 +222,25 @@ function ExtraModule1.Init(Deps)
                             State.ActiveTween = TweenService:Create(root, TweenInfo.new(math.max((root.Position - targetPos.Position).Magnitude/350, 0.1), Enum.EasingStyle.Linear), {CFrame = targetPos})
                             State.ActiveTween:Play()
                             State.ActiveTween.Completed:Wait()
-
                             task.wait(1)
                             CommF:InvokeServer("BuyDragonTalon")
                             WindUI:Notify({Title="موفقیت", Content="شمشیر/میلی Dragon Talon خریداری شد!", Duration=10})
                         end
                     else
-                        -- وقتی دراگون تالون روشنه، اگه استخوان بالای 50 تا بود رول میزنه برای فایر اسنس
                         pcall(function()
                             local bonesData = CommF:InvokeServer("Bones", "Check")
                             local currentBones = tonumber(bonesData) or 0
-                            if currentBones >= 50 then
-                                CommF:InvokeServer("Bones", "Buy", 1, 1)
-                            end
+                            if currentBones >= 50 then CommF:InvokeServer("Bones", "Buy", 1, 1) end
                         end)
                     end
                 end
             end
         end)
     end
-
-    -- ========================================================
-    -- سیستم استخوان و سول ریپر
-    -- ========================================================
     if Sea == 3 and BoneSec then
-        BoneSec:Toggle({Title = "اتو خرید استخوان", Desc = "چک میکند و اگر بالای ۱۰۰ استخوان داشتید اتوماتیک خرید میکند", Value = false, Callback = function(s) State.AutoBuyBones = s end})
-        BoneSec:Toggle({Title = "اتو اسپان و کشتن Soul Reaper (با آیتم)", Desc = "اگه Hallow Essence گرفتید، فارم را متوقف، باس را اسپان و میکشد", Value = false, Callback = function(s) State.AutoSpawnSoulReaper = s end})
-        BoneSec:Toggle({Title = "اتو کشتن Soul Reaper (با نوتیفیکیشن)", Desc = "اگه نوتیفیکیشن اسپان باس آمد، میره میکشتش و برمیگرده", Value = false, Callback = function(s) State.AutoKillReaperNotif = s end})
-
         task.spawn(function()
             local CommF = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("CommF_")
             while task.wait(2) do
-                -- اگه دراگون تالون روشن نباشه، به صورت نرمال استخوان هارو روی 100 تا میخره
                 if State.AutoBuyBones and State.SoulReaperPhase == "Idle" and not State.IsDoingPriorityTask and not State.AutoDragonTalon then
                     pcall(function()
                         local bonesData = CommF:InvokeServer("Bones", "Check")
@@ -249,9 +307,7 @@ function ExtraModule1.Init(Deps)
                     if root then
                         local dist = (root.Position - ReaperAltarPos.Position).Magnitude
                         if dist > 15 then
-                            if State.ActiveTween then State.ActiveTween:Cancel() end
-                            State.ActiveTween = TweenService:Create(root, TweenInfo.new(math.max(dist/(Settings.FlightSpeed or 350), 0.05), Enum.EasingStyle.Linear), {CFrame = ReaperAltarPos})
-                            State.ActiveTween:Play()
+                            State.ActiveTween = SmartTween(root, ReaperAltarPos, State.ActiveTween)
                         else
                             if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
                             root.CFrame = ReaperAltarPos
@@ -283,9 +339,7 @@ function ExtraModule1.Init(Deps)
                         local dest = CFrame.lookAt(ep + d * (Settings.AttackDistance or 40) + Vector3.new(0, (Settings.AttackHeight or 40), 0), ep)
                         
                         if (root.Position - dest.Position).Magnitude > 10 then 
-                            if State.ActiveTween then State.ActiveTween:Cancel() end
-                            State.ActiveTween = TweenService:Create(root, TweenInfo.new(math.max((root.Position - dest.Position).Magnitude/(Settings.FlightSpeed or 350), 0.05), Enum.EasingStyle.Linear), {CFrame = dest})
-                            State.ActiveTween:Play()
+                            State.ActiveTween = SmartTween(root, dest, State.ActiveTween)
                         else
                             if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
                             root.CFrame = dest
@@ -302,11 +356,8 @@ function ExtraModule1.Init(Deps)
                         end
                     else
                         if not State.SoulReaperWaitTimer then State.SoulReaperWaitTimer = tick() end
-                        
                         if (root.Position - ReaperArenaPos.Position).Magnitude > 15 then
-                            if State.ActiveTween then State.ActiveTween:Cancel() end
-                            State.ActiveTween = TweenService:Create(root, TweenInfo.new(math.max((root.Position - ReaperArenaPos.Position).Magnitude/(Settings.FlightSpeed or 350), 0.05), Enum.EasingStyle.Linear), {CFrame = ReaperArenaPos})
-                            State.ActiveTween:Play()
+                            State.ActiveTween = SmartTween(root, ReaperArenaPos, State.ActiveTween)
                         else
                             if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
                         end
@@ -314,141 +365,12 @@ function ExtraModule1.Init(Deps)
                         if tick() - State.SoulReaperWaitTimer > 15 then
                             State.SoulReaperPhase = "Idle"
                             State.SoulReaperWaitTimer = nil
-                            if State.IsDoingPriorityTask then
-                                State.IsDoingPriorityTask = false
-                                ResumeFarms()
-                                WindUI:Notify({Title="Soul Reaper", Content="عملیات پایان یافت! بازگشت به فارم...", Duration=5})
-                            end
+                            if State.IsDoingPriorityTask then State.IsDoingPriorityTask = false; ResumeFarms(); WindUI:Notify({Title="Soul Reaper", Content="عملیات پایان یافت! بازگشت به فارم...", Duration=5}) end
                         end
                     end
                 end
             end
         end)
-    end
-
-    -- ========================================================
-    -- سیستم میریج توابع 
-    -- ========================================================
-    local MIRAGE_SPEED = 340
-
-    local function MirageTweenTo(targetCFrame)
-        local character = Plr.Character or Plr.CharacterAdded:Wait()
-        local hrp = character:WaitForChild("HumanoidRootPart")
-        
-        local distance = (hrp.Position - targetCFrame.Position).Magnitude
-        local timeToReach = math.max(distance / MIRAGE_SPEED, 0.1)
-
-        local tweenInfo = TweenInfo.new(timeToReach, Enum.EasingStyle.Linear)
-        
-        if State.MirageActiveTween then State.MirageActiveTween:Cancel() end
-        State.MirageActiveTween = TweenService:Create(hrp, tweenInfo, {CFrame = targetCFrame})
-
-        if State.MirageNoclip then State.MirageNoclip:Disconnect() end
-        State.MirageNoclip = RunService.Stepped:Connect(function()
-            if character then
-                for _, part in pairs(character:GetDescendants()) do
-                    if part:IsA("BasePart") and part.CanCollide then
-                        part.CanCollide = false
-                    end
-                end
-            end
-        end)
-
-        State.MirageActiveTween:Play()
-        State.MirageActiveTween.Completed:Wait()
-
-        if State.MirageNoclip then State.MirageNoclip:Disconnect() end
-        hrp.Velocity = Vector3.zero
-    end
-
-    local function EmergencyStopAndUnseat()
-        if TurnOffAll then
-            TurnOffAll()
-            WindUI:Notify({Title="میریج", Content="میریج اسپان شد! درحال رفتن به سمت میریج ", Duration=5})
-        end
-        local char = Plr.Character
-        local hum = char and char:FindFirstChild("Humanoid")
-        if hum and hum.Sit then
-            hum.Sit = false
-            hum:ChangeState(Enum.HumanoidStateType.Jumping) 
-            task.wait(0.5) 
-        end
-    end
-
-    local function RemoveFogAndBlindness()
-        Lighting.FogEnd = 100000
-        Lighting.FogStart = 0
-        Lighting.GlobalShadows = false
-        Lighting.Brightness = 2
-        Lighting.ClockTime = 12
-
-        for _, v in pairs(Lighting:GetDescendants()) do
-            if v:IsA("Atmosphere") then v:Destroy() 
-            elseif v:IsA("ColorCorrectionEffect") or v:IsA("BloomEffect") or v:IsA("BlurEffect") then
-                v.Enabled = false
-                v:Destroy()
-            end
-        end
-    end
-
-    task.spawn(function()
-        local mapFolder = Workspace:WaitForChild("Map")
-        while task.wait(1) do
-            if State.AutoMirageSniper then
-                local island = mapFolder:FindFirstChild("MysticIsland")
-                if island then
-                    EmergencyStopAndUnseat()
-                    local targetCFrame = island:GetPivot() * CFrame.new(0, 50, 0)
-                    MirageTweenTo(targetCFrame)
-                    State.AutoMirageSniper = false 
-                end
-            end
-        end
-    end)
-
-    task.spawn(function()
-        while task.wait(0.5) do
-            if State.AutoMirageChest and not State.MirageChestFarming then
-                local mapFolder = Workspace:FindFirstChild("Map")
-                local island = mapFolder and mapFolder:FindFirstChild("MysticIsland")
-                if island then
-                    local chestsFolder = island:FindFirstChild("Chests")
-                    if chestsFolder then
-                        State.MirageChestFarming = true
-                        for _, chest in ipairs(chestsFolder:GetChildren()) do
-                            if not State.AutoMirageChest then break end 
-                            local touchPart = chest:IsA("BasePart") and chest or chest:FindFirstChildWhichIsA("BasePart", true)
-                            if touchPart and touchPart.Transparency < 1 then
-                                MirageTweenTo(touchPart.CFrame)
-                                task.wait(0.5)
-                            end
-                        end
-                        State.MirageChestFarming = false
-                    end
-                end
-            end
-        end
-    end)
-
-    if Sea == 3 and MainSection then
-        local MirageTab = MainSection:Tab({Title="اتو میریج", Icon="eye", IconColor=Color3.fromHex("#a020f0"), Border=true})
-        local MirageStatus = MirageTab:Paragraph({Title="وضعیت جزیره", Desc="در حال بررسی..."})
-        
-        task.spawn(function()
-            local mapF = Workspace:WaitForChild("Map")
-            while task.wait(2) do
-                if mapF:FindFirstChild("MysticIsland") then
-                    MirageStatus:SetDesc("✅ جزیره میریج  اسپان است!")
-                else
-                    MirageStatus:SetDesc("❌ جزیره میریج اسپان نیست.")
-                end
-            end
-        end)
-
-        local MirageSec = MirageTab:Section({Title="تنظیمات جزیره", Box=true, BoxBorder=true, Opened=true})
-        MirageSec:Toggle({Title = "اتو میریج", Desc = "هر وقت میریج اسپان شد میره سمتش", Value = false, Callback = function(s) State.AutoMirageSniper = s end})
-        MirageSec:Toggle({Title = "اتو چست میریج", Desc = "تمام چست های داخل جزیره رو جمع میکنه", Value = false, Callback = function(s) State.AutoMirageChest = s if not s and State.MirageActiveTween then State.MirageActiveTween:Cancel() end end})
-        MirageSec:Button({Title = "حذف تاریکی و مه ", Callback = function() pcall(RemoveFogAndBlindness); WindUI:Notify({Title="تاریکی و مه", Content="لیمیت تاریکی و مه برداشته شد", Duration=3}) end})
     end
 
     -- ========================================================
@@ -456,14 +378,13 @@ function ExtraModule1.Init(Deps)
     -- ========================================================
     RunService.Heartbeat:Connect(function()
         pcall(function()
-            if (State.DarkbeardState == "Attacking" or State.SoulReaperPhase == "Attacking") and Plr.Character then
+            if (State.DarkbeardState == "Attacking" or State.SoulReaperPhase == "Attacking" or (State.AutoBartilo and State.BartiloTarget)) and Plr.Character then
                 for _, p in pairs(Plr.Character:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end
                 if Plr.Character:FindFirstChild("HumanoidRootPart") then Plr.Character.HumanoidRootPart.Velocity = Vector3.zero end
             end
         end)
     end)
 
-    -- بقیه کدهای دارک بیرد
     if Sea == 2 or Sea == 3 then
         task.spawn(function()
             while task.wait(1) do
@@ -476,7 +397,6 @@ function ExtraModule1.Init(Deps)
                         itemName = "God's Chalice"
                         if Plr.Backpack:FindFirstChild(itemName) or (Plr.Character and Plr.Character:FindFirstChild(itemName)) then shouldStop = true end
                     end
-                    
                     if shouldStop then
                         State.StopChestOnSpecialItem = false 
                         PauseFarms()
@@ -488,143 +408,164 @@ function ExtraModule1.Init(Deps)
         end)
     end
 
+    -- ========================================================
+    -- هوش مصنوعی Bartilo Quest (سازگار با تنظیمات هاب)
+    -- ========================================================
     if Sea == 2 then
         task.spawn(function()
-            local Notifications = Plr:WaitForChild("PlayerGui"):WaitForChild("Notifications", 10)
-            if Notifications then
-                Notifications.ChildAdded:Connect(function(child)
-                    if not State.AutoKillDarkbeardEventEnabled then return end
-                    local textLabel = child:WaitForChild("TextLabel", 2) or child:FindFirstChildOfClass("TextLabel")
-                    if not textLabel then for _, desc in pairs(child:GetDescendants()) do if desc:IsA("TextLabel") then textLabel = desc; break end end end
-
-                    if textLabel then
-                        local timeout = tick() + 3
-                        while tick() < timeout do
-                            local txt = textLabel.Text
-                            if txt ~= "" and txt ~= "Label" then
-                                if string.find(txt, "The power of darkness has been unleashed") then
-                                    if not State.IsDoingPriorityTask then
-                                        State.IsDoingPriorityTask = true
-                                        PauseFarms()
-                                        if SetFarmMode then SetFarmMode("Darkbeard") end
-                                        State.DarkbeardState = "Attacking"
-                                        WindUI:Notify({Title="Darkbeard Event", Content="دارک بیرد اسپان شد! شروع اتک دادن...", Duration=5})
-                                    end
-                                end
-                                break
-                            end
-                            task.wait(0.05)
-                        end
-                    end
-                end)
+            while task.wait(3) do
+                if State.AutoBartilo and not State.BartiloIsChecking then
+                    pcall(function()
+                        State.BartiloIsChecking = true
+                        local progress = ReplicatedStorage.Remotes.CommF_:InvokeServer("BartiloQuestProgress", "Bartilo")
+                        progress = tonumber(progress)
+                        if progress and (State.BartiloPhase == -1 or progress > State.BartiloPhase) then State.BartiloPhase = progress end
+                        State.BartiloIsChecking = false
+                    end)
+                end
             end
         end)
 
         task.spawn(function()
             while task.wait(0.1) do
-                if not State.AutoDarkbeardEnabled and not State.AutoKillDarkbeardEventEnabled then
-                    if State.DarkbeardState ~= "Idle" then
-                        State.DarkbeardState = "Idle"; State.DarkbeardTarget = nil
-                        if State.IsDoingPriorityTask then State.IsDoingPriorityTask = false; ResumeFarms() end
-                    end
-                    continue
-                end
+                if not State.AutoBartilo or State.BartiloIsChecking then continue end
+                local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart")
+                if not root then continue end
 
-                local hasFist = Plr.Backpack:FindFirstChild("Fist of Darkness") or (Plr.Character and Plr.Character:FindFirstChild("Fist of Darkness"))
+                if State.BartiloPhase == -1 then continue end
 
-                if State.AutoDarkbeardEnabled and State.DarkbeardState == "Idle" and hasFist then
-                    if not State.IsDoingPriorityTask then
-                        State.IsDoingPriorityTask = true
-                        PauseFarms()
-                        if SetFarmMode then SetFarmMode("Darkbeard") end
-                        State.DarkbeardState = "Spawning"
-                        WindUI:Notify({Title="Darkbeard", Content="Fist of Darkness پیدا شد! حرکت به سمت محل اسپان...", Duration=5})
-                    end
-                end
-
-                if State.DarkbeardState == "Spawning" then
-                    local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart")
-                    if root then
-                        local dist = (root.Position - DarkbeardSpawnPos.Position).Magnitude
-                        if dist > 15 then
-                            if State.ActiveTween then State.ActiveTween:Cancel() end
-                            State.ActiveTween = TweenService:Create(root, TweenInfo.new(math.max(dist/(Settings.FlightSpeed or 350), 0.05), Enum.EasingStyle.Linear), {CFrame=DarkbeardSpawnPos})
-                            State.ActiveTween:Play()
-                        else
-                            if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
-                            root.CFrame = DarkbeardSpawnPos
-                            local fistTool = Plr.Backpack:FindFirstChild("Fist of Darkness")
-                            if fistTool and Plr.Character:FindFirstChild("Humanoid") then Plr.Character.Humanoid:EquipTool(fistTool) end
-                            task.wait(3); State.DarkbeardState = "Attacking"
-                        end
-                    end
-                    
-                elseif State.DarkbeardState == "Attacking" then
-                    local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart")
-                    if not root then continue end
-
-                    local darkbeard = nil
-                    if Workspace:FindFirstChild("Enemies") then
-                        for _, v in pairs(Workspace.Enemies:GetChildren()) do
-                            if string.find(v.Name, "Darkbeard") and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then darkbeard = v; break end
-                        end
-                    end
-                    
-                    if darkbeard then
-                        State.DarkbeardWaitTimer = nil; State.DarkbeardTarget = darkbeard
-                        PrepareEnemyForBoss(darkbeard)
-                        
-                        local EP = darkbeard.HumanoidRootPart.Position
-                        local d = (root.Position - EP); d = Vector3.new(d.X, 0, d.Z)
-                        if d.Magnitude < 0.1 then d = Vector3.new(1,0,0) end; d = d.Unit
-                        local dest = CFrame.lookAt(EP + d * (Settings.AttackDistance or 40) + Vector3.new(0, (Settings.AttackHeight or 40), 0), EP)
-                        
-                        local dist = (root.Position - dest.Position).Magnitude
-                        if dist < 10 then 
-                            root.CFrame = dest
-                            if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
-                            EquipWeaponGeneral()
-                            if darkbeard:FindFirstChild("Head") then Workspace.CurrentCamera.CFrame = CFrame.lookAt(Workspace.CurrentCamera.CFrame.Position, darkbeard.Head.Position) end
-                            
-                            task.spawn(function()
-                                local CX, CY = Workspace.CurrentCamera.ViewportSize.X/2, Workspace.CurrentCamera.ViewportSize.Y/2
-                                for i=1,3 do
-                                    VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, true, game, 1); task.wait(Settings.HoldTime or 0.05); VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, false, game, 1)
-                                    if RegisterAttack then RegisterAttack:FireServer(math.floor((0.5 + math.random() * 0.5) * 10000) / 10000) end
-                                end
-                            end)
-                        else
-                            if State.ActiveTween then State.ActiveTween:Cancel() end
-                            State.ActiveTween = TweenService:Create(root, TweenInfo.new(math.max(dist/(Settings.FlightSpeed or 350), 0.05), Enum.EasingStyle.Linear), {CFrame=dest})
-                            State.ActiveTween:Play()
+                if State.BartiloPhase == 0 then
+                    if not HasQuest() then
+                        State.BartiloTarget = {Mode = "Move", CFrame = BartiloQuestPos}
+                        if (root.Position - BartiloQuestPos.Position).Magnitude < 15 then
+                            ReplicatedStorage.Remotes.CommF_:InvokeServer("StartQuest", "BartiloQuest", 1)
+                            task.wait(1)
+                            HandleDialogueQuick()
                         end
                     else
-                        State.DarkbeardTarget = nil
-                        if not State.DarkbeardWaitTimer then State.DarkbeardWaitTimer = tick() end
-                        
-                        local dist = (root.Position - DarkbeardSpawnPos.Position).Magnitude
-                        if dist > 15 then
-                            if State.ActiveTween then State.ActiveTween:Cancel() end
-                            State.ActiveTween = TweenService:Create(root, TweenInfo.new(math.max(dist/(Settings.FlightSpeed or 350), 0.05), Enum.EasingStyle.Linear), {CFrame=DarkbeardSpawnPos})
-                            State.ActiveTween:Play()
-                        else
-                            if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
+                        local fm, md = nil, math.huge
+                        local E = Workspace:FindFirstChild("Enemies")
+                        if E then
+                            for _, v in pairs(E:GetChildren()) do
+                                if string.find(v.Name, "Swan Pirate") and IsEnemyValid(v) then
+                                    local d = (root.Position - v.HumanoidRootPart.Position).Magnitude
+                                    if d < md then md = d; fm = v end
+                                end
+                            end
                         end
-
-                        if tick() - State.DarkbeardWaitTimer > 15 then
-                            State.DarkbeardState = "Idle"; State.DarkbeardWaitTimer = nil
-                            if State.IsDoingPriorityTask then State.IsDoingPriorityTask = false; ResumeFarms(); WindUI:Notify({Title="Darkbeard", Content="عملیات پایان یافت! بازگشت...", Duration=5}) end
+                        if fm then
+                            PrepareEnemyForBoss(fm)
+                            State.BartiloTarget = {Mode = "Mob", Instance = fm}
+                        else
+                            local realPos = GetRealSpawn("Swan Pirate", SwanPirateArea)
+                            State.BartiloTarget = {Mode = "Wait", CFrame = realPos * CFrame.new(0, Settings.WaitHeight or 40, 0)}
                         end
                     end
+                elseif State.BartiloPhase == 1 then
+                    local jeremyInstance = nil
+                    local E = Workspace:FindFirstChild("Enemies")
+                    if E then
+                        for _, v in pairs(E:GetChildren()) do
+                            if string.find(v.Name, "Jeremy") and IsEnemyValid(v) then jeremyInstance = v; break end
+                        end
+                    end
+                    if jeremyInstance then
+                        PrepareEnemyForBoss(jeremyInstance)
+                        State.BartiloTarget = {Mode = "Mob", Instance = jeremyInstance}
+                    else
+                        local realJeremyPos = GetRealSpawn("Jeremy", JeremyQuestNPC)
+                        State.BartiloTarget = {Mode = "Wait", CFrame = realJeremyPos * CFrame.new(0, Settings.WaitHeight or 40, 0)}
+                    end
+                elseif State.BartiloPhase == 2 then
+                    if State.BartiloPlateIndex <= #BartiloPlates then
+                        local targetPlate = BartiloPlates[State.BartiloPlateIndex]
+                        State.BartiloTarget = {Mode = "Move", CFrame = targetPlate}
+                        if (root.Position - targetPlate.Position).Magnitude < 20 then
+                            task.wait(0.3)
+                            State.BartiloPlateIndex = State.BartiloPlateIndex + 1
+                        end
+                    else
+                        pcall(function() ReplicatedStorage.Remotes.CommF_:InvokeServer("BartiloQuestProgress", "DidPlates") end)
+                        State.BartiloPhase = 3
+                    end
+                elseif State.BartiloPhase == 3 then
+                    State.BartiloTarget = nil
+                    if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
+                    State.AutoBartilo = false
+                    WindUI:Notify({Title="Bartilo Quest", Content="کوئست بارتیلو با موفقیت کامل شد!", Duration=5})
+                    if State.IsDoingPriorityTask then State.IsDoingPriorityTask = false; ResumeFarms() end
                 end
+            end
+        end)
+
+        -- لوپ حرکت و اتک مخصوص بارتیلو
+        task.spawn(function()
+            while task.wait(0.1) do
+                pcall(function()
+                    if not State.AutoBartilo or not State.BartiloTarget then return end
+                    local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart")
+                    if not root then return end
+                    
+                    local dest = nil
+                    if State.BartiloTarget.Mode == "Move" or State.BartiloTarget.Mode == "Wait" then
+                        dest = State.BartiloTarget.CFrame
+                    elseif State.BartiloTarget.Mode == "Mob" and State.BartiloTarget.Instance and State.BartiloTarget.Instance:FindFirstChild("HumanoidRootPart") then
+                        local EP = State.BartiloTarget.Instance.HumanoidRootPart.Position
+                        local d = (root.Position - EP); d = Vector3.new(d.X, 0, d.Z)
+                        if d.Magnitude < 0.1 then d = Vector3.new(1,0,0) end; d = d.Unit
+                        dest = CFrame.lookAt(EP + d * (Settings.AttackDistance or 10) + Vector3.new(0, (Settings.AttackHeight or 10), 0), EP)
+                    end
+
+                    if dest then
+                        local dist = (root.Position - dest.Position).Magnitude
+                        if dist < 10 then 
+                            if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
+                            
+                            -- اتک دادن
+                            if State.BartiloTarget.Mode == "Mob" and tick() - State.BartiloLastAttackTime > (Settings.AttackWaitTime or 0.1) then
+                                State.BartiloLastAttackTime = tick()
+                                local E = State.BartiloTarget.Instance
+                                if IsEnemyValid(E) then
+                                    EquipWeaponGeneral()
+                                    if E:FindFirstChild("Head") then Workspace.CurrentCamera.CFrame = CFrame.lookAt(Workspace.CurrentCamera.CFrame.Position, E.Head.Position) end
+                                    task.spawn(function()
+                                        local CX, CY = Workspace.CurrentCamera.ViewportSize.X/2, Workspace.CurrentCamera.ViewportSize.Y/2
+                                        for i=1,3 do
+                                            VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, true, game, 1); task.wait(Settings.HoldTime or 0.05); VirtualInputManager:SendMouseButtonEvent(CX, CY, 0, false, game, 1)
+                                            if RegisterAttack then RegisterAttack:FireServer(math.floor((0.5 + math.random() * 0.5) * 10000) / 10000) end
+                                        end
+                                    end)
+                                end
+                            end
+                        else
+                            State.ActiveTween = SmartTween(root, dest, State.ActiveTween)
+                        end
+                    end
+                end)
             end
         end)
     end
 
-    if Sea == 2 and BossTab then
-        local DarkbeardSec = BossTab:Section({Title = " اتو دارک بیرد (Darkbeard)", Box = true, BoxBorder = true, Opened = true})
-        DarkbeardSec:Toggle({Title = "اتو اسپان و کشتن Darkbeard", Value = false, Callback = function(s) State.AutoDarkbeardEnabled = s end})
-        DarkbeardSec:Toggle({Title = "کشتن دارک برید وقتی اسپان شد", Value = false, Callback = function(s) State.AutoKillDarkbeardEventEnabled = s end})
+    -- ساخت رابط کاربری دارک بیرد و بارتیلو (در Sea 2)
+    if Sea == 2 then
+        if BossTab then
+            local DarkbeardSec = BossTab:Section({Title = " اتو دارک بیرد (Darkbeard)", Box = true, BoxBorder = true, Opened = true})
+            DarkbeardSec:Toggle({Title = "اتو اسپان و کشتن Darkbeard", Value = false, Callback = function(s) State.AutoDarkbeardEnabled = s end})
+            DarkbeardSec:Toggle({Title = "کشتن دارک برید وقتی اسپان شد", Value = false, Callback = function(s) State.AutoKillDarkbeardEventEnabled = s end})
+        end
+        
+        -- اضافه کردن بارتیلو کوئست به تب ریس‌ها
+        if RaceTab then
+            local BartiloSec = RaceTab:Section({Title = "کوئست بارتیلو (رِیس V2)", Box = true, BoxBorder = true, Opened = true})
+            BartiloSec:Toggle({
+                Title = "انجام خودکار کوئست بارتیلو", 
+                Desc = "به صورت کاملاً خودکار کوئست می‌گیرد، ماب‌ها را می‌کشد، جرمی را می‌کشد و روی پلت‌ها می‌رود.",
+                Value = false, 
+                Callback = function(s) 
+                    if ExtraModule1.ToggleBartilo then ExtraModule1.ToggleBartilo(s) end 
+                end
+            })
+        end
     end
 end
 
