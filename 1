@@ -54,6 +54,7 @@ function ExtraModule1.Init(Deps)
         BartiloPhase = -1,
         BartiloIsChecking = false,
         BartiloPlateIndex = 1,
+        BartiloReachedStart = false, -- متغیر جدید برای چک کردن نقطه شروع پلت ها
         BartiloTarget = nil,
         BartiloLastEnemy = nil,
         BartiloLastEnemyTime = 0
@@ -66,12 +67,7 @@ function ExtraModule1.Init(Deps)
     local BartiloQuestPos = CFrame.new(-459.705, 69.368, 301.777)
     local SwanPirateArea = CFrame.new(875, 122, 1235)
     local JeremyQuestNPC = CFrame.new(637, 72, 917)
-    local BartiloPlates = {
-        CFrame.new(-1850.569, 13.018, 1750.868), CFrame.new(-1858.781, 20.306, 1711.822),
-        CFrame.new(-1803.893, 16.733, 1750.592), CFrame.new(-1858.262, 17.163, 1724.816),
-        CFrame.new(-1869.486, 16.301, 1680.933), CFrame.new(-1800.137, 16.564, 1684.458),
-        CFrame.new(-1819.281, 15.084, 1717.748), CFrame.new(-1813.567, 14.934, 1724.816)
-    }
+    local BartiloStartPos = CFrame.new(-1850.569, 13.018, 1750.868) -- نقطه شروع قبل از رفتن روی پلت ها
 
     local function EquipWeaponGeneral()
         pcall(function()
@@ -184,6 +180,7 @@ function ExtraModule1.Init(Deps)
         if s then
             State.BartiloPhase = -1
             State.BartiloPlateIndex = 1
+            State.BartiloReachedStart = false
             if not State.IsDoingPriorityTask then
                 State.IsDoingPriorityTask = true
                 PauseFarms()
@@ -473,16 +470,33 @@ function ExtraModule1.Init(Deps)
                         State.BartiloTarget = {Mode = "Wait", CFrame = realJeremyPos * CFrame.new(0, Settings.WaitHeight or 40, 0)}
                     end
                 elseif State.BartiloPhase == 2 then
-                    if State.BartiloPlateIndex <= #BartiloPlates then
-                        local targetPlate = BartiloPlates[State.BartiloPlateIndex]
-                        State.BartiloTarget = {Mode = "Move", CFrame = targetPlate}
-                        if (root.Position - targetPlate.Position).Magnitude < 20 then
-                            task.wait(0.3)
-                            State.BartiloPlateIndex = State.BartiloPlateIndex + 1
+                    -- سیستم جدید پلت ها: اول رفتن به نقطه اصلی، بعد خوندن پارت ها از مپ
+                    if not State.BartiloReachedStart then
+                        State.BartiloTarget = {Mode = "Move", CFrame = BartiloStartPos}
+                        if (root.Position - BartiloStartPos.Position).Magnitude < 20 then
+                            task.wait(1)
+                            State.BartiloReachedStart = true
                         end
                     else
-                        pcall(function() ReplicatedStorage.Remotes.CommF_:InvokeServer("BartiloQuestProgress", "DidPlates") end)
-                        State.BartiloPhase = 3
+                        if State.BartiloPlateIndex <= 8 then
+                            local platePath = Workspace:FindFirstChild("Map")
+                            if platePath and platePath:FindFirstChild("Dressrosa") and platePath.Dressrosa:FindFirstChild("BartiloPlates") then
+                                local targetPlate = platePath.Dressrosa.BartiloPlates:FindFirstChild("Plate" .. State.BartiloPlateIndex)
+                                if targetPlate then
+                                    State.BartiloTarget = {Mode = "Move", CFrame = targetPlate.CFrame}
+                                    if (root.Position - targetPlate.Position).Magnitude < 20 then
+                                        task.wait(0.3)
+                                        State.BartiloPlateIndex = State.BartiloPlateIndex + 1
+                                    end
+                                else
+                                    -- اگر مپ کامل لود نشده بود درجا میزنه تا لود شه
+                                    State.BartiloTarget = {Mode = "Move", CFrame = root.CFrame}
+                                end
+                            end
+                        else
+                            pcall(function() ReplicatedStorage.Remotes.CommF_:InvokeServer("BartiloQuestProgress", "DidPlates") end)
+                            State.BartiloPhase = 3
+                        end
                     end
                 elseif State.BartiloPhase == 3 then
                     State.BartiloTarget = nil
@@ -538,7 +552,7 @@ function ExtraModule1.Init(Deps)
                     local E = State.BartiloTarget.Instance
                     if not IsEnemyValid(E) then return end
                     
-                    -- تاخیر 2 ثانیه ای هوشمند (هنگام عوض شدن تارگت) دقیقا مشابه هاب شما
+                    -- تاخیر 2 ثانیه ای هوشمند (هنگام عوض شدن تارگت)
                     if E ~= State.BartiloLastEnemy then 
                         State.BartiloLastEnemy = E
                         State.BartiloLastEnemyTime = tick() 
@@ -570,7 +584,7 @@ function ExtraModule1.Init(Deps)
                     end
                 end)
                 
-                -- سیستم دیلی اتک هوشمند که در اسکریپت LevelUp شما هست
+                -- سیستم دیلی اتک هوشمند
                 if Clicked then
                     local minDelay = Settings.MinClickDelay or 0.05
                     local maxDelay = Settings.MaxClickDelay or 0.09
