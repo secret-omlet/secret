@@ -15,6 +15,7 @@ function ExtraModule1.Init(Deps)
     local BossTab = Deps.BossTab
     local ChestSection = Deps.ChestSection
     local MainSection = Deps.MainSection 
+    local FarmTab = Deps.FarmTab -- دریافت تب اتو فارم
     local BoneSec = Deps.BoneSec
     local RaceTab = Deps.RaceTab 
     local TurnOffAll = Deps.TurnOffAll 
@@ -60,7 +61,7 @@ function ExtraModule1.Init(Deps)
         BartiloLastEnemy = nil,
         BartiloLastEnemyTime = 0,
 
-        -- متغیرهای جدید Ectoplasm / Hellfire Torch / Cursed Captain (دریای دوم)
+        -- متغیرهای Ectoplasm / Hellfire Torch / Cursed Captain
         AutoHellfire = false,
         HellfirePhase = "Idle",
         EctoCount = 0,
@@ -95,9 +96,7 @@ function ExtraModule1.Init(Deps)
     local HellfireNPCCFrame = CFrame.new(919.716, 126.011, 33454.562)
     local CursedShipCenter = Vector3.new(923, 126, 32852)
 
-    -- ========================================================
     -- خنثی‌سازی پارت تله‌پورت باگ‌خور داخل کشتی
-    -- ========================================================
     local function SafeDisableShipTeleport()
         pcall(function()
             local map = Workspace:FindFirstChild("Map")
@@ -360,7 +359,6 @@ function ExtraModule1.Init(Deps)
     ExtraModule1.ToggleCursedCaptain = function(s)
         State.AutoCursedCaptain = s
         if s then
-            -- اول چک می‌کنیم که آیا باس همین الان توی بازی هست یا نه
             local bossFound = nil
             if Workspace:FindFirstChild("Enemies") then
                 for _, v in pairs(Workspace.Enemies:GetChildren()) do
@@ -570,7 +568,7 @@ function ExtraModule1.Init(Deps)
     end
 
     -- ========================================================
-    -- هسته Noclip (فقط موقع اتک و حرکات اصلی - بدون ایجاد کندی در رانندگی/راه رفتن)
+    -- هسته Noclip (فقط موقع اتک و حرکات اصلی - بدون ایجاد کندی در راه رفتن)
     -- ========================================================
     RunService.Heartbeat:Connect(function()
         pcall(function()
@@ -1148,8 +1146,10 @@ function ExtraModule1.Init(Deps)
             })
         end
 
-        if MainSection then
-            local EctoSec = MainSection:Section({Title = "فارم ماب‌های اکتوپلاسم (Cursed Ship)", Box = true, BoxBorder = true, Opened = true})
+        -- قرارگیری قرار دادن بخش Ecto Farm دقیقاً داخل تب اتو فارم (FarmTab)
+        local targetFarmTab = FarmTab or MainSection
+        if targetFarmTab then
+            local EctoSec = targetFarmTab:Section({Title = "فارم ماب‌های اکتوپلاسم (Cursed Ship)", Box = true, BoxBorder = true, Opened = true})
             EctoSec:Toggle({
                 Title = "شروع فارم ماب‌های Cursed Ship",
                 Desc = "وارد کشتی شده و ماب‌ها را جهت دریافت Ectoplasm می‌کشد.",
