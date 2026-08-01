@@ -95,6 +95,30 @@ function ExtraModule1.Init(Deps)
     local HellfireNPCCFrame = CFrame.new(919.716, 126.011, 33454.562)
     local CursedShipCenter = Vector3.new(923, 126, 32852)
 
+    -- ========================================================
+    -- خنثی‌سازی پارت تله‌پورت باگ‌خور داخل کشتی
+    -- ========================================================
+    local function SafeDisableShipTeleport()
+        pcall(function()
+            local map = Workspace:FindFirstChild("Map")
+            if map then
+                local ghostShip = map:FindFirstChild("GhostShipInterior")
+                if ghostShip then
+                    local tpPart = ghostShip:FindFirstChild("Teleport")
+                    if tpPart then
+                        tpPart.CanTouch = false
+                        tpPart.CanCollide = false
+                        for _, c in pairs(tpPart:GetDescendants()) do
+                            if c:IsA("TouchTransmitter") or c.Name == "TouchInterest" then
+                                c:Destroy()
+                            end
+                        end
+                    end
+                end
+            end
+        end)
+    end
+
     local function EquipWeaponGeneral()
         pcall(function()
             local h = Plr.Character:FindFirstChild("Humanoid")
@@ -318,6 +342,11 @@ function ExtraModule1.Init(Deps)
                 PauseFarms()
                 if SetFarmMode then SetFarmMode("EctoFarm") end
             end
+            task.spawn(function()
+                local CommF = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("CommF_")
+                CommF:InvokeServer("requestEntrance", CursedShipEntranceCF)
+                task.wait(2)
+            end)
         else
             State.EctoFarmTarget = nil
             if State.ActiveTween then State.ActiveTween:Cancel(); State.ActiveTween = nil end
@@ -331,7 +360,29 @@ function ExtraModule1.Init(Deps)
     ExtraModule1.ToggleCursedCaptain = function(s)
         State.AutoCursedCaptain = s
         if s then
-            WindUI:Notify({Title="Cursed Captain", Content="سیستم مانیتورینگ کرسد کپتن فعال شد!", Duration=3})
+            -- اول چک می‌کنیم که آیا باس همین الان توی بازی هست یا نه
+            local bossFound = nil
+            if Workspace:FindFirstChild("Enemies") then
+                for _, v in pairs(Workspace.Enemies:GetChildren()) do
+                    if string.find(v.Name, "Cursed Captain") and IsEnemyValid(v) then
+                        bossFound = v
+                        break
+                    end
+                end
+            end
+
+            if bossFound then
+                if not State.IsDoingPriorityTask then
+                    State.IsDoingPriorityTask = true
+                    PauseFarms()
+                    if SetFarmMode then SetFarmMode("CursedCaptain") end
+                end
+                State.CursedCaptainPhase = "Entering"
+                WindUI:Notify({Title="Cursed Captain", Content="کرسد کپتن در بازی پیدا شد! در حال ورود به Cursed Ship...", Duration=5})
+            else
+                State.CursedCaptainPhase = "Idle"
+                WindUI:Notify({Title="Cursed Captain", Content="سیستم مانیتورینگ فعال شد! منتظر اسپاون...", Duration=3})
+            end
         else
             State.CursedCaptainTarget = nil
             State.CursedCaptainPhase = "Idle"
@@ -519,11 +570,15 @@ function ExtraModule1.Init(Deps)
     end
 
     -- ========================================================
-    -- هسته Noclip (رد شدن از دیوار موقع اتک)
+    -- هسته Noclip (فقط موقع اتک و حرکات اصلی - بدون ایجاد کندی در رانندگی/راه رفتن)
     -- ========================================================
     RunService.Heartbeat:Connect(function()
         pcall(function()
-            if (State.DarkbeardState == "Attacking" or State.SoulReaperPhase == "Attacking" or (State.AutoBartilo and State.BartiloTarget) or State.AutoHellfire or State.AutoEctoFarm or State.AutoCursedCaptain) and Plr.Character then
+            local isAttackingCaptain = (State.AutoCursedCaptain and State.CursedCaptainPhase == "Hunting" and State.CursedCaptainTarget ~= nil)
+            local isAttackingHellfire = (State.AutoHellfire and State.HellfirePhase == "Farming")
+            local isAttackingEcto = (State.AutoEctoFarm and State.EctoFarmTarget ~= nil)
+            
+            if (State.DarkbeardState == "Attacking" or State.SoulReaperPhase == "Attacking" or (State.AutoBartilo and State.BartiloTarget) or isAttackingHellfire or isAttackingEcto or isAttackingCaptain) and Plr.Character then
                 for _, p in pairs(Plr.Character:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false end end
                 if Plr.Character:FindFirstChild("HumanoidRootPart") then Plr.Character.HumanoidRootPart.Velocity = Vector3.zero end
             end
@@ -784,6 +839,8 @@ function ExtraModule1.Init(Deps)
                 local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart")
                 if not root then continue end
 
+                SafeDisableShipTeleport()
+
                 if State.HellfirePhase == "Entering" then
                     WindUI:Notify({Title="Hellfire Torch", Content="درحال ورود به Cursed Ship...", Duration=3})
                     CommF:InvokeServer("requestEntrance", CursedShipEntranceCF)
@@ -895,6 +952,8 @@ function ExtraModule1.Init(Deps)
                 local root = Plr.Character and Plr.Character:FindFirstChild("HumanoidRootPart")
                 if not root then continue end
 
+                SafeDisableShipTeleport()
+
                 local inShip = (root.Position - CursedShipCenter).Magnitude < 3000
                 if not inShip then
                     CommF:InvokeServer("requestEntrance", CursedShipEntranceCF)
@@ -1001,11 +1060,13 @@ function ExtraModule1.Init(Deps)
                 end
 
                 if State.CursedCaptainPhase == "Entering" then
+                    SafeDisableShipTeleport()
                     CommF:InvokeServer("requestEntrance", CursedShipEntranceCF)
                     task.wait(2)
                     State.CursedCaptainPhase = "Hunting"
 
                 elseif State.CursedCaptainPhase == "Hunting" then
+                    SafeDisableShipTeleport()
                     local boss = nil
                     if Workspace:FindFirstChild("Enemies") then
                         for _, v in pairs(Workspace.Enemies:GetChildren()) do
